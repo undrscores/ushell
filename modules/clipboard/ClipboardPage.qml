@@ -53,7 +53,7 @@ Item {
             id: clearBtn
             implicitWidth: 38; implicitHeight: 38
             radius: Theme.radius
-            color: page.clearArmed ? Theme.dangerSoft : (cma.containsMouse ? Theme.hover : Theme.tint)
+            color: page.clearArmed ? Qt.rgba(0.953, 0.545, 0.659, 0.28) : (cma.containsMouse ? Theme.hover : Theme.tint)
             Behavior on color { ColorAnimation { duration: Theme.animFast } }
             scale: cma.pressed ? 0.9 : (cma.containsMouse ? 1.08 : 1)
             Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
@@ -136,7 +136,7 @@ Item {
                     }
                     Rectangle {
                         width: 24; height: 24; radius: 8
-                        color: dma.containsMouse ? Theme.dangerSoft : "transparent"
+                        color: dma.containsMouse ? Qt.rgba(0.953, 0.545, 0.659, 0.28) : "transparent"
                         Icon { anchors.centerIn: parent; text: ""; size: 11; color: dma.containsMouse ? Theme.danger : Theme.fgDim }
                         MouseArea { id: dma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Clipboard.remove(entry.modelData.id) }
                     }
