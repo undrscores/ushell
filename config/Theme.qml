@@ -16,6 +16,13 @@ Singleton {
     readonly property color danger:    "#f38ba8"
     readonly property color ok:        "#a6e3a1"
 
+    // Glass surfaces (shared by every panel)
+    readonly property color glass:  Qt.rgba(0.118, 0.118, 0.180, 0.82)
+    readonly property color line:   Qt.rgba(1, 1, 1, 0.07)
+    readonly property color hover:  Qt.rgba(1, 1, 1, 0.09)
+    readonly property color tint:   Qt.rgba(1, 1, 1, 0.05)
+    readonly property color accentSoft: Qt.rgba(0.796, 0.651, 0.969, 0.18)
+
     // Shape & spacing
     readonly property int radius:      14
     readonly property int radiusSmall: 8
@@ -26,6 +33,8 @@ Singleton {
     // Typography
     readonly property string font: "Sans"
     readonly property int fontSize: 13
+    readonly property string iconFont: "Symbols Nerd Font"
+    readonly property int iconSize: 16
 
     // Motion
     readonly property int animFast:   120
