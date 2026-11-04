@@ -93,6 +93,16 @@ Variants {
                 Column {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 5
+                    // scroll over the pills to move between workspaces
+                    WheelHandler {
+                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                        onWheel: e => {
+                            if (wsCool.running || e.angleDelta.y === 0) return
+                            Quickshell.execDetached(["niri", "msg", "action", e.angleDelta.y < 0 ? "focus-workspace-down" : "focus-workspace-up"])
+                            wsCool.restart()
+                        }
+                    }
+                    Timer { id: wsCool; interval: 180 }
                     Repeater {
                         model: wsModel
                         delegate: Item {
@@ -185,6 +195,7 @@ Variants {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
+                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                             onContainsMouseChanged: {
                                 if (containsMouse) {
                                     win.tipText = slot.modelData.name
@@ -192,9 +203,10 @@ Variants {
                                     win.tipShown = true
                                 } else if (win.tipText === slot.modelData.name) win.tipShown = false
                             }
-                            onClicked: {
+                            onClicked: mouse => {
                                 bounce.restart()
-                                if (slot.running) Niri.focusWindow(slot.win_.id)
+                                // left: jump to the running window, or start the app; middle: always a new window
+                                if (slot.running && mouse.button !== Qt.MiddleButton) Niri.focusWindow(slot.win_.id)
                                 else if (slot.modelData.entry) slot.modelData.entry.execute()
                             }
                         }
@@ -241,6 +253,15 @@ Variants {
                             id: tma
                             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                             acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                            readonly property string label: t.modelData.tooltipTitle || t.modelData.title || ""
+                            onContainsMouseChanged: {
+                                if (containsMouse && label !== "") {
+                                    win.tipText = label
+                                    win.tipPos = t.mapToItem(null, 0, t.height / 2).y
+                                    win.tipShown = true
+                                } else if (win.tipText === label) win.tipShown = false
+                            }
+                            onWheel: w => { if (w.angleDelta.y !== 0) t.modelData.scroll(w.angleDelta.y, false) }
                             onClicked: mouse => {
                                 if (mouse.button === Qt.RightButton || t.modelData.onlyMenu) {
                                     if (t.modelData.hasMenu) {
