@@ -16,7 +16,7 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "left"
-        autoHide: Config.leftAutoHide
+        autoHide: Prefs.leftAutoHide
         panelWidth: 68
         panelHeight: col.implicitHeight + 28
         panelRadius: 24

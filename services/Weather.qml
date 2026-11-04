@@ -4,7 +4,7 @@ import Quickshell.Io
 import QtQuick
 import "../config"
 
-// Open-Meteo forecast. Location: Config.weatherCity (geocoded) or the IP address.
+// Open-Meteo forecast. Location: Prefs.weatherCity (geocoded) or the IP address.
 // Fetches lazily (first time the Weather tab is seen, then at most every 20 min).
 Singleton {
     id: root
@@ -22,16 +22,21 @@ Singleton {
     property bool isDay: true
     property var daily: []          // [{ date, code, max, min }]
 
-    readonly property string tempUnit: Config.weatherMetric ? "°C" : "°F"
-    readonly property string windUnit: Config.weatherMetric ? "km/h" : "mph"
+    readonly property string tempUnit: Prefs.weatherMetric ? "°C" : "°F"
+    readonly property string windUnit: Prefs.weatherMetric ? "km/h" : "mph"
 
     property real lat: 0
     property real lon: 0
     property bool located: false
     property int attempt: 0
-    // IP geolocation providers, tried in order (unused when Config.weatherCity is set)
+    // IP geolocation providers, tried in order (unused when Prefs.weatherCity is set)
     readonly property var ipProviders: ["https://ipwho.is/", "https://ipapi.co/json/"]
 
+    Connections {
+        target: Prefs
+        function onWeatherCityChanged() { root.attempt = 0; root.refresh() }
+        function onWeatherMetricChanged() { root.refresh() }
+    }
     function ensure() { if (!loading && Date.now() - updated > 20 * 60 * 1000) refresh() }
     function refresh() {
         if (loading) return
@@ -61,23 +66,23 @@ Singleton {
 
     Process {
         id: locate
-        command: Config.weatherCity !== ""
-            ? ["curl", "-sf", "-m", "10", "https://geocoding-api.open-meteo.com/v1/search?count=1&name=" + encodeURIComponent(Config.weatherCity)]
+        command: Prefs.weatherCity !== ""
+            ? ["curl", "-sf", "-m", "10", "https://geocoding-api.open-meteo.com/v1/search?count=1&name=" + encodeURIComponent(Prefs.weatherCity)]
             : ["curl", "-sf", "-m", "10", root.ipProviders[Math.min(root.attempt, root.ipProviders.length - 1)]]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     const j = JSON.parse(text)
-                    const r = Config.weatherCity !== "" ? j.results[0] : j
+                    const r = Prefs.weatherCity !== "" ? j.results[0] : j
                     if (!r || r.latitude === undefined || r.success === false) throw new Error("no location")
                     root.lat = r.latitude
                     root.lon = r.longitude
-                    root.place = r.city || r.name || Config.weatherCity
+                    root.place = r.city || r.name || Prefs.weatherCity
                     root.located = true
                     forecast.running = true
                 } catch (e) {
                     // try the next IP provider before giving up
-                    if (Config.weatherCity === "" && root.attempt + 1 < root.ipProviders.length) {
+                    if (Prefs.weatherCity === "" && root.attempt + 1 < root.ipProviders.length) {
                         root.attempt++
                         locate.running = true
                     } else root.fail("Couldn't find your location")
@@ -91,7 +96,7 @@ Singleton {
             "https://api.open-meteo.com/v1/forecast?latitude=" + root.lat + "&longitude=" + root.lon
             + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day"
             + "&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=5&timezone=auto"
-            + (Config.weatherMetric ? "" : "&temperature_unit=fahrenheit&wind_speed_unit=mph")]
+            + (Prefs.weatherMetric ? "" : "&temperature_unit=fahrenheit&wind_speed_unit=mph")]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

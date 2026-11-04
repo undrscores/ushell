@@ -74,6 +74,8 @@ PanelWindow {
           run: () => win.widgetsTab(2) },
         { id: "clipboard", title: "Clipboard history", glyph: "\uf0ea", words: "copy paste history clipboard",
           run: () => Shell.open("clipboard") },
+        { id: "settings", title: "Settings", glyph: "\uf013", words: "settings preferences config autohide weather",
+          run: () => Shell.open("settings") },
         { id: "calendar", title: "Calendar",        glyph: "", words: "date month day",
           run: () => Shell.open("calendar") },
         { id: "sound",    title: "Sound settings",  glyph: "", words: "volume microphone output device audio quick settings",
