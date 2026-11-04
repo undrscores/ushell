@@ -7,6 +7,7 @@ import "modules/widgets"
 import "modules/launcher"
 import "modules/quicksettings"
 import "modules/calendar"
+import "modules/media"
 import "modules/power"
 import "services"
 
@@ -17,9 +18,10 @@ ShellRoot {
     Launcher {}
     QuickSettings {}
     CalendarMenu {}
+    MediaMenu {}
     PowerMenu {}
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|power|widgets>
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|power|widgets>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

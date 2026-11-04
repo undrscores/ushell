@@ -9,9 +9,11 @@ Rectangle {
     signal clicked(var mouse)
     signal scrolled(int delta)
 
-    implicitWidth: row.implicitWidth + 16
-    implicitHeight: 28
-    radius: 9
+    implicitWidth: row.implicitWidth + 18
+    implicitHeight: 30
+    radius: 10
+    scale: ma.pressed ? 0.95 : 1
+    Behavior on scale { NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
     color: (ma.containsMouse || active) ? Theme.hover : "transparent"
     Behavior on color { ColorAnimation { duration: Theme.animFast } }
 

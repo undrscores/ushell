@@ -16,6 +16,21 @@ Singleton {
     readonly property string artist: player ? (player.trackArtist || "") : ""
     readonly property string art:    player ? (player.trackArtUrl || "") : ""
 
+    readonly property real length:   player && player.lengthSupported ? player.length : 0
+    property real position: 0
+    readonly property string identity: player ? (player.identity || "") : ""
+    function seek(frac) { if (player && player.canSeek && length > 0) player.position = frac * length }
+
+    // MPRIS positions don't push updates; poll while something plays.
+    Timer {
+        interval: 500
+        repeat: true
+        running: root.playing
+        triggeredOnStart: true
+        onTriggered: if (root.player) { root.player.positionChanged(); root.position = root.player.position }
+    }
+    onPlayerChanged: position = player ? player.position : 0
+
     function toggle() { if (player) player.togglePlaying() }
     function next()   { if (player) player.next() }
     function prev()   { if (player) player.previous() }
