@@ -16,7 +16,8 @@ Singleton {
         terminal: "alacritty",
         lockCommand: ["swaylock", "-f"],
         searchUrl: "https://duckduckgo.com/?q=",
-        glassOpacity: 1.0
+        glassOpacity: 1.0,
+        wallpaperDir: "~/Pictures/Wallpapers"
     })
 
     // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
@@ -33,6 +34,9 @@ Singleton {
 
     // How opaque panels are: 1 = solid, down to 0.5 = see-through.
     property real glassOpacity: defaults.glassOpacity
+
+    // Folder the wallpaper picker lists (pictures up to one folder deep).
+    property string wallpaperDir: defaults.wallpaperDir
 
     readonly property string path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/ushell/config.json"
 

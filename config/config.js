@@ -11,6 +11,7 @@ var RULES = {
     terminal:     { ok: isText,                                        fix: v => v.trim(),                                    hint: "a command name" },
     lockCommand:  { ok: v => isTextList(v) && v.length > 0,            fix: v => v.map(s => s.trim()),                        hint: "a non-empty list: the command and its arguments" },
     searchUrl:    { ok: v => typeof v === "string" && /^https?:\/\/\S+$/.test(v.trim()), fix: v => v.trim(),                   hint: "an http(s) URL the search text is appended to" },
+    wallpaperDir: { ok: isText,                                        fix: v => v.trim(),                                    hint: "a folder path (~ is your home)" },
     glassOpacity: { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.max(0.5, Math.min(1, v)),               hint: "a number from 0.5 to 1" }
 }
 

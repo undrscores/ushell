@@ -63,11 +63,30 @@ Overlay {
                         readonly property bool chosen: Palette.make(Theme.mode, Prefs.accent).accentName === modelData
                         width: 22; height: 22; radius: 11
                         color: Palette.make(Theme.mode, modelData).accent
-                        border { width: chosen ? 2 : 0; color: Theme.fg }
+                        opacity: Wallpapers.useColors ? 0.35 : 1          // ignored while the wallpaper sets the accent
+                        border { width: chosen && !Wallpapers.useColors ? 2 : 0; color: Theme.fg }
                         scale: swMa.pressed ? 0.88 : (swMa.containsMouse ? 1.18 : 1)
                         Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
                         MouseArea { id: swMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Prefs.set("accent", sw.modelData) }
                     }
+                }
+            }
+
+            Row_ {
+                title: "Colors from wallpaper"
+                hint: Prefs.wallpaperColors && Prefs.wallpaper !== "" && !Wallpapers.colorsOk ? "Reading it… or this picture has no colour" : "The accent follows the wallpaper"
+                Switch { checked: Prefs.wallpaperColors; onToggled: v => Prefs.set("wallpaperColors", v) }
+            }
+            Row_ {
+                title: "Wallpaper"
+                hint: Prefs.wallpaper === "" ? "None chosen: another program may be drawing it" : Wallpapers.nameOf(Prefs.wallpaper)
+                Rectangle {
+                    implicitWidth: chooseText.implicitWidth + 24; implicitHeight: 28
+                    radius: height / 2
+                    color: chooseMa.containsMouse ? Theme.hover : Theme.tint
+                    Behavior on color { ColorAnimation { duration: Theme.animFast } }
+                    Text { id: chooseText; anchors.centerIn: parent; text: "Choose…"; color: Theme.fg; font { family: Theme.font; pixelSize: Theme.fontSize - 1 } }
+                    MouseArea { id: chooseMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Shell.open("wallpapers") }
                 }
             }
 

@@ -12,6 +12,7 @@ import "modules/clipboard"
 import "modules/settings"
 import "modules/media"
 import "modules/power"
+import "modules/wallpaper"
 import "services"
 import "config"
 
@@ -22,6 +23,10 @@ ShellRoot {
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
     Binding { target: Theme; property: "accentName"; value: Prefs.accent }
+    Binding { target: Theme; property: "wallHue"; value: Wallpapers.useColors ? Wallpapers.hue : -1 }
+    Binding { target: Theme; property: "wallSat"; value: Wallpapers.sat }
+
+    Wallpaper {}
 
     Bar {}
     LeftBar {}
@@ -33,6 +38,7 @@ ShellRoot {
     ClipboardMenu {}
     SettingsMenu {}
     PowerMenu {}
+    WallpaperPicker {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
     IpcHandler {
@@ -40,7 +46,7 @@ ShellRoot {
         function query(text: string): void { launcher.query(text) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets>
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }
@@ -50,6 +56,8 @@ ShellRoot {
         // qs ipc call shell brightness <+N|-N>   change brightness of all monitors by N percent
         function brightness(delta: int): void { Brightness.step(delta) }
         function tab(index: int): void      { Shell.widgetsTab = index; Shell.widgetsPinned = true }
+        // qs ipc call shell wallpaper <next|prev|random|off|/path/to/picture>
+        function wallpaper(arg: string): void { Wallpapers.command(arg) }
         // qs ipc call shell theme <dark|light|toggle>   (e.g. from a day/night timer)
         function theme(mode: string): void {
             if (mode === "toggle") Prefs.set("themeMode", Prefs.themeMode === "dark" ? "light" : "dark")

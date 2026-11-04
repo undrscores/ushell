@@ -13,6 +13,8 @@ Singleton {
     property string weatherCity: ""      // empty = locate by IP address
     property string themeMode: "dark"    // dark | light
     property string accent: "mauve"      // see config/palette.js
+    property string wallpaper: ""        // picture path; empty = ushell draws no wallpaper
+    property bool wallpaperColors: false // accent colour taken from the wallpaper
 
     function set(key, value) {
         if (root[key] === value || !StateDir.ready) return
@@ -20,7 +22,8 @@ Singleton {
         file.setText(JSON.stringify({
             topAutoHide: topAutoHide, leftAutoHide: leftAutoHide,
             weatherMetric: weatherMetric, weatherCity: weatherCity,
-            themeMode: themeMode, accent: accent
+            themeMode: themeMode, accent: accent,
+            wallpaper: wallpaper, wallpaperColors: wallpaperColors
         }))
     }
 
@@ -35,6 +38,8 @@ Singleton {
                     if (typeof j[k] === "boolean") root[k] = j[k]
                 if (typeof j.weatherCity === "string") root.weatherCity = j.weatherCity
                 if (j.themeMode === "dark" || j.themeMode === "light") root.themeMode = j.themeMode
+                if (typeof j.wallpaper === "string") root.wallpaper = j.wallpaper
+                if (typeof j.wallpaperColors === "boolean") root.wallpaperColors = j.wallpaperColors
                 if (typeof j.accent === "string") root.accent = j.accent      // unknown names fall back to mauve in palette.js
             } catch (e) {}
         }
