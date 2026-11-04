@@ -17,7 +17,7 @@ Variants {
         screen: modelData
         edge: "left"
         autoHide: Prefs.leftAutoHide
-        panelWidth: 68
+        panelWidth: Theme.dockWidth
         panelHeight: col.implicitHeight + 28
         panelRadius: 24
 

@@ -308,6 +308,10 @@ PanelWindow {
                         listView.currentIndex = Math.min(listView.currentIndex + 1, win.results.length - 1); event.accepted = true
                     } else if (event.key === Qt.Key_Up || (event.modifiers & Qt.ControlModifier && (event.key === Qt.Key_P || event.key === Qt.Key_K))) {
                         listView.currentIndex = Math.max(listView.currentIndex - 1, 0); event.accepted = true
+                    } else if (event.key === Qt.Key_PageDown) {
+                        listView.currentIndex = Math.min(listView.currentIndex + 6, win.results.length - 1); event.accepted = true
+                    } else if (event.key === Qt.Key_PageUp) {
+                        listView.currentIndex = Math.max(listView.currentIndex - 6, 0); event.accepted = true
                     }
                 }
 

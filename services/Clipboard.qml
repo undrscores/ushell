@@ -23,9 +23,7 @@ Singleton {
     function remove(id) { run("delete", String(id)) }
     function togglePin(id) { run("pin", String(id)) }
     function clear() { run("clear") }
-    function copy(text) {
-        Quickshell.execDetached(["sh", "-c", "printf '%s' \"$1\" | wl-copy", "sh", text])
-    }
+    function copy(id) { run("copy", String(id)) }     // the script pipes the text to wl-copy (no argv size limit)
 
     FileView {
         id: store
