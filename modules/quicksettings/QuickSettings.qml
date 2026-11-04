@@ -8,23 +8,15 @@ Overlay {
     id: root
     name: "quicksettings"
 
-    Glass {
+    DropCard {
         id: card
-        width: 340
-        height: col.implicitHeight + 32
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: Theme.margin + Theme.barHeight + 6 + (root.open ? 0 : -10)
-        opacity: root.open ? 1 : 0
-        scale: root.open ? 1 : 0.9
-        transformOrigin: Item.Top
-        Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on y       { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.4 } }
-        Behavior on scale   { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.6 } }
-        Behavior on height  { NumberAnimation { duration: Theme.animFast;   easing.type: Theme.easing } }
+        open: root.open
+        contentWidth: 320
+        contentHeight: col.implicitHeight
 
         ColumnLayout {
             id: col
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 16 }
+            x: card.padding; y: card.padding; width: card.contentWidth
             spacing: 14
 
             // Volume

@@ -22,16 +22,18 @@ Item {
         radius: Theme.radius
         color: Theme.tint
         clip: true
-        Image { id: bgSrc; anchors.fill: parent; source: Media.art; fillMode: Image.PreserveAspectCrop; visible: false; asynchronous: true }
+        Rectangle { id: bgMask; anchors.fill: parent; radius: Theme.radius; visible: false; layer.enabled: true }
+        Image { id: bgSrc; anchors.fill: parent; source: Media.art; sourceSize: Qt.size(160, 160); fillMode: Image.PreserveAspectCrop; visible: false; asynchronous: true }
         MultiEffect {
             anchors.fill: parent
             source: bgSrc
+            maskEnabled: true; maskSource: bgMask
             blurEnabled: true; blur: 1.0; blurMax: 48
             brightness: -0.15; saturation: 0.3
             opacity: bgSrc.status === Image.Ready ? 0.55 : 0
             Behavior on opacity { NumberAnimation { duration: 500 } }
         }
-        Rectangle { anchors.fill: parent; color: Theme.glass; opacity: 0.35 }
+        Rectangle { anchors.fill: parent; radius: Theme.radius; color: Theme.glass; opacity: 0.35 }
     }
 
     ColumnLayout {
@@ -74,7 +76,7 @@ Item {
                     }
                     Rectangle { anchors.fill: parent; radius: width / 2; color: Theme.surface }
                     Icon { anchors.centerIn: parent; text: ""; size: 28; color: Theme.fgDim; visible: art.status !== Image.Ready }
-                    Image { id: art; anchors.fill: parent; source: Media.art; fillMode: Image.PreserveAspectCrop; asynchronous: true; visible: false }
+                    Image { id: art; anchors.fill: parent; source: Media.art; sourceSize: Qt.size(220, 220); fillMode: Image.PreserveAspectCrop; mipmap: true; smooth: true; asynchronous: true; visible: false }
                     MultiEffect {
                         anchors.fill: parent
                         source: art
@@ -94,6 +96,7 @@ Item {
                 id: info
                 Layout.fillWidth: true
                 spacing: 3
+                transform: Translate { id: infoShift }
                 Text {
                     id: titleText
                     Layout.fillWidth: true
@@ -124,7 +127,7 @@ Item {
                 ParallelAnimation {
                     id: swap
                     NumberAnimation { target: info; property: "opacity"; from: 0; to: 1; duration: 380; easing.type: Theme.easing }
-                    NumberAnimation { target: info; property: "x"; from: 14; to: 0; duration: 380; easing.type: Easing.OutBack }
+                    NumberAnimation { target: infoShift; property: "x"; from: 14; to: 0; duration: 380; easing.type: Easing.OutBack }
                 }
             }
         }

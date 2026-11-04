@@ -8,18 +8,12 @@ Overlay {
     id: root
     name: "calendar"
 
-    Glass {
-        width: 320
-        height: cal.implicitHeight + 32
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: Theme.margin + Theme.barHeight + 6 + (root.open ? 0 : -10)
-        opacity: root.open ? 1 : 0
-        scale: root.open ? 1 : 0.9
-        transformOrigin: Item.Top
-        Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on y       { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.4 } }
-        Behavior on scale   { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.6 } }
+    DropCard {
+        id: card
+        open: root.open
+        contentWidth: 290
+        contentHeight: cal.implicitHeight
 
-        Calendar { id: cal; x: 16; y: 16; width: parent.width - 32 }
+        Calendar { id: cal; x: card.padding; y: card.padding; width: card.contentWidth }
     }
 }
