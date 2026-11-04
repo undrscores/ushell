@@ -8,18 +8,19 @@ Overlay {
     id: root
     name: "media"
 
-    Glass {
-        width: 360
-        height: player.implicitHeight + 12
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: Theme.margin + Theme.barHeight + 6 + (root.open ? 0 : -10)
-        opacity: root.open ? 1 : 0
-        scale: root.open ? 1 : 0.9
-        transformOrigin: Item.Top
-        Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on y       { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.4 } }
-        Behavior on scale   { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.6 } }
+    // nothing left to show -> dismiss instead of leaving an empty card
+    Connections {
+        target: Media
+        function onAvailableChanged() { if (!Media.available && root.open) Shell.close() }
+    }
 
-        MediaPlayer { id: player; x: 6; y: 6; width: parent.width - 12 }
+    DropCard {
+        id: card
+        open: root.open
+        padding: 8
+        contentWidth: 344
+        contentHeight: player.implicitHeight
+
+        MediaPlayer { id: player; x: card.padding; y: card.padding; width: card.contentWidth }
     }
 }

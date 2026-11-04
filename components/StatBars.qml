@@ -7,7 +7,7 @@ Column {
     Repeater {
         model: [
             { icon: "", v: Stats.cpu },
-            { icon: "", v: Stats.mem }
+            { icon: "\uDB80\uDF5B", v: Stats.mem }
         ]
         delegate: Row {
             id: stat

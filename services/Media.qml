@@ -3,35 +3,49 @@ import Quickshell
 import Quickshell.Services.Mpris
 import QtQuick
 
-// First playing MPRIS player, else the first available one.
+// One "now playing" view over two backends: MPRIS players (browsers, mpv, ...) and MPD.
+// A playing source wins; otherwise a paused MPRIS player, then a paused MPD.
 Singleton {
     id: root
+
     readonly property var player: {
         const ps = Mpris.players.values
         return ps.find(p => p.isPlaying) ?? ps[0] ?? null
     }
-    readonly property bool available: player !== null
-    readonly property bool playing: player ? player.isPlaying : false
-    readonly property string title:  player ? (player.trackTitle  || "") : ""
-    readonly property string artist: player ? (player.trackArtist || "") : ""
-    readonly property string art:    player ? (player.trackArtUrl || "") : ""
+    readonly property bool mprisPlaying: player ? player.isPlaying : false
+    readonly property bool useMpd: !mprisPlaying && (Mpd.playing || (player === null && Mpd.active))
 
-    readonly property real length:   player && player.lengthSupported ? player.length : 0
+    readonly property bool available: useMpd || player !== null
+    readonly property bool playing: useMpd ? Mpd.playing : mprisPlaying
+    readonly property string title:  useMpd ? Mpd.title  : (player ? (player.trackTitle  || "") : "")
+    readonly property string artist: useMpd ? Mpd.artist : (player ? (player.trackArtist || "") : "")
+    readonly property string art:    useMpd ? Mpd.art    : (player ? (player.trackArtUrl || "") : "")
+    readonly property string identity: useMpd ? "MPD" : (player ? (player.identity || "") : "")
+    readonly property real length: useMpd ? Mpd.duration : (player && player.lengthSupported ? player.length : 0)
     property real position: 0
-    readonly property string identity: player ? (player.identity || "") : ""
-    function seek(frac) { if (player && player.canSeek && length > 0) player.position = frac * length }
 
-    // MPRIS positions don't push updates; poll while something plays.
+    function seek(frac) {
+        if (length <= 0) return
+        if (useMpd) Mpd.seek(frac * length)
+        else if (player && player.canSeek) player.position = frac * length
+    }
+    function toggle() { if (useMpd) Mpd.toggle(); else if (player) player.togglePlaying() }
+    function next()   { if (useMpd) Mpd.next();   else if (player) player.next() }
+    function prev()   { if (useMpd) Mpd.prev();   else if (player) player.previous() }
+
+    // Positions don't push updates: poll (MPD is interpolated between its ticks).
     Timer {
-        interval: 500
+        interval: 400
         repeat: true
         running: root.playing
         triggeredOnStart: true
-        onTriggered: if (root.player) { root.player.positionChanged(); root.position = root.player.position }
+        onTriggered: root.syncPosition()
     }
-    onPlayerChanged: position = player ? player.position : 0
-
-    function toggle() { if (player) player.togglePlaying() }
-    function next()   { if (player) player.next() }
-    function prev()   { if (player) player.previous() }
+    function syncPosition() {
+        if (useMpd) position = Math.min(Mpd.duration, Mpd.elapsed + (Mpd.playing ? (Date.now() - Mpd.stamp) / 1000 : 0))
+        else if (player) { player.positionChanged(); position = player.position }
+    }
+    onUseMpdChanged: syncPosition()
+    onPlayerChanged: syncPosition()
+    Connections { target: Mpd; function onElapsedChanged() { if (root.useMpd && !root.playing) root.syncPosition() } }
 }

@@ -27,6 +27,7 @@ Overlay {
         y: parent.height * 0.3 + (root.open ? 0 : -8)
         opacity: root.open ? 1 : 0
         scale: root.open ? 1 : 0.9
+        Behavior on width   { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on scale   { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.6 } }

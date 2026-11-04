@@ -16,23 +16,31 @@ Variants {
         edge: "right"
         pinned: Shell.widgetsPinned
         panelWidth: 340
-        panelHeight: Math.min(modelData.height - 2 * Theme.margin - 80, 860)
+        // fit the content (media player, stats); never taller than the screen
+        panelHeight: (loader.item ? loader.item.implicitHeight : 0) + 40
         onShownChanged: Shell.widgetsShown = shown
 
-        Flickable {
+        // Content only exists while the panel is on screen: no hidden animations, no cava.
+        Loader {
+            id: loader
             anchors.fill: parent
-            contentHeight: col.implicitHeight + 40
-            clip: true
-            boundsBehavior: Flickable.StopAtBounds
+            active: win.shown || win.slide > 0.002
+            sourceComponent: Flickable {
+                id: flick
+                implicitHeight: col.implicitHeight
+                contentHeight: col.implicitHeight + 40
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
 
-            ColumnLayout {
-                id: col
-                x: 20; y: 20
-                width: parent.width - 40
-                spacing: 20
+                ColumnLayout {
+                    id: col
+                    x: 20; y: 20
+                    width: flick.width - 40
+                    spacing: 20
 
-                MediaPlayer { Layout.fillWidth: true }
-                StatBars    { Layout.fillWidth: true }
+                    MediaPlayer { Layout.fillWidth: true }
+                    StatBars    { Layout.fillWidth: true }
+                }
             }
         }
     }
