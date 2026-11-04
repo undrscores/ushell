@@ -13,24 +13,41 @@ Item {
 
     Rectangle {
         id: track
-        width: parent.width; height: 6; radius: 3
+        width: parent.width; height: ma.containsMouse || ma.pressed ? 8 : 6; radius: height / 2
         anchors.verticalCenter: parent.verticalCenter
         color: Theme.hover
+        Behavior on height { NumberAnimation { duration: 140; easing.type: Theme.easing } }
         Rectangle {
-            height: parent.height; radius: 3
+            height: parent.height; radius: height / 2
             width: Math.max(height, track.width * root.clamped)
-            color: root.tone
-            Behavior on width { enabled: !ma.pressed; NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0; color: root.tone }
+                GradientStop { position: 1; color: Qt.lighter(root.tone, 1.25) }
+            }
+            Behavior on width { enabled: !ma.pressed; NumberAnimation { duration: 200; easing.type: Theme.easing } }
         }
     }
-    Rectangle {
-        width: 14; height: 14; radius: 7
-        color: Theme.fg
+    // handle + glow ring
+    Item {
+        id: handle
+        width: 16; height: 16
         anchors.verticalCenter: parent.verticalCenter
         x: (track.width - width) * root.clamped
-        scale: ma.pressed ? 1.2 : (ma.containsMouse ? 1.1 : 1)
-        Behavior on x { enabled: !ma.pressed; NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
-        Behavior on scale { NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
+        Behavior on x { enabled: !ma.pressed; NumberAnimation { duration: 200; easing.type: Theme.easing } }
+        Rectangle {
+            anchors.centerIn: parent
+            width: ma.pressed ? 30 : (ma.containsMouse ? 24 : 0); height: width; radius: width / 2
+            color: root.tone; opacity: 0.22
+            Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+        }
+        Rectangle {
+            anchors.centerIn: parent
+            width: 14; height: 14; radius: 7
+            color: Theme.fg
+            scale: ma.pressed ? 1.25 : (ma.containsMouse ? 1.12 : 1)
+            Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+        }
     }
     MouseArea {
         id: ma

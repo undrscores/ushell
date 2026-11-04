@@ -1,57 +1,111 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import "../config"
 import "../services"
 
-// Now-playing card: album art, track info, cava spectrum, progress, controls.
+// Now-playing card: spinning vinyl art, blurred backdrop, spectrum, progress, controls.
 Item {
     id: root
     visible: Media.available
-    implicitHeight: visible ? col.implicitHeight : 0
+    implicitHeight: visible ? col.implicitHeight + 32 : 0
 
     function fmt(sec) {
         sec = Math.max(0, Math.floor(sec))
         return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0")
     }
 
+    // Blurred album-art backdrop
+    Rectangle {
+        id: backdrop
+        anchors.fill: parent
+        radius: Theme.radius
+        color: Theme.tint
+        clip: true
+        Image { id: bgSrc; anchors.fill: parent; source: Media.art; fillMode: Image.PreserveAspectCrop; visible: false; asynchronous: true }
+        MultiEffect {
+            anchors.fill: parent
+            source: bgSrc
+            blurEnabled: true; blur: 1.0; blurMax: 48
+            brightness: -0.15; saturation: 0.3
+            opacity: bgSrc.status === Image.Ready ? 0.55 : 0
+            Behavior on opacity { NumberAnimation { duration: 500 } }
+        }
+        Rectangle { anchors.fill: parent; color: Theme.glass; opacity: 0.35 }
+    }
+
     ColumnLayout {
         id: col
-        width: parent.width
+        x: 16; y: 16
+        width: parent.width - 32
         spacing: 14
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 14
+            spacing: 16
 
-            Rectangle {
-                Layout.preferredWidth: 104; Layout.preferredHeight: 104
-                radius: Theme.radius
-                color: Theme.tint
-                clip: true
-                Icon { anchors.centerIn: parent; text: ""; size: 30; color: Theme.fgDim; visible: art.status !== Image.Ready }
-                Image {
-                    id: art
-                    anchors.fill: parent
-                    source: Media.art
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true
-                    opacity: status === Image.Ready ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
+            // Vinyl-style art: spins while playing, pulses with the bass
+            Item {
+                Layout.preferredWidth: 100; Layout.preferredHeight: 100
+                Rectangle {  // bass glow
+                    anchors.centerIn: parent
+                    width: 100 + 26 * Cava.bass; height: width; radius: width / 2
+                    color: Theme.accent
+                    opacity: Media.playing ? 0.12 + 0.35 * Cava.bass : 0
+                    Behavior on width { NumberAnimation { duration: 80 } }
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
+                }
+                Item {
+                    id: disc
+                    anchors.centerIn: parent
+                    width: 96; height: 96
+                    scale: 1 + 0.07 * Cava.bass
+                    Behavior on scale { NumberAnimation { duration: 80 } }
+                    NumberAnimation on rotation {
+                        from: 0; to: 360; duration: 14000
+                        loops: Animation.Infinite
+                        running: true
+                        paused: !Media.playing
+                    }
+                    Rectangle {
+                        id: mask
+                        anchors.fill: parent; radius: width / 2; visible: false
+                        layer.enabled: true
+                    }
+                    Rectangle { anchors.fill: parent; radius: width / 2; color: Theme.surface }
+                    Icon { anchors.centerIn: parent; text: ""; size: 28; color: Theme.fgDim; visible: art.status !== Image.Ready }
+                    Image { id: art; anchors.fill: parent; source: Media.art; fillMode: Image.PreserveAspectCrop; asynchronous: true; visible: false }
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: art
+                        maskEnabled: true; maskSource: mask
+                        opacity: art.status === Image.Ready ? 1 : 0
+                        Behavior on opacity { NumberAnimation { duration: 400 } }
+                    }
+                    Rectangle {  // spindle hole
+                        anchors.centerIn: parent; width: 14; height: 14; radius: 7
+                        color: Theme.glass; border { color: Theme.line; width: 1 }
+                    }
+                    Rectangle { anchors.fill: parent; radius: width / 2; color: "transparent"; border { color: Theme.line; width: 1 } }
                 }
             }
 
             ColumnLayout {
+                id: info
                 Layout.fillWidth: true
                 spacing: 3
                 Text {
+                    id: titleText
                     Layout.fillWidth: true
                     text: Media.title || "Nothing playing"
                     color: Theme.fg
                     elide: Text.ElideRight
                     maximumLineCount: 2; wrapMode: Text.Wrap
                     font { family: Theme.font; pixelSize: Theme.fontSize + 3; bold: true }
+                    onTextChanged: swap.restart()
                 }
                 Text {
+                    id: artistText
                     Layout.fillWidth: true
                     text: Media.artist
                     color: Theme.fgDim
@@ -66,10 +120,16 @@ Item {
                     elide: Text.ElideRight
                     font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
                 }
+                // track-change flourish
+                ParallelAnimation {
+                    id: swap
+                    NumberAnimation { target: info; property: "opacity"; from: 0; to: 1; duration: 380; easing.type: Theme.easing }
+                    NumberAnimation { target: info; property: "x"; from: 14; to: 0; duration: 380; easing.type: Easing.OutBack }
+                }
             }
         }
 
-        Visualizer { Layout.fillWidth: true; Layout.preferredHeight: 44 }
+        Visualizer { Layout.fillWidth: true; Layout.preferredHeight: 56 }
 
         ColumnLayout {
             Layout.fillWidth: true
@@ -89,9 +149,9 @@ Item {
 
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 10
+            spacing: 12
             IconButton { size: 38; icon: ""; onClicked: Media.prev() }
-            IconButton { size: 46; icon: Media.playing ? "" : ""; active: true; tone: Theme.accent; onClicked: Media.toggle() }
+            IconButton { size: 48; icon: Media.playing ? "" : ""; active: true; tone: Theme.accent; onClicked: Media.toggle() }
             IconButton { size: 38; icon: ""; onClicked: Media.next() }
         }
     }
