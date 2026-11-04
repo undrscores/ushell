@@ -19,8 +19,6 @@ Variants {
         panelHeight: Math.min(modelData.height - 2 * Theme.margin - 80, 860)
         onShownChanged: Shell.widgetsShown = shown
 
-        SystemClock { id: clock; precision: SystemClock.Minutes }
-
         Flickable {
             anchors.fill: parent
             contentHeight: col.implicitHeight + 40
@@ -32,21 +30,6 @@ Variants {
                 x: 20; y: 20
                 width: parent.width - 40
                 spacing: 20
-
-                Column {
-                    Layout.fillWidth: true
-                    spacing: 2
-                    Text {
-                        text: Qt.formatDateTime(clock.date, "HH:mm")
-                        color: Theme.fg
-                        font { family: Theme.font; pixelSize: 40; weight: Font.Light }
-                    }
-                    Text {
-                        text: Qt.formatDateTime(clock.date, "dddd, d MMMM")
-                        color: Theme.fgDim
-                        font { family: Theme.font; pixelSize: Theme.fontSize + 1 }
-                    }
-                }
 
                 MediaPlayer { Layout.fillWidth: true }
                 StatBars    { Layout.fillWidth: true }
