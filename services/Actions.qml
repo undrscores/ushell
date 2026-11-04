@@ -44,6 +44,8 @@ Singleton {
           run: () => root.widgetsTab(2) },
         { id: "clipboard", title: "Clipboard history", glyph: "\uf0ea", words: "copy paste history clipboard",
           run: () => Shell.open("clipboard") },
+        { id: "appearance", title: "Appearance", glyph: "\uf1fc", words: "appearance theme colors accent dark light wallpaper look style",
+          run: () => Shell.open("appearance") },
         { id: "wallpapers", title: "Wallpapers", glyph: "\uf03e", words: "wallpaper background picture image theme colors choose",
           run: () => Shell.open("wallpapers") },
         { id: "wallpaper-next", title: "Next wallpaper", glyph: "\uf051", words: "wallpaper background change cycle",
