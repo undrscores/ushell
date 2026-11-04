@@ -21,7 +21,7 @@ auto-hide and weather options are in the Settings menu.
 
 ## niri keybinds
 ```kdl
-Mod+D        { spawn "qs" "ipc" "call" "launcher" "toggle"; }
+Mod+D        { spawn "qs" "ipc" "call" "shell" "toggle" "launcher"; }
 Mod+A        { spawn "qs" "ipc" "call" "shell" "toggle" "widgets"; }
 Mod+S        { spawn "qs" "ipc" "call" "shell" "toggle" "quicksettings"; }
 Mod+Ctrl+V   { spawn "qs" "ipc" "call" "shell" "toggle" "clipboard"; }
