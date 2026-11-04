@@ -8,6 +8,7 @@ Singleton {
     id: root
     property string overlay: ""          // one dropdown/overlay at a time
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
+    property int  widgetsTab: 0          // 0 media, 1 system, 2 weather
     property bool widgetsShown: false    // set by the widgets panel while visible
 
     function open(name)   { if (name === "widgets") widgetsPinned = true; else overlay = name }

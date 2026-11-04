@@ -27,5 +27,7 @@ ShellRoot {
         function toggle(name: string): void { Shell.toggle(name) }
         function open(name: string): void   { Shell.open(name) }
         function close(): void              { Shell.close() }
+        // qs ipc call shell tab <0|1|2>   open the widgets panel on a tab
+        function tab(index: int): void      { Shell.widgetsTab = index; Shell.widgetsPinned = true }
     }
 }

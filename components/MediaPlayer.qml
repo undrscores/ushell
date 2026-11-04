@@ -7,6 +7,7 @@ import "../services"
 // Now-playing card: spinning vinyl art, blurred backdrop, spectrum, progress, controls.
 Item {
     id: root
+    property bool animate: true          // false while off-screen: stops the spin
     visible: Media.available
     implicitHeight: visible ? col.implicitHeight + 32 : 0
 
@@ -22,7 +23,7 @@ Item {
         radius: Theme.radius
         color: Theme.tint
         clip: true
-        Rectangle { id: bgMask; anchors.fill: parent; radius: Theme.radius; visible: false; layer.enabled: true }
+        Rectangle { id: bgMask; anchors.fill: parent; radius: Theme.radius; visible: false; layer.enabled: true; layer.smooth: true; layer.samples: 4 }
         Image { id: bgSrc; anchors.fill: parent; source: Media.art; sourceSize: Qt.size(160, 160); fillMode: Image.PreserveAspectCrop; visible: false; asynchronous: true }
         MultiEffect {
             anchors.fill: parent
@@ -67,12 +68,12 @@ Item {
                         from: 0; to: 360; duration: 14000
                         loops: Animation.Infinite
                         running: true
-                        paused: !Media.playing
+                        paused: !Media.playing || !root.animate
                     }
                     Rectangle {
                         id: mask
                         anchors.fill: parent; radius: width / 2; visible: false
-                        layer.enabled: true
+                        layer.enabled: true; layer.smooth: true; layer.samples: 8
                     }
                     Rectangle { anchors.fill: parent; radius: width / 2; color: Theme.surface }
                     Icon { anchors.centerIn: parent; text: ""; size: 28; color: Theme.fgDim; visible: art.status !== Image.Ready }

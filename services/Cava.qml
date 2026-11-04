@@ -11,7 +11,7 @@ Singleton {
     property var bars: new Array(count).fill(0)
     readonly property real bass: bars.length >= 4 ? (bars[0] + bars[1] + bars[2] + bars[3]) / 400 : 0
     readonly property bool wanted: Media.playing
-        && (Shell.widgetsShown || Shell.widgetsPinned || Shell.overlay === "media")
+        && (((Shell.widgetsShown || Shell.widgetsPinned) && Shell.widgetsTab === 0) || Shell.overlay === "media")
 
     Process {
         id: proc
