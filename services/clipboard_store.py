@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Clipboard history store (stdlib only), fed by `wl-paste --watch`.
 
-  clipboard_store.py store        record the current clipboard: text, or a PNG image when no text is offered
+  clipboard_store.py store        record the current clipboard: text, or an image (PNG, JPEG, WebP, GIF) when no text is offered
                                   (the watcher pipes the selection on stdin)
   clipboard_store.py delete ID    remove one entry
   clipboard_store.py pin ID       toggle pinned
   clipboard_store.py clear        remove every unpinned entry
+  clipboard_store.py clear-images remove every unpinned image
   clipboard_store.py copy ID      put one entry back on the clipboard (via wl-copy)
 
 History lives in ~/.local/state/ushell/clipboard.json, and images next to it in clipboard-images/
@@ -25,6 +26,8 @@ MAX_BYTES = 200_000            # text
 MAX_IMAGES = 20                # unpinned images kept
 MAX_IMAGE_BYTES = 10_000_000   # per image
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+# images are stored as they were copied (no conversion); preferred type first
+IMAGE_TYPES = [("image/png", ".png"), ("image/jpeg", ".jpg"), ("image/webp", ".webp"), ("image/gif", ".gif")]
 SECRET_HINT = "x-kde-passwordManagerHint"
 
 
@@ -92,9 +95,52 @@ def read_stdin():
             kept += chunk[:room]
 
 
-def png_size(data):
-    if data[:8] == PNG_MAGIC and data[12:16] == b"IHDR" and len(data) >= 24:
-        return struct.unpack(">II", data[16:24])
+def image_mime(data):
+    """MIME type from the file's own header, or None if it isn't a supported image."""
+    if data[:8] == PNG_MAGIC:
+        return "image/png"
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if data[:6] in (b"GIF87a", b"GIF89a"):
+        return "image/gif"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
+def image_size(data, mime):
+    """(width, height) or None. Best effort: a picture without a readable size is still stored."""
+    try:
+        if mime == "image/png" and data[12:16] == b"IHDR":
+            return struct.unpack(">II", data[16:24])
+        if mime == "image/gif":
+            return struct.unpack("<HH", data[6:10])
+        if mime == "image/jpeg":
+            i = 2
+            while i + 9 < len(data):
+                if data[i] != 0xFF:
+                    i += 1
+                    continue
+                marker = data[i + 1]
+                if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7 or marker == 0xFF:
+                    i += 1 if marker == 0xFF else 2
+                    continue
+                if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                    h, w = struct.unpack(">HH", data[i + 5:i + 9])
+                    return (w, h)
+                i += 2 + struct.unpack(">H", data[i + 2:i + 4])[0]
+        if mime == "image/webp":
+            kind = data[12:16]
+            if kind == b"VP8X":
+                return (int.from_bytes(data[24:27], "little") + 1, int.from_bytes(data[27:30], "little") + 1)
+            if kind == b"VP8 ":
+                w, h = struct.unpack("<HH", data[26:30])
+                return (w & 0x3FFF, h & 0x3FFF)
+            if kind == b"VP8L" and data[20] == 0x2F:
+                bits = int.from_bytes(data[21:25], "little")
+                return ((bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1)
+    except (struct.error, IndexError):
+        pass
     return None
 
 
@@ -130,12 +176,15 @@ def store_text(items, data):
     return items
 
 
-def store_image(items):
+def store_image(items, offered):
+    mime = next((m for m, _ in IMAGE_TYPES if m in offered), None)
+    if mime is None:
+        return None
     try:
-        data = subprocess.run(["wl-paste", "--type", "image/png"], capture_output=True, timeout=5).stdout
+        data = subprocess.run(["wl-paste", "--type", mime], capture_output=True, timeout=5).stdout
     except Exception:
         return None
-    if not data or len(data) > MAX_IMAGE_BYTES or data[:8] != PNG_MAGIC:
+    if not data or len(data) > MAX_IMAGE_BYTES or image_mime(data) != mime:
         return None
     digest = hashlib.sha1(data).hexdigest()
     old = next((i for i in items if i.get("type") == "image" and i.get("hash") == digest), None)
@@ -146,14 +195,14 @@ def store_image(items):
         return items
     os.makedirs(IMG_DIR, mode=0o700, exist_ok=True)
     ident = int(time.time() * 1000)
-    name = "%d.png" % ident
+    name = "%d%s" % (ident, dict(IMAGE_TYPES)[mime])
     fd = os.open(os.path.join(IMG_DIR, name), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "wb") as f:
         f.write(data)
-    size = png_size(data)
+    size = image_size(data, mime)
     label = "Image" + (" %d×%d" % size if size else "") + " · " + human(len(data))
     items.insert(0, {"id": ident, "text": label, "time": int(time.time()), "pinned": False,
-                     "type": "image", "mime": "image/png", "file": name, "hash": digest, "bytes": len(data)})
+                     "type": "image", "mime": mime, "file": name, "hash": digest, "bytes": len(data)})
     return items
 
 
@@ -183,8 +232,8 @@ def main(argv):
                 return
             if types is None or has_text(types):
                 items = store_text(items, data)
-            elif "image/png" in types:
-                items = store_image(items)
+            elif any(m in types for m, _ in IMAGE_TYPES):
+                items = store_image(items, types)
             else:
                 return
             if items is None:
@@ -198,6 +247,8 @@ def main(argv):
                     i["pinned"] = not i.get("pinned")
         elif cmd == "clear":
             items = [i for i in items if i.get("pinned")]
+        elif cmd == "clear-images":
+            items = [i for i in items if i.get("pinned") or i.get("type") != "image"]
         elif cmd == "copy" and len(argv) > 2:
             item = next((i for i in items if str(i["id"]) == argv[2]), None)
             if item:

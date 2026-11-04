@@ -9,6 +9,9 @@ import "../../components"
 Item {
     id: page
     property bool clearArmed: false
+    property bool imagesArmed: false
+    readonly property bool hasImages: Clipboard.items.some(i => i.type === "image" && i.pinned !== true)
+    onHasImagesChanged: if (!hasImages) imagesArmed = false
     property bool active: true
     property alias contentHeight: list.contentHeight
     onActiveChanged: if (!active) { search.text = ""; search.focus = false }
@@ -47,6 +50,24 @@ Item {
                 font { family: Theme.font; pixelSize: Theme.fontSize }
                 Keys.onEscapePressed: { if (text !== "") text = ""; else Shell.close() }
                 Text { visible: !search.text; text: "Search history"; color: Theme.fgDim; font: search.font }
+            }
+        }
+        Rectangle {   // clear only the (unpinned) images: they are the bulky part of the history
+            id: imgBtn
+            visible: page.hasImages
+            implicitWidth: 38; implicitHeight: 38
+            radius: Theme.radius
+            color: page.imagesArmed ? Theme.dangerSoft : (ima.containsMouse ? Theme.hover : Theme.tint)
+            Behavior on color { ColorAnimation { duration: Theme.animFast } }
+            Icon { anchors.centerIn: parent; text: "\uf03e"; size: 14; color: page.imagesArmed ? Theme.danger : Theme.fgDim }
+            Timer { id: imgDisarm; interval: 2500; onTriggered: page.imagesArmed = false }
+            MouseArea {
+                id: ima
+                anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    if (page.imagesArmed) { Clipboard.clearImages(); page.imagesArmed = false; imgDisarm.stop() }
+                    else { page.imagesArmed = true; imgDisarm.restart() }
+                }
             }
         }
         Rectangle {
