@@ -3,5 +3,6 @@
   "terminal": "alacritty",
   "lockCommand": ["swaylock", "-f"],
   "searchUrl": "https://duckduckgo.com/?q=",
-  "glassOpacity": 1.0
+  "glassOpacity": 1.0,
+  "wallpaperDir": "~/Pictures/Wallpapers"
 }

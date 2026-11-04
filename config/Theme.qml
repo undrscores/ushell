@@ -9,7 +9,10 @@ Singleton {
     // the colours themselves live in palette.js.
     property string mode: "dark"          // dark | light
     property string accentName: "mauve"
-    readonly property var pal: Palette.make(mode, accentName)
+    // Accent taken from the wallpaper (hue in degrees, -1 = not in use); set from Wallpapers via shell.qml.
+    property real wallHue: -1
+    property real wallSat: 0
+    readonly property var pal: Palette.make(mode, accentName, wallHue >= 0 ? { hue: wallHue, sat: wallSat } : null)
 
     readonly property color bg:        pal.bg
     readonly property color surface:   pal.surface
