@@ -52,39 +52,18 @@ Variants {
                     onSelected: i => Shell.widgetsTab = i
                 }
 
-                Flickable {
+                Pager {
                     id: view
                     x: body.pad; y: body.pad + bar.height + 14
                     width: body.width - body.pad * 2
-                    height: pages.children[Math.min(Shell.widgetsTab, pages.children.length - 1)].implicitHeight
-                    clip: true
-                    flickableDirection: Flickable.HorizontalFlick
-                    boundsBehavior: Flickable.StopAtBounds
-                    contentWidth: pages.width
-                    contentHeight: height
+                    height: currentPageHeight
+                    index: Shell.widgetsTab
+                    count: win.tabs.length
+                    onSwiped: i => Shell.widgetsTab = i
 
-                    // follow the selected tab; animate unless the user is dragging
-                    contentX: Shell.widgetsTab * width
-                    Behavior on contentX {
-                        enabled: !view.dragging && !view.flicking
-                        NumberAnimation { duration: 420; easing.type: Easing.OutCubic }
-                    }
-                    onFlickStarted: cancelFlick()
-                    onDragEnded: {
-                        const frac = contentX / width - Shell.widgetsTab
-                        let t = Shell.widgetsTab
-                        if (frac > 0.2) t++
-                        else if (frac < -0.2) t--
-                        Shell.widgetsTab = Math.max(0, Math.min(win.tabs.length - 1, t))
-                        contentX = Qt.binding(() => Shell.widgetsTab * view.width)
-                    }
-
-                    Row {
-                        id: pages
-                        MediaPage   { width: view.width; active: Shell.widgetsTab === 0 }
-                        SystemPage  { width: view.width }
-                        WeatherPage { width: view.width }
-                    }
+                    MediaPage   { width: view.width; active: Shell.widgetsTab === 0 }
+                    SystemPage  { width: view.width }
+                    WeatherPage { width: view.width }
                 }
 
                 // fetch weather the first time (and when stale) the tab is shown

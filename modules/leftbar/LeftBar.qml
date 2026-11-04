@@ -5,7 +5,8 @@ import "../../config"
 import "../../services"
 import "../../components"
 
-// Left auto-hiding dock: workspaces, pinned apps (with running dots), tray.
+// Left side, full height: workspaces, Apps / Clipboard tabs, tray.
+// Auto-hides by default; the pin button keeps it always visible (and reserves its space).
 Variants {
     model: Quickshell.screens
 
@@ -14,132 +15,126 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "left"
-        panelWidth: 52
-        panelHeight: col.implicitHeight + 28
-        panelRadius: 26
+        autoHide: Prefs.leftAutoHide
+        takesFocus: true
+        panelWidth: 300
+        panelHeight: modelData.height
+        panelRadius: Theme.radius + 4
 
-        Column {
-            id: col
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 14
-            spacing: 10
+        readonly property var tabs: [
+            { icon: "", label: "Apps" },
+            { icon: "", label: "Clipboard" }
+        ]
 
-            // Workspaces
-            Column {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 6
-                Repeater {
-                    model: Niri.workspaces
-                    delegate: Item {
-                        id: ws
-                        required property var modelData
-                        readonly property bool active: modelData.is_focused || modelData.is_active
-                        width: 36; height: active ? 30 : 14
-                        Behavior on height { SpringAnimation { spring: 5; damping: 0.28; epsilon: 0.3 } }
-                        Rectangle {  // glow
-                            anchors.centerIn: parent
-                            width: 20; height: parent.height + 4; radius: 10
-                            color: Theme.accent
-                            opacity: ws.active ? glowPulse : 0
-                            property real glowPulse: 0.22
-                            Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
-                            SequentialAnimation on glowPulse {
-                                running: ws.active; loops: Animation.Infinite
-                                NumberAnimation { to: 0.36; duration: 1100; easing.type: Easing.InOutSine }
-                                NumberAnimation { to: 0.14; duration: 1100; easing.type: Easing.InOutSine }
+        Item {
+            id: body
+            anchors.fill: parent
+            readonly property int pad: 16
+
+            // header: workspaces + pin
+            Item {
+                id: header
+                x: body.pad; y: body.pad
+                width: parent.width - body.pad * 2
+                height: 30
+
+                Row {
+                    anchors { left: parent.left; verticalCenter: parent.verticalCenter }
+                    spacing: 6
+                    Repeater {
+                        model: Niri.workspaces
+                        delegate: Item {
+                            id: ws
+                            required property var modelData
+                            readonly property bool active: modelData.is_focused || modelData.is_active
+                            width: active ? 34 : 14; height: 26
+                            Behavior on width { SpringAnimation { spring: 5; damping: 0.28; epsilon: 0.3 } }
+                            Rectangle {   // glow
+                                anchors.centerIn: parent
+                                width: parent.width + 8; height: 18; radius: 9
+                                color: Theme.accent
+                                opacity: ws.active ? 0.2 : 0
+                                Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
+                            }
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: parent.width - 4; height: 10; radius: 5
+                                color: ws.active ? Theme.accent : (ws.modelData.active_window_id ? Theme.fgDim : Theme.surfaceHi)
+                                Behavior on color { ColorAnimation { duration: Theme.animNormal } }
+                            }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Niri.focusWorkspace(ws.modelData.idx) }
+                        }
+                    }
+                }
+                PinButton {
+                    anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+                    pinned: !Prefs.leftAutoHide
+                    onClicked: Prefs.toggle("left")
+                }
+            }
+
+            TabBar {
+                id: bar
+                x: body.pad; y: header.y + header.height + 14
+                width: parent.width - body.pad * 2
+                tabs: win.tabs
+                current: Shell.leftTab
+                onSelected: i => Shell.leftTab = i
+            }
+
+            // footer: tray
+            Item {
+                id: footer
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+                height: tray.count > 0 ? 58 : body.pad
+                Behavior on height { NumberAnimation { duration: 250; easing.type: Theme.easing } }
+                Rectangle { visible: tray.count > 0; anchors { top: parent.top; left: parent.left; right: parent.right; leftMargin: body.pad; rightMargin: body.pad } height: 1; color: Theme.line }
+                Row {
+                    id: tray
+                    readonly property int count: SystemTray.items.values.length
+                    anchors { left: parent.left; leftMargin: body.pad; verticalCenter: parent.verticalCenter; verticalCenterOffset: 2 }
+                    spacing: 4
+                    Repeater {
+                        model: SystemTray.items
+                        delegate: Rectangle {
+                            id: t
+                            required property var modelData
+                            width: 36; height: 36; radius: 12
+                            color: tma.containsMouse ? Theme.hover : "transparent"
+                            Behavior on color { ColorAnimation { duration: Theme.animFast } }
+                            scale: tma.containsMouse ? 1.12 : 1
+                            Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
+                            Image { anchors.centerIn: parent; width: 20; height: 20; source: t.modelData.icon; sourceSize: Qt.size(40, 40) }
+                            MouseArea {
+                                id: tma
+                                anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                                onClicked: mouse => {
+                                    if (mouse.button === Qt.RightButton || t.modelData.onlyMenu) {
+                                        if (t.modelData.hasMenu) {
+                                            const p = t.mapToItem(null, t.width, 0)
+                                            t.modelData.display(win, p.x + 6, p.y)
+                                        }
+                                    } else if (mouse.button === Qt.MiddleButton) t.modelData.secondaryActivate()
+                                    else t.modelData.activate()
+                                }
                             }
                         }
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: 8; height: parent.height - 4; radius: 4
-                            color: ws.active ? Theme.accent : (ws.modelData.active_window_id ? Theme.fgDim : Theme.surfaceHi)
-                            Behavior on color { ColorAnimation { duration: Theme.animNormal } }
-                        }
-                        MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Niri.focusWorkspace(ws.modelData.idx) }
                     }
                 }
             }
 
-            Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 22; height: 1; color: Theme.line }
+            Pager {
+                id: pager
+                x: body.pad; y: bar.y + bar.height + 14
+                width: parent.width - body.pad * 2
+                height: footer.y - y - 8
+                index: Shell.leftTab
+                count: win.tabs.length
+                onSwiped: i => Shell.leftTab = i
 
-            // Pinned apps: click focuses the running window, or launches it
-            Repeater {
-                model: Config.pinnedApps
-                delegate: Rectangle {
-                    id: app
-                    required property string modelData
-                    readonly property var entry: DesktopEntries.heuristicLookup(modelData)
-                    readonly property bool running: Niri.appWindow(entry) !== null
-                    visible: entry !== null
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 38; height: 38; radius: 12
-                    color: ma.containsMouse ? Theme.hover : "transparent"
-                    Behavior on color { ColorAnimation { duration: Theme.animFast } }
-                    z: ma.containsMouse ? 2 : 0
-                    scale: ma.pressed ? 0.85 : (ma.containsMouse ? 1.38 : 1)
-                    Behavior on scale { NumberAnimation { duration: 500; easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.42 } }
-                    transform: Translate { id: hop; x: 0 }
-                    SequentialAnimation {
-                        id: bounce
-                        NumberAnimation { target: hop; property: "x"; to: 9; duration: 110; easing.type: Easing.OutQuad }
-                        NumberAnimation { target: hop; property: "x"; to: 0; duration: 380; easing.type: Easing.OutBounce }
-                    }
-                    Image {
-                        anchors.centerIn: parent
-                        width: 24; height: 24
-                        sourceSize: Qt.size(48, 48)
-                        source: app.entry ? Quickshell.iconPath(app.entry.icon, "application-x-executable") : ""
-                    }
-                    Rectangle {  // running indicator
-                        anchors { left: parent.left; leftMargin: 1; verticalCenter: parent.verticalCenter }
-                        width: 3; radius: 1.5
-                        height: app.running ? 12 : 0
-                        color: Theme.accent
-                        Behavior on height { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-                    }
-                    MouseArea {
-                        id: ma
-                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            bounce.restart()
-                            const w = Niri.appWindow(app.entry)
-                            if (w) Niri.focusWindow(w.id)
-                            else if (app.entry) app.entry.execute()
-                        }
-                    }
-                }
-            }
-
-            Rectangle { visible: SystemTray.items.values.length > 0; anchors.horizontalCenter: parent.horizontalCenter; width: 22; height: 1; color: Theme.line }
-
-            // Tray
-            Repeater {
-                model: SystemTray.items
-                delegate: Rectangle {
-                    id: tray
-                    required property var modelData
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 38; height: 34; radius: 12
-                    color: tma.containsMouse ? Theme.hover : "transparent"
-                    Behavior on color { ColorAnimation { duration: Theme.animFast } }
-                    Image { anchors.centerIn: parent; width: 18; height: 18; source: tray.modelData.icon; sourceSize: Qt.size(36, 36) }
-                    MouseArea {
-                        id: tma
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: mouse => {
-                            if (mouse.button === Qt.RightButton || tray.modelData.onlyMenu) {
-                                if (tray.modelData.hasMenu) {
-                                    const p = tray.mapToItem(null, tray.width, 0)
-                                    tray.modelData.display(win, p.x + 6, p.y)
-                                }
-                            } else if (mouse.button === Qt.MiddleButton) tray.modelData.secondaryActivate()
-                            else tray.modelData.activate()
-                        }
-                    }
-                }
+                AppsPage      { width: pager.width; height: pager.height }
+                ClipboardPage { width: pager.width; height: pager.height }
             }
         }
     }
