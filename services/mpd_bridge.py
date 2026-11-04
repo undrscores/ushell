@@ -10,7 +10,7 @@
 
 Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600).
 """
-import hashlib, json, os, select, socket, sys, time
+import hashlib, json, os, select, socket, sys, threading, time
 
 HOST = os.environ.get("MPD_HOST", "127.0.0.1")
 PORT = int(os.environ.get("MPD_PORT", "6600"))
@@ -107,13 +107,11 @@ def fetch_art(uri):
     return ""
 
 
-def snapshot(m, art_cache):
+def snapshot(m):
+    """Current player state. `art` is filled in by the caller (cover art is fetched in the background)."""
     status = dict(m.run("status")[0])
     song = dict(m.run("currentsong")[0])
     uri = song.get("file", "")
-    if uri not in art_cache:
-        art_cache.clear()
-        art_cache[uri] = fetch_art(uri)
     title = song.get("Title") or (os.path.splitext(os.path.basename(uri))[0] if uri else "")
     return {
         "online": True,
@@ -124,7 +122,7 @@ def snapshot(m, art_cache):
         "uri": uri,
         "elapsed": float(status.get("elapsed", 0) or 0),
         "duration": float(song.get("duration") or status.get("duration") or 0),
-        "art": art_cache[uri],
+        "art": "",
     }
 
 
@@ -133,27 +131,59 @@ IDLE_TIMEOUT = 30  # seconds; also re-syncs `elapsed` so interpolation on the QM
 
 
 def watch():
-    """Print one JSON line when something changes. No polling: MPD tells us (idle)."""
-    last, art_cache = None, {}
+    """Print one JSON line when something changes. No polling: MPD tells us (idle).
+
+    Cover art can take a few round trips to fetch, so it never holds up the track info: the line goes out
+    at once with art "", and a background thread prints it again with the cover when that is ready.
+    """
+    lock = threading.RLock()
+    art = {}                      # uri -> cover path ('' while pending or if there is none); only the current song
+    state = {"last": None, "snap": None}
+
+    def emit(snap):
+        with lock:
+            if snap == state["last"]:
+                return
+            state["last"] = snap
+            try:
+                print(json.dumps(snap), flush=True)
+            except BrokenPipeError:
+                os._exit(0)       # Quickshell went away (also reached from the art thread)
+
+    def fetch_in_background(uri):
+        path = fetch_art(uri)
+        with lock:
+            if uri not in art or not path:
+                return            # the song changed meanwhile, or no cover
+            art[uri] = path
+            snap = state["snap"]
+            if snap and snap.get("uri") == uri:
+                state["snap"] = dict(snap, art=path)
+                emit(state["snap"])
+
     offline = {"online": False}
     while True:
         try:
             m = Mpd()
             while True:
-                snap = snapshot(m, art_cache)
-                if snap != last:
-                    print(json.dumps(snap), flush=True)
-                    last = snap
+                snap = snapshot(m)
+                with lock:
+                    uri = snap["uri"]
+                    start = uri != "" and uri not in art
+                    if uri not in art:
+                        art.clear()
+                        art[uri] = ""
+                    snap["art"] = art[uri]
+                    state["snap"] = snap
+                    emit(snap)
+                if start:
+                    threading.Thread(target=fetch_in_background, args=(uri,), daemon=True).start()
                 m.idle(IDLE_SUBSYSTEMS, IDLE_TIMEOUT)
-        except BrokenPipeError:
-            return  # Quickshell went away
         except Exception:
-            try:
-                if last != offline:
-                    print(json.dumps(offline), flush=True)
-            except BrokenPipeError:
-                return
-            last = offline
+            with lock:
+                if state["last"] != offline:
+                    state["snap"] = None
+                    emit(offline)
             time.sleep(2)
 
 
