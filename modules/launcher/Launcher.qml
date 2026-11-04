@@ -72,6 +72,8 @@ PanelWindow {
           run: () => win.widgetsTab(1) },
         { id: "w-weather", title: "Weather",        glyph: "", words: "forecast temperature rain sun widgets",
           run: () => win.widgetsTab(2) },
+        { id: "clipboard", title: "Clipboard history", glyph: "\uf0ea", words: "copy paste history clipboard",
+          run: () => Shell.open("clipboard") },
         { id: "calendar", title: "Calendar",        glyph: "", words: "date month day",
           run: () => Shell.open("calendar") },
         { id: "sound",    title: "Sound settings",  glyph: "", words: "volume microphone output device audio quick settings",

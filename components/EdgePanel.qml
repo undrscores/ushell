@@ -16,6 +16,11 @@ PanelWindow {
     property bool pinned: false         // temporarily held open (e.g. a menu is using it)
     property bool autoHide: true        // false = always shown, and it reserves its space
     property bool takesFocus: false     // allow keyboard focus on click (for text fields)
+    // Hover label drawn just outside the panel (e.g. an app name next to a dock icon).
+    // tipY / tipX are positions along the panel's long / short axis, in window coordinates.
+    property string tipText: ""
+    property bool tipShown: false
+    property real tipPos: 0
     property real panelWidth: 300       // desired size; animated into animW / animH
     property real panelHeight: 300
     property int hotSize: 4
@@ -75,6 +80,32 @@ PanelWindow {
         id: full
         anchors.fill: parent
         HoverHandler { id: hover }
+
+        // label bubble: sits on the open side of the panel and is never clipped by it
+        Rectangle {
+            id: tip
+            visible: opacity > 0.01
+            opacity: win.tipShown && win.shown ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: 140 } }
+            height: tipLabel.implicitHeight + 14
+            width: tipLabel.implicitWidth + 22
+            radius: height / 2
+            color: Theme.glass
+            border { width: 1; color: Theme.line }
+            readonly property real along: Math.max(0, win.tipPos - height / 2)
+            x: win.edge === "left" ? panel.x + panel.width + 10 + 6 * (1 - opacity)
+             : win.edge === "right" ? panel.x - width - 10 - 6 * (1 - opacity)
+             : Math.max(0, win.tipPos - width / 2)
+            y: win.edge === "top" ? panel.y + panel.height + 10 + 6 * (1 - opacity) : along
+            z: 5
+            Text {
+                id: tipLabel
+                anchors.centerIn: parent
+                text: win.tipText
+                color: Theme.fg
+                font { family: Theme.font; pixelSize: Theme.fontSize - 1 }
+            }
+        }
 
         Glass {
             id: panel

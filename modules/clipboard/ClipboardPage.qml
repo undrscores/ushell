@@ -9,6 +9,9 @@ import "../../components"
 Item {
     id: page
     property bool clearArmed: false
+    property bool active: true
+    property alias contentHeight: list.contentHeight
+    onActiveChanged: if (!active) { search.text = ""; search.focus = false }
     readonly property var filtered: {
         const q = search.text.trim().toLowerCase()
         return q === "" ? Clipboard.items : Clipboard.items.filter(i => i.text.toLowerCase().includes(q))
@@ -42,7 +45,7 @@ Item {
                 selectionColor: Theme.accent; selectedTextColor: Theme.accentFg
                 clip: true
                 font { family: Theme.font; pixelSize: Theme.fontSize }
-                Keys.onEscapePressed: { text = ""; focus = false }
+                Keys.onEscapePressed: { if (text !== "") text = ""; else Shell.close() }
                 Text { visible: !search.text; text: "Search history"; color: Theme.fgDim; font: search.font }
             }
         }
