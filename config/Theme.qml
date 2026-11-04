@@ -6,7 +6,6 @@ import QtQuick
 Singleton {
     // Palette (dark, mauve accent)
     readonly property color bg:        "#1e1e2e"
-    readonly property color bgAlt:     "#181825"
     readonly property color surface:   "#313244"
     readonly property color surfaceHi: "#45475a"
     readonly property color fg:        "#cdd6f4"
@@ -28,9 +27,9 @@ Singleton {
     // Shape & spacing
     readonly property int radius:      14
     readonly property int radiusSmall: 8
-    readonly property int spacing:     8
     readonly property int margin:      8
     readonly property int barHeight:   38
+    readonly property int dockWidth:   68      // left dock; the clipboard flyout opens beside it
 
     // Typography
     readonly property string font: "Sans"

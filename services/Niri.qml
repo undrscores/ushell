@@ -8,7 +8,6 @@ import QtQuick
 Singleton {
     id: root
     property var workspaces: []
-    property string title: ""
     property string focusedOutput: ""
     property var windows: []
 
@@ -18,11 +17,10 @@ Singleton {
         const ids = [entry.id, entry.startupClass, entry.name].filter(x => x).map(x => x.toLowerCase())
         return windows.find(w => w.app_id && ids.includes(w.app_id.toLowerCase())) ?? null
     }
-    function closeWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", String(id)]) }
     function focusWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(id)]) }
 
     function refreshWorkspaces() { wsProc.running = true; outProc.running = true }
-    function refreshWindows() { winProc.running = true; allWinProc.running = true }
+    function refreshWindows() { allWinProc.running = true }
     function refresh() { refreshWorkspaces(); refreshWindows() }
     function focusWorkspace(idx) { Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", String(idx)]) }
 
@@ -32,16 +30,6 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try { root.workspaces = JSON.parse(text).sort((a, b) => a.idx - b.idx) } catch (e) {}
-            }
-        }
-    }
-    Process {
-        id: winProc
-        command: ["niri", "msg", "-j", "focused-window"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try { const w = JSON.parse(text); root.title = w ? (w.title || w.app_id || "") : "" }
-                catch (e) { root.title = "" }
             }
         }
     }
@@ -62,16 +50,20 @@ Singleton {
     // Event names from `niri msg -j event-stream` (one JSON object per line, keyed by event name).
     readonly property var ignoredEvents: ["WindowLayoutsChanged", "KeyboardLayoutsChanged", "KeyboardLayoutSwitched",
         "OverviewOpenedOrClosed", "ConfigLoaded", "ScreenshotCaptured", "WorkspaceUrgencyChanged", "WindowUrgencyChanged"]
-    readonly property var windowEvents: ["WindowsChanged", "WindowOpenedOrChanged", "WindowClosed", "WindowFocusChanged"]
+    readonly property var windowEvents: ["WindowsChanged", "WindowOpenedOrChanged", "WindowClosed"]
+    readonly property var workspaceEvents: ["WorkspacesChanged", "WorkspaceActivated", "WorkspaceActiveWindowChanged"]
     property bool staleWorkspaces: false
     property bool staleWindows: false
+    property bool staleOutput: false      // keyboard focus moved: the focused output may have changed
 
     function handleEvent(line) {
         let name = ""
         try { name = Object.keys(JSON.parse(line))[0] } catch (e) {}      // unparsable: refresh everything
         if (ignoredEvents.includes(name)) return
-        staleWindows = true                                                  // the focused title can change on any event
-        if (!windowEvents.includes(name)) staleWorkspaces = true             // unknown events refresh both
+        if (name === "WindowFocusChanged") staleOutput = true
+        else if (windowEvents.includes(name)) staleWindows = true
+        else if (workspaceEvents.includes(name)) staleWorkspaces = true
+        else { staleWorkspaces = true; staleWindows = true }              // unknown event: refresh everything
         debounce.restart()
     }
 
@@ -84,10 +76,12 @@ Singleton {
         id: debounce
         interval: 40
         onTriggered: {
-            if (root.staleWorkspaces) root.refreshWorkspaces()
+            if (root.staleWorkspaces) root.refreshWorkspaces()          // includes the focused output
+            else if (root.staleOutput) outProc.running = true
             if (root.staleWindows) root.refreshWindows()
             root.staleWorkspaces = false
             root.staleWindows = false
+            root.staleOutput = false
         }
     }
     Component.onCompleted: refresh()

@@ -124,12 +124,11 @@ def snapshot(m, art_cache):
         "uri": uri,
         "elapsed": float(status.get("elapsed", 0) or 0),
         "duration": float(song.get("duration") or status.get("duration") or 0),
-        "volume": int(status.get("volume", -1) or -1),
         "art": art_cache[uri],
     }
 
 
-IDLE_SUBSYSTEMS = ("player", "mixer", "options", "playlist")
+IDLE_SUBSYSTEMS = ("player", "options", "playlist")
 IDLE_TIMEOUT = 30  # seconds; also re-syncs `elapsed` so interpolation on the QML side can't drift
 
 

@@ -8,9 +8,16 @@ Singleton {
     id: root
     property string overlay: ""          // one dropdown/overlay at a time
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
-    property int  leftTab: 0             // 0 apps, 1 clipboard
     property int  widgetsTab: 0          // 0 media, 1 system, 2 weather
-    property bool widgetsShown: false    // set by the widgets panel while visible
+    // Each screen has its own widgets panel; it reports here whether it is on screen.
+    property var shownOn: ({})           // screen name -> bool
+    readonly property bool widgetsShown: Object.values(shownOn).some(v => v === true)
+    function setWidgetsShown(screenName, shown) {
+        if ((shownOn[screenName] === true) === shown) return
+        const m = Object.assign({}, shownOn)
+        m[screenName] = shown
+        shownOn = m
+    }
 
     function open(name)   { if (name === "widgets") widgetsPinned = true; else overlay = name }
     function close()      { overlay = "" }

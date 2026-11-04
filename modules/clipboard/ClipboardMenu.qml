@@ -13,7 +13,7 @@ Overlay {
         width: 340
         // grows with the history, within sensible limits
         height: Math.min(parent.height * 0.7, 76 + Math.max(page.contentHeight, 150))
-        x: Theme.margin * 2 + 68 + 28 + (root.open ? 0 : -24)
+        x: Theme.margin * 2 + Theme.dockWidth + 28 + (root.open ? 0 : -24)
         y: (parent.height - height) / 2
         opacity: root.open ? 1 : 0
         scale: root.open ? 1 : 0.88

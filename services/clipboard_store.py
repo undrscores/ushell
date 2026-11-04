@@ -5,6 +5,7 @@
   clipboard_store.py delete ID    remove one entry
   clipboard_store.py pin ID       toggle pinned
   clipboard_store.py clear        remove every unpinned entry
+  clipboard_store.py copy ID      put one entry back on the clipboard (via wl-copy, text on stdin)
 
 History lives in ~/.local/state/ushell/clipboard.json (private: mode 0600).
 Anything a password manager marks as secret is never stored.
@@ -76,6 +77,12 @@ def main(argv):
                     i["pinned"] = not i.get("pinned")
         elif cmd == "clear":
             items = [i for i in items if i.get("pinned")]
+        elif cmd == "copy" and len(argv) > 2:
+            item = next((i for i in items if str(i["id"]) == argv[2]), None)
+            if item:
+                subprocess.run(["wl-copy"], input=item["text"].encode("utf-8"),
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return
         else:
             return
         save(items)

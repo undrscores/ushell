@@ -148,7 +148,7 @@ Item {
                 z: -1
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: { Clipboard.copy(entry.modelData.text); entry.flash = true; unflash.restart() }
+                onClicked: { Clipboard.copy(entry.modelData.id); entry.flash = true; unflash.restart() }
             }
         }
 
