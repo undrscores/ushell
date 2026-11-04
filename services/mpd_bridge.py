@@ -4,6 +4,9 @@
   mpd_bridge.py watch            stream one JSON line per state change
   mpd_bridge.py cmd NAME [ARGS]  send a raw MPD command, print its reply
   mpd_bridge.py art URI          fetch cover art for a song, print file path
+  mpd_bridge.py search TEXT      search the library, print a JSON list of songs
+  mpd_bridge.py playuri URI      add a song to the queue and play it now
+  mpd_bridge.py queue URI        add a song to the end of the queue
 
 Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600).
 """
@@ -141,6 +144,25 @@ def main(argv):
             print("%s: %s" % (k, v))
     elif len(argv) >= 3 and argv[1] == "art":
         print(fetch_art(argv[2]))
+    elif len(argv) >= 3 and argv[1] == "search":
+        m = Mpd()
+        pairs, _ = m.run("search any %s window 0:40" % quote(argv[2]))
+        songs, cur = [], None
+        for k, v in pairs:
+            if k == "file":
+                cur = {"uri": v, "title": "", "artist": "", "album": ""}
+                songs.append(cur)
+            elif cur is not None and k in ("Title", "Artist", "Album"):
+                cur[k.lower()] = v
+        for song in songs:
+            if not song["title"]:
+                song["title"] = os.path.splitext(os.path.basename(song["uri"]))[0]
+        print(json.dumps(songs))
+    elif len(argv) >= 3 and argv[1] in ("playuri", "queue"):
+        m = Mpd()
+        pairs, _ = m.run("addid %s" % quote(argv[2]))
+        if argv[1] == "playuri":
+            m.run("playid %s" % quote(dict(pairs).get("Id", "0")))
     else:
         sys.exit(__doc__)
 

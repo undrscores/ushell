@@ -15,11 +15,17 @@ ShellRoot {
     Bar {}
     LeftBar {}
     Widgets {}
-    Launcher {}
+    Launcher { id: launcher }
     QuickSettings {}
     CalendarMenu {}
     MediaMenu {}
     PowerMenu {}
+
+    // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
+    IpcHandler {
+        target: "launcher"
+        function query(text: string): void { launcher.query(text) }
+    }
 
     // qs ipc call shell toggle <launcher|quicksettings|calendar|media|power|widgets>
     IpcHandler {
