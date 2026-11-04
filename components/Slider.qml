@@ -6,7 +6,10 @@ Item {
     id: root
     property real value: 0
     property color tone: Theme.accent
-    signal moved(real value)
+    signal moved(real value)         // continuously while dragging / scrolling
+    signal released(real value)      // once, with the final value, when the pointer is let go
+    property real lastMoved: 0
+    readonly property bool pressed: ma.pressed
     implicitHeight: 24
 
     readonly property real clamped: Math.max(0, Math.min(1, value))
@@ -54,9 +57,11 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        function set(x) { root.moved(Math.max(0, Math.min(1, x / width))) }
+        function emit(v) { root.lastMoved = v; root.moved(v) }
+        function set(x) { emit(Math.max(0, Math.min(1, x / width))) }
         onPressed: mouse => set(mouse.x)
         onPositionChanged: mouse => { if (pressed) set(mouse.x) }
-        onWheel: w => root.moved(Math.max(0, Math.min(1, root.clamped + (w.angleDelta.y > 0 ? 0.03 : -0.03))))
+        onReleased: root.released(root.lastMoved)
+        onWheel: w => emit(Math.max(0, Math.min(1, root.clamped + (w.angleDelta.y > 0 ? 0.03 : -0.03))))
     }
 }

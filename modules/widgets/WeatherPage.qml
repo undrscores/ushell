@@ -9,6 +9,14 @@ Item {
     implicitHeight: Weather.ok ? col.implicitHeight : 190
     readonly property var now: Weather.describe(Weather.code, Weather.isDay)
 
+    // minute tick so "N min ago" keeps up while the page is visible
+    property int tick: 0
+    Timer { interval: 60000; repeat: true; running: page.visible; onTriggered: page.tick++ }
+    function age(_) {
+        const m = Math.max(0, Math.round((Date.now() - Weather.updated) / 60000))
+        return m < 1 ? "just now" : (m < 60 ? m + " min ago" : Math.floor(m / 60) + " h ago")
+    }
+
     function dayName(iso, i) {
         if (i === 0) return "Today"
         return Qt.formatDate(new Date(iso + "T12:00:00"), "ddd")
@@ -50,6 +58,16 @@ Item {
                 rotation: 0
                 RotationAnimation on rotation { from: 0; to: 360; duration: 900; loops: Animation.Infinite; running: Weather.loading && page.visible }
             }
+        }
+
+        // a refresh failed: say so, and how old the numbers below are
+        Text {
+            Layout.fillWidth: true
+            visible: Weather.error !== ""
+            wrapMode: Text.Wrap
+            text: Weather.error + " · showing data from " + page.age(page.tick)
+            color: Theme.danger
+            font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
         }
 
         // current conditions

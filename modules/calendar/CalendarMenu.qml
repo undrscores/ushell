@@ -7,6 +7,7 @@ import "../../components"
 Overlay {
     id: root
     name: "calendar"
+    onOpenChanged: if (open) cal.reset()
 
     DropCard {
         id: card
