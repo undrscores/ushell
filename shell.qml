@@ -14,7 +14,7 @@ import "services"
 
 ShellRoot {
     // singletons are created lazily; touch these so clipboard watching and saved prefs start with the shell
-    readonly property var warm: [Clipboard.items.length, Prefs.topAutoHide]
+    readonly property var warm: [Clipboard.items.length]
 
     Bar {}
     LeftBar {}
@@ -38,8 +38,6 @@ ShellRoot {
         function toggle(name: string): void { Shell.toggle(name) }
         function open(name: string): void   { Shell.open(name) }
         function close(): void              { Shell.close() }
-        // qs ipc call shell autohide <top|left>   toggle always-visible vs auto-hide (saved)
-        function autohide(name: string): void { Prefs.toggle(name) }
         // qs ipc call shell tab <0|1|2>   open the widgets panel on a tab
         // qs ipc call shell lefttab <0|1>   select the left sidebar tab (apps / clipboard)
         function lefttab(index: int): void   { Shell.leftTab = index }
