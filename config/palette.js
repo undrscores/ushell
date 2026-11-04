@@ -46,6 +46,12 @@ function hsv(h, s, v) {
     return "#" + hex2(rgb[0] + m) + hex2(rgb[1] + m) + hex2(rgb[2] + m)
 }
 
+// HSL (hue 0..360, s and l 0..1) -> "#rrggbb"
+function hsl(h, s, l) {
+    const v = l + s * Math.min(l, 1 - l)
+    return hsv(h, v === 0 ? 0 : 2 * (1 - l / v), v)
+}
+
 // WCAG relative luminance and contrast ratio of "#rrggbb" colours
 function lum(hex) {
     const n = parseInt(hex.slice(1), 16)
@@ -60,17 +66,38 @@ function contrast(a, b) {
 // An accent in the style of the named ones (soft and bright on dark, deeper on light) for any hue.
 // `sat` is how colourful the source was, 0..1; it only nudges the result. The colour is then eased
 // (paler on dark, darker on light) until it stands out from the background well enough to read.
-function fromHue(mode, hue, sat) {
+function fromHue(mode, hue, sat, bg, surface) {
     const s = clamp(isFinite(sat) ? sat : 0.5, 0, 1)
     if (mode === "light") {
         const sa = clamp(0.55 + 0.4 * s, 0.6, 0.9)
         let v = 0.85, c = hsv(hue, sa, v)
-        while (contrast(c, BASE.light.bg) < 3.5 && v > 0.4) { v -= 0.03; c = hsv(hue, sa, v) }
+        while ((contrast(c, bg || BASE.light.bg) < 3.5 || contrast(c, surface || BASE.light.surface) < 3) && v > 0.4) { v -= 0.03; c = hsv(hue, sa, v) }
         return c
     }
     let sa = clamp(0.22 + 0.3 * s, 0.28, 0.5), c = hsv(hue, sa, 0.97)      // the named dark accents sit at 0.24-0.45
-    while (contrast(c, BASE.dark.bg) < 4.5 && sa > 0.2) { sa -= 0.02; c = hsv(hue, sa, 0.97) }
+    while ((contrast(c, bg || BASE.dark.bg) < 4.5 || contrast(c, surface || BASE.dark.surface) < 3) && sa > 0.2) { sa -= 0.02; c = hsv(hue, sa, 0.97) }
     return c
+}
+
+// Background, surfaces and text tinted with a hue, laid out like the Catppuccin greys (which carry a hint of blue).
+// Lightness steps are fixed and then nudged until the text is readable whatever the hue turns out to be.
+function neutrals(mode, hue, sat) {
+    const s = clamp(isFinite(sat) ? sat : 0.5, 0, 1)
+    const t = clamp(0.12 + 0.12 * s, 0.12, 0.24)         // how strongly the greys lean toward the hue
+    const light = mode === "light"
+    const bg = hsl(hue, light ? t + 0.06 : t, light ? 0.95 : 0.15)
+    let fgL = light ? 0.30 : 0.88, dimL = light ? 0.43 : 0.58
+    let fg = hsl(hue, light ? t * 0.8 : t * 2.2, fgL), fgDim = hsl(hue, t * 0.6, dimL)
+    const step = light ? -0.02 : 0.02
+    while (contrast(fg, bg) < 7 && fgL > 0.05 && fgL < 0.99) { fgL += step; fg = hsl(hue, light ? t * 0.8 : t * 2.2, fgL) }
+    while (contrast(fgDim, bg) < 4 && dimL > 0.05 && dimL < 0.99) { dimL += step; fgDim = hsl(hue, t * 0.6, dimL) }
+    return {
+        bg: bg,
+        surface:   hsl(hue, t * 0.8,  light ? 0.83 : 0.23),
+        surfaceHi: hsl(hue, t * 0.65, light ? 0.77 : 0.31),
+        fg: fg, fgDim: fgDim,
+        ink: light ? fg : "#ffffff"
+    }
 }
 
 // Unknown mode or accent names fall back to dark / mauve, so a bad pref can never break the theme.
@@ -81,13 +108,14 @@ function make(mode, accentName, auto) {
     const base = BASE[m]
     const i = m === "light" ? 1 : 0
     const custom = !!auto && typeof auto.hue === "number" && isFinite(auto.hue)
-    const accent = custom ? fromHue(m, auto.hue, auto.sat) : ACCENTS[a][i]
+    const n = custom ? neutrals(m, auto.hue, auto.sat) : base
+    const accent = custom ? fromHue(m, auto.hue, auto.sat, n.bg, n.surface) : ACCENTS[a][i]
     return {
         mode: m, accentName: custom ? "auto" : a,
-        bg: base.bg, surface: base.surface, surfaceHi: base.surfaceHi,
-        fg: base.fg, fgDim: base.fgDim, danger: base.danger, ok: base.ok,
-        ink: base.ink, sheen: base.sheen,
-        accent: accent, accent2: custom ? fromHue(m, auto.hue + 40, auto.sat) : ACCENTS.pink[i],
+        bg: n.bg, surface: n.surface, surfaceHi: n.surfaceHi,
+        fg: n.fg, fgDim: n.fgDim, danger: base.danger, ok: base.ok,
+        ink: n.ink, sheen: base.sheen,
+        accent: accent, accent2: custom ? fromHue(m, auto.hue + 40, auto.sat, n.bg, n.surface) : ACCENTS.pink[i],
         accentFg: contrast(accent, "#1e1e2e") >= contrast(accent, "#eff1f5") ? "#1e1e2e" : "#eff1f5"
     }
 }

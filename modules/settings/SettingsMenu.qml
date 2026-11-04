@@ -74,7 +74,7 @@ Overlay {
 
             Row_ {
                 title: "Colors from wallpaper"
-                hint: Prefs.wallpaperColors && Prefs.wallpaper !== "" && !Wallpapers.colorsOk ? "Reading it… or this picture has no colour" : "The accent follows the wallpaper"
+                hint: Prefs.wallpaperColors && Prefs.wallpaper !== "" && !Wallpapers.colorsOk ? "Reading it… or this picture has no colour" : "Accent, background and text follow the wallpaper"
                 Switch { checked: Prefs.wallpaperColors; onToggled: v => Prefs.set("wallpaperColors", v) }
             }
             Row_ {
