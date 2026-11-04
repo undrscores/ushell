@@ -1,18 +1,55 @@
 pragma Singleton
 import Quickshell
+import Quickshell.Io
 import QtQuick
+import "config.js" as Rules
 
-// User-editable settings.
+// User settings. The values below are the defaults; to change them, create
+//   ~/.config/ushell/config.json        (see config.example.json in the shell's folder)
+// with just the keys you want. It reloads as soon as you save it. A key that is missing or invalid
+// keeps its default, and a warning shows up in `qs log`.
 Singleton {
+    id: root
+
+    readonly property var defaults: ({
+        pinnedApps: ["firefox", "alacritty", "keepassxc", "mpv"],
+        terminal: "alacritty",
+        lockCommand: ["swaylock", "-f"],
+        searchUrl: "https://duckduckgo.com/?q=",
+        glassOpacity: 1.0
+    })
+
     // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
-    readonly property var pinnedApps: ["firefox", "alacritty", "keepassxc", "mpv"]
+    property var pinnedApps: defaults.pinnedApps
 
     // Terminal for launcher jobs that need one (package install/remove): runs `<terminal> -e bash -c ...`.
-    readonly property string terminal: "alacritty"
+    property string terminal: defaults.terminal
 
-    // Command that locks the screen.
-    readonly property var lockCommand: ["swaylock", "-f"]
+    // Command that locks the screen: the program and its arguments.
+    property var lockCommand: defaults.lockCommand
 
     // Web search for the launcher ("g " prefix); the query is appended URL-encoded.
-    readonly property string searchUrl: "https://duckduckgo.com/?q="
+    property string searchUrl: defaults.searchUrl
+
+    // How opaque panels are: 1 = solid, down to 0.5 = see-through.
+    property real glassOpacity: defaults.glassOpacity
+
+    readonly property string path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/ushell/config.json"
+
+    // Validate the file and apply every key that differs from what is set now.
+    function apply(text) {
+        const r = Rules.parse(text, defaults)
+        for (const w of r.warnings) console.warn("ushell config.json: " + w)
+        for (const k of Object.keys(defaults))
+            if (JSON.stringify(root[k]) !== JSON.stringify(r.values[k])) root[k] = r.values[k]
+    }
+
+    FileView {
+        id: file
+        path: root.path
+        watchChanges: true
+        onLoaded: root.apply(file.text())
+        onFileChanged: reload()
+        onLoadFailed: root.apply("{}")      // no file (the normal case) or unreadable: defaults
+    }
 }

@@ -1,28 +1,36 @@
 pragma Singleton
 import Quickshell
 import QtQuick
+import "palette.js" as Palette
 
 // Single source of truth for the look & feel. Every module reads from here.
 Singleton {
-    // Palette (dark, mauve accent)
-    readonly property color bg:        "#1e1e2e"
-    readonly property color surface:   "#313244"
-    readonly property color surfaceHi: "#45475a"
-    readonly property color fg:        "#cdd6f4"
-    readonly property color fgDim:     "#7f849c"
-    readonly property color accent:    "#cba6f7"
-    readonly property color accent2:   "#f5c2e7"
-    readonly property color accentFg:  "#1e1e2e"
-    readonly property color danger:    "#f38ba8"
-    readonly property color ok:        "#a6e3a1"
+    // Which palette is in use. Set from the saved preferences (see the Binding items in shell.qml);
+    // the colours themselves live in palette.js.
+    property string mode: "dark"          // dark | light
+    property string accentName: "mauve"
+    readonly property var pal: Palette.make(mode, accentName)
+
+    readonly property color bg:        pal.bg
+    readonly property color surface:   pal.surface
+    readonly property color surfaceHi: pal.surfaceHi
+    readonly property color fg:        pal.fg
+    readonly property color fgDim:     pal.fgDim
+    readonly property color accent:    pal.accent
+    readonly property color accent2:   pal.accent2
+    readonly property color accentFg:  pal.accentFg       // text on top of the accent colour
+    readonly property color danger:    pal.danger
+    readonly property color ok:        pal.ok
     readonly property color dangerSoft: Qt.rgba(danger.r, danger.g, danger.b, 0.26)   // armed / hovered destructive buttons
 
-    // Glass surfaces (shared by every panel)
-    readonly property color glass:  Qt.rgba(0.118, 0.118, 0.180, 1.0)   // set alpha < 1 for transparency
-    readonly property color line:   Qt.rgba(1, 1, 1, 0.08)
-    readonly property color hover:  Qt.rgba(1, 1, 1, 0.09)
-    readonly property color tint:   Qt.rgba(1, 1, 1, 0.05)
-    readonly property color accentSoft: Qt.rgba(0.796, 0.651, 0.969, 0.18)
+    // Glass surfaces (shared by every panel). Overlays are white on dark and ink on light.
+    readonly property color glass:  Qt.rgba(bg.r, bg.g, bg.b, Config.glassOpacity)
+    readonly property color ink:    pal.ink
+    readonly property color line:   Qt.rgba(ink.r, ink.g, ink.b, 0.08)
+    readonly property color hover:  Qt.rgba(ink.r, ink.g, ink.b, 0.09)
+    readonly property color tint:   Qt.rgba(ink.r, ink.g, ink.b, 0.05)
+    readonly property color sheen:  Qt.rgba(1, 1, 1, pal.sheen)     // soft highlight along a panel's top edge
+    readonly property color accentSoft: Qt.rgba(accent.r, accent.g, accent.b, 0.18)
 
     // Shape & spacing
     readonly property int radius:      14

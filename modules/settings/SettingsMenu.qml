@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import "../../config"
 import "../../services"
 import "../../components"
+import "../../config/palette.js" as Palette
 
 // Settings dropdown (gear in the top pill, or `qs ipc call shell toggle settings`).
 Overlay {
@@ -44,6 +45,30 @@ Overlay {
             Row_ {
                 title: "Auto-hide left dock"; hint: "Off keeps it visible and reserves space"
                 Switch { checked: Prefs.leftAutoHide; onToggled: v => Prefs.set("leftAutoHide", v) }
+            }
+
+            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+            Text { text: "Appearance"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            Row_ {
+                title: "Light theme"; hint: "Off is the dark theme"
+                Switch { checked: Prefs.themeMode === "light"; onToggled: v => Prefs.set("themeMode", v ? "light" : "dark") }
+            }
+            Row {
+                spacing: 8
+                Repeater {
+                    model: Palette.names
+                    delegate: Rectangle {
+                        id: sw
+                        required property string modelData
+                        readonly property bool chosen: Palette.make(Theme.mode, Prefs.accent).accentName === modelData
+                        width: 22; height: 22; radius: 11
+                        color: Palette.make(Theme.mode, modelData).accent
+                        border { width: chosen ? 2 : 0; color: Theme.fg }
+                        scale: swMa.pressed ? 0.88 : (swMa.containsMouse ? 1.18 : 1)
+                        Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+                        MouseArea { id: swMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Prefs.set("accent", sw.modelData) }
+                    }
+                }
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
