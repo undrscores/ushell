@@ -16,7 +16,7 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "left"
-        autoHide: Prefs.leftAutoHide
+        autoHide: Config.leftAutoHide
         panelWidth: 68
         panelHeight: col.implicitHeight + 28
         panelRadius: 24
@@ -218,12 +218,6 @@ Variants {
                             }
                         }
                     }
-                }
-
-                PinButton {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    pinned: !Prefs.leftAutoHide
-                    onClicked: Prefs.toggle("left")
                 }
             }
         }

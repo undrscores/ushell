@@ -13,7 +13,7 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "top"
-        autoHide: Prefs.topAutoHide
+        autoHide: Config.topAutoHide
         pinned: ["quicksettings", "calendar", "media", "power"].includes(Shell.overlay)
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -106,19 +106,6 @@ Variants {
                 active: Shell.overlay === "power"
                 onClicked: Shell.toggle("power")
                 Icon { text: ""; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
-            }
-
-            // Auto-hide toggle: tilted = hides, upright = always shown
-            BarItem {
-                active: !Prefs.topAutoHide
-                onClicked: Prefs.toggle("top")
-                Icon {
-                    text: "\uf08d"; size: 13
-                    color: Prefs.topAutoHide ? Theme.fgDim : Theme.accent
-                    anchors.verticalCenter: parent.verticalCenter
-                    rotation: Prefs.topAutoHide ? 45 : 0
-                    Behavior on rotation { SpringAnimation { spring: 5; damping: 0.28; epsilon: 0.5 } }
-                }
             }
         }
     }

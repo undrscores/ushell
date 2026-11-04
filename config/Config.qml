@@ -10,4 +10,10 @@ Singleton {
     readonly property bool weatherMetric: true
 
     readonly property var pinnedApps: ["firefox", "alacritty", "keepassxc", "mpv"]
+
+    // Auto-hide per panel: true = slides away until you hover its screen edge,
+    // false = always visible (and reserves its space so windows tile around it).
+    // The right widgets panel always auto-hides.
+    readonly property bool topAutoHide: true
+    readonly property bool leftAutoHide: true
 }
