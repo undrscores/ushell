@@ -6,14 +6,6 @@ import QtQuick
 Singleton {
     // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
     // Weather tab. Empty city = locate by IP address (via ipapi.co); otherwise geocode the name (Open-Meteo).
-    readonly property string weatherCity: ""
-    readonly property bool weatherMetric: true
 
     readonly property var pinnedApps: ["firefox", "alacritty", "keepassxc", "mpv"]
-
-    // Auto-hide per panel: true = slides away until you hover its screen edge,
-    // false = always visible (and reserves its space so windows tile around it).
-    // The right widgets panel always auto-hides.
-    readonly property bool topAutoHide: true
-    readonly property bool leftAutoHide: true
 }

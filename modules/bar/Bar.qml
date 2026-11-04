@@ -13,8 +13,8 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "top"
-        autoHide: Config.topAutoHide
-        pinned: ["quicksettings", "calendar", "media", "power"].includes(Shell.overlay)
+        autoHide: Prefs.topAutoHide
+        pinned: ["quicksettings", "calendar", "media", "settings", "power"].includes(Shell.overlay)
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
         panelRadius: Theme.barHeight / 2
@@ -99,6 +99,13 @@ Variants {
                     font { family: Theme.font; pixelSize: Theme.fontSize }
                     anchors.verticalCenter: parent.verticalCenter
                 }
+            }
+
+            // Settings
+            BarItem {
+                active: Shell.overlay === "settings"
+                onClicked: Shell.toggle("settings")
+                Icon { text: "\uf013"; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
             }
 
             // Power

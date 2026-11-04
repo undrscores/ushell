@@ -8,6 +8,7 @@ import "modules/launcher"
 import "modules/quicksettings"
 import "modules/calendar"
 import "modules/clipboard"
+import "modules/settings"
 import "modules/media"
 import "modules/power"
 import "services"
@@ -24,6 +25,7 @@ ShellRoot {
     CalendarMenu {}
     MediaMenu {}
     ClipboardMenu {}
+    SettingsMenu {}
     PowerMenu {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
@@ -32,7 +34,7 @@ ShellRoot {
         function query(text: string): void { launcher.query(text) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|power|widgets>
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }
