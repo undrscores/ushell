@@ -13,6 +13,7 @@ import "modules/settings"
 import "modules/media"
 import "modules/power"
 import "modules/wallpaper"
+import "modules/appearance"
 import "services"
 import "config"
 
@@ -39,6 +40,7 @@ ShellRoot {
     SettingsMenu {}
     PowerMenu {}
     WallpaperPicker {}
+    AppearanceMenu {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
     IpcHandler {
@@ -46,7 +48,7 @@ ShellRoot {
         function query(text: string): void { launcher.query(text) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers>
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

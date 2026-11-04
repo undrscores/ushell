@@ -22,18 +22,6 @@ Overlay {
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on scale   { SpringAnimation { spring: root.open ? 3.4 : 6; damping: root.open ? 0.24 : 0.8; epsilon: 0.002 } }
 
-        component Pill: Rectangle {
-            id: pill
-            property string label
-            signal clicked()
-            implicitWidth: pillText.implicitWidth + 24; implicitHeight: 28
-            radius: height / 2
-            color: pma.containsMouse ? Theme.hover : Theme.tint
-            Behavior on color { ColorAnimation { duration: Theme.animFast } }
-            Text { id: pillText; anchors.centerIn: parent; text: pill.label; color: Theme.fg; font { family: Theme.font; pixelSize: Theme.fontSize - 1 } }
-            MouseArea { id: pma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: pill.clicked() }
-        }
-
         Item {
             anchors { fill: parent; margins: 16 }
 
