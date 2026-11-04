@@ -68,7 +68,7 @@ function fromHue(mode, hue, sat) {
         while (contrast(c, BASE.light.bg) < 3.5 && v > 0.4) { v -= 0.03; c = hsv(hue, sa, v) }
         return c
     }
-    let sa = clamp(0.30 + 0.4 * s, 0.32, 0.65), c = hsv(hue, sa, 0.97)
+    let sa = clamp(0.22 + 0.3 * s, 0.28, 0.5), c = hsv(hue, sa, 0.97)      // the named dark accents sit at 0.24-0.45
     while (contrast(c, BASE.dark.bg) < 4.5 && sa > 0.2) { sa -= 0.02; c = hsv(hue, sa, 0.97) }
     return c
 }
