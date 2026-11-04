@@ -6,12 +6,12 @@
   clipboard_store.py pin ID       toggle pinned
   clipboard_store.py clear        remove every unpinned entry
 
-History lives in ~/.local/state/quickshell-config/clipboard.json.
+History lives in ~/.local/state/ushell/clipboard.json (private: mode 0600).
 Anything a password manager marks as secret is never stored.
 """
 import fcntl, json, os, subprocess, sys, time
 
-DIR = os.path.expanduser("~/.local/state/quickshell-config")
+DIR = os.path.expanduser("~/.local/state/ushell")
 FILE = os.path.join(DIR, "clipboard.json")
 MAX_ITEMS = 200
 MAX_BYTES = 200_000
@@ -21,13 +21,21 @@ def load():
     try:
         with open(FILE) as f:
             return json.load(f).get("items", [])
-    except (OSError, ValueError):
+    except FileNotFoundError:
+        return []
+    except (OSError, ValueError, AttributeError):
+        # unreadable or corrupt: keep it aside instead of overwriting it with an empty history
+        try:
+            os.replace(FILE, FILE + ".corrupt")
+        except OSError:
+            pass
         return []
 
 
 def save(items):
     tmp = FILE + ".tmp"
-    with open(tmp, "w") as f:
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
         json.dump({"items": items}, f)
     os.replace(tmp, FILE)
 
@@ -41,7 +49,7 @@ def is_secret():
 
 
 def main(argv):
-    os.makedirs(DIR, exist_ok=True)
+    os.makedirs(DIR, mode=0o700, exist_ok=True)
     with open(os.path.join(DIR, ".clipboard.lock"), "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         cmd = argv[1] if len(argv) > 1 else ""

@@ -10,11 +10,11 @@
 
 Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600).
 """
-import hashlib, json, os, socket, sys, time
+import hashlib, json, os, select, socket, sys, time
 
 HOST = os.environ.get("MPD_HOST", "127.0.0.1")
 PORT = int(os.environ.get("MPD_PORT", "6600"))
-CACHE = os.path.expanduser("~/.cache/quickshell-config/mpd-art")
+CACHE = os.path.expanduser("~/.cache/ushell/mpd-art")
 
 
 def quote(arg):
@@ -28,9 +28,11 @@ class Mpd:
         if not self.f.readline().startswith(b"OK MPD"):
             raise OSError("not an MPD server")
 
-    def run(self, line):
-        """Returns (list of (key, value), binary-or-None)."""
+    def send(self, line):
         self.sock.sendall((line + "\n").encode())
+
+    def read_reply(self):
+        """Returns (list of (key, value), binary-or-None)."""
         pairs, binary = [], None
         while True:
             raw = self.f.readline()
@@ -47,6 +49,22 @@ class Mpd:
                 self.f.read(1)  # trailing newline
             else:
                 pairs.append((key, value))
+
+    def run(self, line):
+        self.send(line)
+        return self.read_reply()
+
+    def idle(self, subsystems, timeout):
+        """Sleep inside MPD's `idle` until one of the subsystems changes, or `timeout` seconds pass.
+
+        select() waits on the raw socket (a read timeout would poison the buffered reader);
+        on timeout we send `noidle`, which makes MPD end the idle with a plain OK.
+        """
+        self.send("idle " + " ".join(subsystems))
+        ready, _, _ = select.select([self.sock], [], [], timeout)
+        if not ready:
+            self.send("noidle")
+        self.read_reply()
 
     def close(self):
         try:
@@ -111,26 +129,32 @@ def snapshot(m, art_cache):
     }
 
 
+IDLE_SUBSYSTEMS = ("player", "mixer", "options", "playlist")
+IDLE_TIMEOUT = 30  # seconds; also re-syncs `elapsed` so interpolation on the QML side can't drift
+
+
 def watch():
-    last, beat, art_cache = None, 0, {}
+    """Print one JSON line when something changes. No polling: MPD tells us (idle)."""
+    last, art_cache = None, {}
+    offline = {"online": False}
     while True:
         try:
             m = Mpd()
             while True:
                 snap = snapshot(m, art_cache)
-                beat += 1
-                if snap != last or snap["state"] == "play" or beat >= 5:
+                if snap != last:
                     print(json.dumps(snap), flush=True)
-                    last, beat = snap, 0
-                time.sleep(0.7)
+                    last = snap
+                m.idle(IDLE_SUBSYSTEMS, IDLE_TIMEOUT)
         except BrokenPipeError:
             return  # Quickshell went away
         except Exception:
             try:
-                print(json.dumps({"online": False}), flush=True)
+                if last != offline:
+                    print(json.dumps(offline), flush=True)
             except BrokenPipeError:
                 return
-            last = None
+            last = offline
             time.sleep(2)
 
 

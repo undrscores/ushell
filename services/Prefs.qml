@@ -4,7 +4,7 @@ import Quickshell.Io
 import QtQuick
 
 // User settings, edited from the Settings menu and saved to
-// ~/.local/state/quickshell-config/prefs.json.
+// ~/.local/state/ushell/prefs.json.
 Singleton {
     id: root
     property bool topAutoHide: true      // false = top pill always visible (reserves space)
@@ -12,10 +12,8 @@ Singleton {
     property bool weatherMetric: true
     property string weatherCity: ""      // empty = locate by IP address
 
-    readonly property string dir: Quickshell.env("HOME") + "/.local/state/quickshell-config"
-
     function set(key, value) {
-        if (root[key] === value) return
+        if (root[key] === value || !StateDir.ready) return
         root[key] = value
         file.setText(JSON.stringify({
             topAutoHide: topAutoHide, leftAutoHide: leftAutoHide,
@@ -25,7 +23,7 @@ Singleton {
 
     FileView {
         id: file
-        path: root.dir + "/prefs.json"
+        path: StateDir.ready ? StateDir.dir + "/prefs.json" : ""
         watchChanges: false
         onLoaded: {
             try {
@@ -36,5 +34,4 @@ Singleton {
             } catch (e) {}
         }
     }
-    Component.onCompleted: Quickshell.execDetached(["mkdir", "-p", dir])
 }

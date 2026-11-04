@@ -7,8 +7,7 @@ import QtQuick
 // file; this singleton just reads it (and reloads whenever it changes).
 Singleton {
     id: root
-    readonly property string home: Quickshell.env("HOME")
-    readonly property string file: home + "/.local/state/quickshell-config/clipboard.json"
+    readonly property string file: StateDir.dir + "/clipboard.json"
     readonly property string script: Quickshell.shellPath("services/clipboard_store.py")
 
     property var items: []          // [{ id, text, time, pinned }] pinned first, then newest first
@@ -30,15 +29,18 @@ Singleton {
 
     FileView {
         id: store
-        path: root.file
+        path: StateDir.ready ? root.file : ""
         watchChanges: true
         onLoaded: root.parse(store.text())
         onFileChanged: reload()
     }
 
+    // Keeps itself alive: if the watcher dies (compositor hiccup, wl-clipboard crash) it comes back.
     Process {
-        running: true
+        id: watcher
+        running: StateDir.ready
         command: ["wl-paste", "--type", "text", "--watch", "python3", "-I", root.script, "store"]
+        onExited: if (StateDir.ready) restart.start()
     }
-    Component.onCompleted: Quickshell.execDetached(["mkdir", "-p", home + "/.local/state/quickshell-config"])
+    Timer { id: restart; interval: 2000; onTriggered: watcher.running = true }
 }
