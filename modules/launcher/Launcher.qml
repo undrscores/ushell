@@ -122,7 +122,7 @@ PanelWindow {
         id: asyncTimer
         interval: 220
         onTriggered: {
-            const p = win.parse(input.text)
+            const p = Search.parse(input.text)
             win.asyncQuery = p.q
             if (p.mode === "pkg")  { pkgProc.running = false;  pkgProc.running = true }
             if (p.mode === "song") { songProc.running = false; songProc.running = true }

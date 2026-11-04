@@ -101,12 +101,13 @@ Singleton {
                     // try the next IP provider before giving up
                     if (Prefs.weatherCity === "" && root.attempt + 1 < root.ipProviders.length) {
                         root.attempt++
-                        locate.running = true
+                        retryLocate.restart()     // not straight away: this process may not have been marked finished yet
                     } else root.fail("Couldn't find your location")
                 }
             }
         }
     }
+    Timer { id: retryLocate; interval: 250; onTriggered: locate.running = true }
     Process {
         id: forecast
         command: ["curl", "-sf", "-m", "10",
