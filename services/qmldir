@@ -9,3 +9,5 @@ singleton Weather 1.0 Weather.qml
 singleton Clipboard 1.0 Clipboard.qml
 singleton Prefs 1.0 Prefs.qml
 singleton Brightness 1.0 Brightness.qml
+singleton StateDir 1.0 StateDir.qml
+singleton Actions 1.0 Actions.qml

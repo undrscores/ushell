@@ -16,6 +16,7 @@ Singleton {
     readonly property color accentFg:  "#1e1e2e"
     readonly property color danger:    "#f38ba8"
     readonly property color ok:        "#a6e3a1"
+    readonly property color dangerSoft: Qt.rgba(danger.r, danger.g, danger.b, 0.26)   // armed / hovered destructive buttons
 
     // Glass surfaces (shared by every panel)
     readonly property color glass:  Qt.rgba(0.118, 0.118, 0.180, 1.0)   // set alpha < 1 for transparency
