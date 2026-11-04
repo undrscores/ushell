@@ -29,16 +29,18 @@ PanelWindow {
     property real animH: Math.min(panelHeight, screenH - gap * 2)
     property bool ready: false
     Timer { interval: 600; running: true; onTriggered: win.ready = true }
-    Behavior on animW { enabled: win.ready; NumberAnimation { duration: 340; easing.type: Easing.OutCubic } }
-    Behavior on animH { enabled: win.ready; NumberAnimation { duration: 340; easing.type: Easing.OutCubic } }
+    // size changes wobble a little before settling
+    Behavior on animW { enabled: win.ready; SpringAnimation { spring: 3.6; damping: 0.32; epsilon: 0.4 } }
+    Behavior on animH { enabled: win.ready; SpringAnimation { spring: 3.6; damping: 0.32; epsilon: 0.4 } }
 
     property bool shown: false
     property real slide: shown ? 1 : 0
+    // Real spring physics: bouncy on the way in, quick and tight on the way out.
     Behavior on slide {
-        NumberAnimation {
-            duration: win.shown ? 480 : 260
-            easing.type: win.shown ? Easing.OutBack : Easing.InCubic
-            easing.overshoot: 1.25
+        SpringAnimation {
+            spring: win.shown ? 3.0 : 5.0
+            damping: win.shown ? 0.22 : 0.75
+            epsilon: 0.003
         }
     }
 
@@ -66,32 +68,16 @@ PanelWindow {
         anchors.fill: parent
         HoverHandler { id: hover }
 
-        // faint breathing hint while hidden
-        Rectangle {
-            id: hint
-            radius: 2
-            color: Theme.accent
-            property real pulse: 0.5
-            opacity: Math.max(0, 1 - win.slide) * pulse
-            SequentialAnimation on pulse {
-                running: !win.shown
-                loops: Animation.Infinite
-                NumberAnimation { to: 0.9; duration: 1400; easing.type: Easing.InOutSine }
-                NumberAnimation { to: 0.3; duration: 1400; easing.type: Easing.InOutSine }
-            }
-            width: win.vertical ? 3 : 44
-            height: win.vertical ? 44 : 3
-            x: win.vertical ? (win.edge === "left" ? 0 : win.width - width) : (win.width - width) / 2
-            y: win.vertical ? (win.height - height) / 2 : 0
-        }
-
         Glass {
             id: panel
             visible: win.slide > 0.002        // nothing renders or animates while hidden
             width: win.animW
             height: win.animH
             radius: win.panelRadius
-            opacity: Math.min(1, win.slide * 1.6)
+            opacity: Math.max(0, Math.min(1, win.slide * 1.6))
+            // grows out of the screen edge
+            scale: 0.86 + 0.14 * Math.max(0, Math.min(1.15, win.slide))
+            transformOrigin: win.edge === "top" ? Item.Top : (win.edge === "left" ? Item.Left : Item.Right)
             x: win.edge === "top"  ? (win.width - width) / 2
              : win.edge === "left" ? -width + (width + win.gap) * win.slide
              :                       win.width - win.gap - width + (width + win.gap) * (1 - win.slide)

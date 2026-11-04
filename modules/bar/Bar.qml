@@ -76,10 +76,21 @@ Variants {
                     text: Audio.icon(); color: Audio.muted ? Theme.danger : Theme.fg; anchors.verticalCenter: parent.verticalCenter
                     SequentialAnimation {
                         id: bump
-                        NumberAnimation { target: volIcon; property: "scale"; to: 1.35; duration: 90; easing.type: Easing.OutQuad }
-                        NumberAnimation { target: volIcon; property: "scale"; to: 1; duration: 260; easing.type: Easing.OutBack }
+                        NumberAnimation { target: volIcon; property: "scale"; to: 1.45; duration: 80; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: volIcon; property: "scale"; to: 1; duration: 520; easing.type: Easing.OutElastic; easing.amplitude: 1.3; easing.period: 0.4 }
                     }
-                    Connections { target: Audio; function onVolumeChanged() { bump.restart() } function onMutedChanged() { bump.restart() } }
+                    SequentialAnimation {   // mute: little head-shake
+                        id: shake
+                        NumberAnimation { target: volIcon; property: "rotation"; to: -18; duration: 70 }
+                        NumberAnimation { target: volIcon; property: "rotation"; to: 16;  duration: 90 }
+                        NumberAnimation { target: volIcon; property: "rotation"; to: -8;  duration: 80 }
+                        NumberAnimation { target: volIcon; property: "rotation"; to: 0;   duration: 100 }
+                    }
+                    Connections {
+                        target: Audio
+                        function onVolumeChanged() { bump.restart() }
+                        function onMutedChanged() { bump.restart(); shake.restart() }
+                    }
                 }
                 Text {
                     text: Math.round(Audio.volume * 100)

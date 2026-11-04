@@ -144,11 +144,11 @@ PanelWindow {
         color: Theme.glass
         border { color: Qt.rgba(1, 1, 1, 0.07); width: 1 }
         opacity: win.open ? 1 : 0
-        scale: win.open ? 1 : 0.92
+        scale: win.open ? 1 : 0.84
         clip: true
 
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on scale   { NumberAnimation { duration: win.open ? 380 : 180; easing.type: win.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.4 } }
+        Behavior on scale   { SpringAnimation { spring: win.open ? 3.6 : 6; damping: win.open ? 0.24 : 0.8; epsilon: 0.002 } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on height  { NumberAnimation { duration: Theme.animFast;   easing.type: Theme.easing } }
 

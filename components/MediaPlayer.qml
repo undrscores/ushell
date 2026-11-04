@@ -62,13 +62,25 @@ Item {
                     id: disc
                     anchors.centerIn: parent
                     width: 96; height: 96
-                    scale: 1 + 0.07 * Cava.bass
+                    property real pop: 1                       // track-change bounce
+                    scale: (1 + 0.07 * Cava.bass) * pop
                     Behavior on scale { NumberAnimation { duration: 80 } }
-                    NumberAnimation on rotation {
-                        from: 0; to: 360; duration: 14000
-                        loops: Animation.Infinite
-                        running: true
-                        paused: !Media.playing || !root.animate
+
+                    // the record spins up when playing and winds down when paused
+                    property real speed: Media.playing && root.animate ? 1 : 0
+                    Behavior on speed { NumberAnimation { duration: Media.playing ? 900 : 1600; easing.type: Easing.OutCubic } }
+                    FrameAnimation {
+                        running: disc.speed > 0.002
+                        onTriggered: disc.rotation = (disc.rotation + frameTime * 26 * disc.speed) % 360
+                    }
+                    Connections {
+                        target: Media
+                        function onArtChanged() { popAnim.restart() }
+                    }
+                    SequentialAnimation {
+                        id: popAnim
+                        NumberAnimation { target: disc; property: "pop"; to: 0.7; duration: 90; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: disc; property: "pop"; to: 1; duration: 620; easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.45 }
                     }
                     Rectangle {
                         id: mask
@@ -155,7 +167,17 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             spacing: 12
             IconButton { size: 38; icon: ""; onClicked: Media.prev() }
-            IconButton { size: 48; icon: Media.playing ? "" : ""; active: true; tone: Theme.accent; onClicked: Media.toggle() }
+            IconButton {
+                id: playBtn
+                size: 48; icon: Media.playing ? "" : ""; active: true; tone: Theme.accent
+                onClicked: Media.toggle()
+                Connections { target: Media; function onPlayingChanged() { flip.restart() } }
+                SequentialAnimation {
+                    id: flip
+                    NumberAnimation { target: playBtn; property: "rotation"; to: -14; duration: 70; easing.type: Easing.OutQuad }
+                    NumberAnimation { target: playBtn; property: "rotation"; to: 0; duration: 520; easing.type: Easing.OutElastic; easing.amplitude: 1.3; easing.period: 0.42 }
+                }
+            }
             IconButton { size: 38; icon: ""; onClicked: Media.next() }
         }
     }

@@ -45,8 +45,8 @@ Item {
             anchors.centerIn: parent
             width: 14; height: 14; radius: 7
             color: Theme.fg
-            scale: ma.pressed ? 1.25 : (ma.containsMouse ? 1.12 : 1)
-            Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+            scale: ma.pressed ? 1.3 : (ma.containsMouse ? 1.15 : 1)
+            Behavior on scale { NumberAnimation { duration: 380; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
         }
     }
     MouseArea {
