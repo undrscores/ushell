@@ -11,6 +11,12 @@ Item {
     visible: Media.available
     implicitHeight: visible ? col.implicitHeight + 32 : 0
 
+    property real scrub: -1              // 0..1 while the user is scrubbing, -1 otherwise
+    function commitSeek(v) { Media.seek(v); settle.restart() }
+    // hold the knob where it was dropped until the player reports the new position
+    Timer { id: settle; interval: 700; onTriggered: root.scrub = -1 }
+    Timer { id: wheelSeek; interval: 250; onTriggered: root.commitSeek(root.scrub) }
+
     function fmt(sec) {
         sec = Math.max(0, Math.floor(sec))
         return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0")
@@ -150,10 +156,14 @@ Item {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
+            // Dragging only moves the knob; the seek is sent once on release (every seek is a command
+            // to the player). Scrolling over the bar seeks after a short pause.
             Slider {
+                id: seekBar
                 Layout.fillWidth: true
-                value: Media.length > 0 ? Media.position / Media.length : 0
-                onMoved: v => Media.seek(v)
+                value: root.scrub >= 0 ? root.scrub : (Media.length > 0 ? Media.position / Media.length : 0)
+                onMoved: v => { root.scrub = v; settle.stop(); if (!seekBar.pressed) wheelSeek.restart() }
+                onReleased: v => { wheelSeek.stop(); root.commitSeek(v) }
             }
             RowLayout {
                 Layout.fillWidth: true
