@@ -2,20 +2,24 @@
 import Quickshell
 import Quickshell.Io
 import "modules/bar"
+import "modules/leftbar"
+import "modules/widgets"
 import "modules/launcher"
 import "modules/quicksettings"
-import "modules/sidebar"
+import "modules/calendar"
 import "modules/power"
 import "services"
 
 ShellRoot {
     Bar {}
+    LeftBar {}
+    Widgets {}
     Launcher {}
     QuickSettings {}
-    Sidebar {}
+    CalendarMenu {}
     PowerMenu {}
 
-    // qs ipc call shell toggle <launcher|quicksettings|sidebar|power>
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|power|widgets>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }
