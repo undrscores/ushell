@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Wayland
 import QtQuick
 import "../config"
 
@@ -12,7 +13,9 @@ import "../config"
 PanelWindow {
     id: win
     property string edge: "top"
-    property bool pinned: false
+    property bool pinned: false         // temporarily held open (e.g. a menu is using it)
+    property bool autoHide: true        // false = always shown, and it reserves its space
+    property bool takesFocus: false     // allow keyboard focus on click (for text fields)
     property real panelWidth: 300       // desired size; animated into animW / animH
     property real panelHeight: 300
     property int hotSize: 4
@@ -48,18 +51,23 @@ PanelWindow {
     anchors { top: true; bottom: vertical; left: edge === "left"; right: edge === "right" }
     implicitWidth:  vertical ? Math.min(560, screenW * 0.4) : Math.min(1200, screenW)
     implicitHeight: vertical ? screenH : 120
-    exclusionMode: ExclusionMode.Ignore
+    // Always-shown panels push tiled windows out of their way; auto-hiding ones float over them.
+    exclusionMode: autoHide ? ExclusionMode.Ignore : ExclusionMode.Normal
+    exclusiveZone: autoHide ? 0 : (vertical ? panelWidth : panelHeight) + gap * 2
+    WlrLayershell.keyboardFocus: takesFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     color: "transparent"
 
     // Input only where something is actually on screen.
     mask: Region { item: hitbox }
 
-    readonly property bool want: hover.hovered || pinned
+    readonly property bool want: hover.hovered || pinned || !autoHide
     onWantChanged: {
         if (want) { hideTimer.stop(); showTimer.restart() }
         else      { showTimer.stop(); hideTimer.restart() }
     }
     onPinnedChanged: if (pinned) { hideTimer.stop(); shown = true }
+    onAutoHideChanged: if (!autoHide) { hideTimer.stop(); shown = true }
+    Component.onCompleted: if (!autoHide) shown = true
     Timer { id: showTimer; interval: 130; onTriggered: win.shown = true }
     Timer { id: hideTimer; interval: 450; onTriggered: win.shown = false }
 

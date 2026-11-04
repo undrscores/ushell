@@ -17,6 +17,7 @@ Singleton {
         const ids = [entry.id, entry.startupClass, entry.name].filter(x => x).map(x => x.toLowerCase())
         return windows.find(w => w.app_id && ids.includes(w.app_id.toLowerCase())) ?? null
     }
+    function closeWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", String(id)]) }
     function focusWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(id)]) }
 
     function refresh() { wsProc.running = true; winProc.running = true; outProc.running = true; allWinProc.running = true }
