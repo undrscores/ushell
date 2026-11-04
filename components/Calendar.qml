@@ -52,7 +52,11 @@ Column {
                     && root.view.getFullYear() === grid.today.getFullYear()
                 width: grid.cell; height: 34
                 Rectangle { anchors.centerIn: parent; width: 30; height: 30; radius: 15
-                            color: parent.isToday ? Theme.accent : "transparent" }
+                            color: parent.isToday ? Theme.accent : (dayMa.containsMouse && parent.valid ? Theme.hover : "transparent")
+                            scale: dayMa.containsMouse && parent.valid ? 1.12 : 1
+                            Behavior on color { ColorAnimation { duration: Theme.animFast } }
+                            Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutBack; easing.overshoot: 2 } } }
+                MouseArea { id: dayMa; anchors.fill: parent; hoverEnabled: true }
                 Text {
                     anchors.centerIn: parent
                     text: parent.valid ? parent.day : ""

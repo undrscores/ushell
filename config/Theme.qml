@@ -12,6 +12,7 @@ Singleton {
     readonly property color fg:        "#cdd6f4"
     readonly property color fgDim:     "#7f849c"
     readonly property color accent:    "#cba6f7"
+    readonly property color accent2:   "#f5c2e7"
     readonly property color accentFg:  "#1e1e2e"
     readonly property color danger:    "#f38ba8"
     readonly property color ok:        "#a6e3a1"

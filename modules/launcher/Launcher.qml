@@ -123,7 +123,9 @@ PanelWindow {
         Shell.close()
     }
 
-    onOpenChanged: if (open) { input.text = ""; search(""); input.forceActiveFocus() }
+    property bool fresh: false
+    Timer { id: freshTimer; interval: 450; onTriggered: win.fresh = false }
+    onOpenChanged: if (open) { fresh = true; freshTimer.restart(); input.text = ""; search(""); input.forceActiveFocus() }
 
     // Dim backdrop, click to dismiss
     Rectangle {
@@ -142,11 +144,11 @@ PanelWindow {
         color: Theme.glass
         border { color: Qt.rgba(1, 1, 1, 0.07); width: 1 }
         opacity: win.open ? 1 : 0
-        scale: win.open ? 1 : 0.985
+        scale: win.open ? 1 : 0.92
         clip: true
 
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on scale   { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
+        Behavior on scale   { NumberAnimation { duration: win.open ? 380 : 180; easing.type: win.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.4 } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on height  { NumberAnimation { duration: Theme.animFast;   easing.type: Theme.easing } }
 
@@ -239,6 +241,17 @@ PanelWindow {
                 width: listView.width
                 height: 40
                 z: 1
+                opacity: 0
+                transform: Translate { id: slideIn; x: win.fresh ? -14 : 0 }
+                Component.onCompleted: appear.start()
+                SequentialAnimation {
+                    id: appear
+                    PauseAnimation { duration: win.fresh ? Math.min(row.index, 9) * 26 : 0 }
+                    ParallelAnimation {
+                        NumberAnimation { target: row; property: "opacity"; to: 1; duration: win.fresh ? 220 : 90 }
+                        NumberAnimation { target: slideIn; property: "x"; to: 0; duration: 300; easing.type: Easing.OutCubic }
+                    }
+                }
 
                 Item {
                     id: icon

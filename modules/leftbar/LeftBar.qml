@@ -36,6 +36,19 @@ Variants {
                         readonly property bool active: modelData.is_focused || modelData.is_active
                         width: 36; height: active ? 30 : 14
                         Behavior on height { NumberAnimation { duration: Theme.animNormal; easing.type: Easing.OutBack } }
+                        Rectangle {  // glow
+                            anchors.centerIn: parent
+                            width: 20; height: parent.height + 4; radius: 10
+                            color: Theme.accent
+                            opacity: ws.active ? glowPulse : 0
+                            property real glowPulse: 0.22
+                            Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
+                            SequentialAnimation on glowPulse {
+                                running: ws.active; loops: Animation.Infinite
+                                NumberAnimation { to: 0.36; duration: 1100; easing.type: Easing.InOutSine }
+                                NumberAnimation { to: 0.14; duration: 1100; easing.type: Easing.InOutSine }
+                            }
+                        }
                         Rectangle {
                             anchors.centerIn: parent
                             width: 8; height: parent.height - 4; radius: 4
@@ -62,8 +75,15 @@ Variants {
                     width: 38; height: 38; radius: 12
                     color: ma.containsMouse ? Theme.hover : "transparent"
                     Behavior on color { ColorAnimation { duration: Theme.animFast } }
-                    scale: ma.pressed ? 0.92 : 1
-                    Behavior on scale { NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
+                    z: ma.containsMouse ? 2 : 0
+                    scale: ma.pressed ? 0.9 : (ma.containsMouse ? 1.28 : 1)
+                    Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack; easing.overshoot: 2.2 } }
+                    transform: Translate { id: hop; x: 0 }
+                    SequentialAnimation {
+                        id: bounce
+                        NumberAnimation { target: hop; property: "x"; to: 9; duration: 110; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: hop; property: "x"; to: 0; duration: 380; easing.type: Easing.OutBounce }
+                    }
                     Image {
                         anchors.centerIn: parent
                         width: 24; height: 24
@@ -81,6 +101,7 @@ Variants {
                         id: ma
                         anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                         onClicked: {
+                            bounce.restart()
                             const w = Niri.appWindow(app.entry)
                             if (w) Niri.focusWindow(w.id)
                             else if (app.entry) app.entry.execute()

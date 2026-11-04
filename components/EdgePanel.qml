@@ -18,7 +18,13 @@ PanelWindow {
 
     property bool shown: false
     property real slide: shown ? 1 : 0
-    Behavior on slide { NumberAnimation { duration: Theme.animSlow; easing.type: Theme.easing } }
+    Behavior on slide {
+        NumberAnimation {
+            duration: win.shown ? 480 : 260
+            easing.type: win.shown ? Easing.OutBack : Easing.InCubic
+            easing.overshoot: 1.25
+        }
+    }
 
     readonly property real gap: Theme.margin
     anchors { top: edge === "top"; left: edge === "left"; right: edge === "right" }
@@ -46,7 +52,14 @@ PanelWindow {
         Rectangle {
             radius: 2
             color: Theme.accent
-            opacity: (1 - win.slide) * 0.5
+            opacity: Math.max(0, 1 - win.slide) * pulse
+            property real pulse: 0.5
+            SequentialAnimation on pulse {
+                running: !win.shown
+                loops: Animation.Infinite
+                NumberAnimation { to: 0.9; duration: 1400; easing.type: Easing.InOutSine }
+                NumberAnimation { to: 0.3; duration: 1400; easing.type: Easing.InOutSine }
+            }
             width: win.edge === "top" ? 44 : 3
             height: win.edge === "top" ? 3 : 44
             x: win.edge === "top" ? (win.width - width) / 2 : (win.edge === "left" ? 0 : win.width - width)

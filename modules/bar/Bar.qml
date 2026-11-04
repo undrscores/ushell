@@ -71,7 +71,16 @@ Variants {
                 active: Shell.overlay === "quicksettings"
                 onClicked: Shell.toggle("quicksettings")
                 onScrolled: d => Audio.setVolume(Audio.volume + (d > 0 ? 0.03 : -0.03))
-                Icon { text: Audio.icon(); color: Audio.muted ? Theme.danger : Theme.fg; anchors.verticalCenter: parent.verticalCenter }
+                Icon {
+                    id: volIcon
+                    text: Audio.icon(); color: Audio.muted ? Theme.danger : Theme.fg; anchors.verticalCenter: parent.verticalCenter
+                    SequentialAnimation {
+                        id: bump
+                        NumberAnimation { target: volIcon; property: "scale"; to: 1.35; duration: 90; easing.type: Easing.OutQuad }
+                        NumberAnimation { target: volIcon; property: "scale"; to: 1; duration: 260; easing.type: Easing.OutBack }
+                    }
+                    Connections { target: Audio; function onVolumeChanged() { bump.restart() } function onMutedChanged() { bump.restart() } }
+                }
                 Text {
                     text: Math.round(Audio.volume * 100)
                     color: Audio.muted ? Theme.danger : Theme.fgDim
