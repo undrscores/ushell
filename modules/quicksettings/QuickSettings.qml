@@ -7,6 +7,7 @@ import "../../components"
 Overlay {
     id: root
     name: "quicksettings"
+    onOpenChanged: if (open) Brightness.ensure()
 
     DropCard {
         id: card
@@ -63,6 +64,37 @@ Overlay {
                     color: Theme.fgDim
                     font { family: Theme.font; pixelSize: Theme.fontSize }
                 }
+            }
+
+            // Brightness (one slider per DDC-capable monitor)
+            Repeater {
+                model: Brightness.displays
+                delegate: RowLayout {
+                    id: br
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: 12
+                    Icon { text: "\uf185"; size: 17; color: Theme.fg; Layout.preferredWidth: 34; horizontalAlignment: Text.AlignHCenter }
+                    Slider {
+                        Layout.fillWidth: true
+                        value: br.modelData.value / 100
+                        tone: Theme.accent2
+                        onMoved: v => Brightness.set(br.modelData.bus, v * 100)
+                    }
+                    Text {
+                        Layout.preferredWidth: 34
+                        horizontalAlignment: Text.AlignRight
+                        text: Math.round(br.modelData.value)
+                        color: Theme.fgDim
+                        font { family: Theme.font; pixelSize: Theme.fontSize }
+                    }
+                }
+            }
+            Text {
+                visible: Brightness.detecting || Brightness.missing
+                text: Brightness.detecting ? "Reading monitor brightness…" : "No DDC monitor found for brightness"
+                color: Theme.fgDim
+                font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
