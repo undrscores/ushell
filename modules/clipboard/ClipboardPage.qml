@@ -84,7 +84,8 @@ Item {
             required property int index
             property bool flash: false
             width: list.width
-            height: Math.max(46, preview.implicitHeight + 22)
+            readonly property bool isImage: modelData.type === "image"
+            height: isImage ? 76 : Math.max(46, preview.implicitHeight + 22)
             radius: Theme.radius
             color: flash ? Theme.accentSoft : (ema.containsMouse ? Theme.hover : Theme.tint)
             Behavior on color { ColorAnimation { duration: entry.flash ? 80 : 220 } }
@@ -97,15 +98,31 @@ Item {
                 anchors { left: parent.left; top: parent.top; bottom: parent.bottom; topMargin: 10; bottomMargin: 10 }
                 width: 3; radius: 1.5; color: Theme.accent
             }
+            Rectangle {   // image entries: a small thumbnail, the label goes beside it
+                id: thumb
+                visible: entry.isImage
+                anchors { left: parent.left; leftMargin: 14; verticalCenter: parent.verticalCenter }
+                width: 104; height: 56
+                radius: Theme.radiusSmall
+                color: Qt.rgba(0, 0, 0, 0.25)
+                clip: true
+                Image {
+                    anchors { fill: parent; margins: 2 }
+                    source: entry.isImage ? Clipboard.imageUrl(entry.modelData) : ""
+                    sourceSize: Qt.size(208, 112)
+                    fillMode: Image.PreserveAspectFit
+                    asynchronous: true
+                }
+            }
             Text {
                 id: preview
-                anchors { left: parent.left; leftMargin: 14; right: side.left; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                anchors { left: entry.isImage ? thumb.right : parent.left; leftMargin: entry.isImage ? 12 : 14; right: side.left; rightMargin: 8; verticalCenter: parent.verticalCenter }
                 text: entry.modelData.text.trim().replace(/[ \t]+/g, " ")
                 textFormat: Text.PlainText
                 wrapMode: Text.WrapAnywhere
                 maximumLineCount: 3
                 elide: Text.ElideRight
-                color: Theme.fg
+                color: entry.isImage ? Theme.fgDim : Theme.fg
                 font { family: Theme.font; pixelSize: Theme.fontSize - 1 }
             }
             Item {
