@@ -17,7 +17,14 @@ Variants {
         edge: "right"
         pinned: Shell.widgetsPinned
         panelWidth: 340
-        panelHeight: loader.item ? loader.item.implicitHeight : 0
+        // Remember the last real height: the content only exists while shown, and a
+        // collapsed (0) height would leave the hover strip with no area.
+        property real lastHeight: 380
+        panelHeight: loader.item ? loader.item.implicitHeight : lastHeight
+        Connections {
+            target: loader.item
+            function onImplicitHeightChanged() { if (loader.item) win.lastHeight = loader.item.implicitHeight }
+        }
         onShownChanged: Shell.widgetsShown = shown
 
         readonly property var tabs: [
