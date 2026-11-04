@@ -24,6 +24,7 @@ Singleton {
     function remove(id) { run("delete", String(id)) }
     function togglePin(id) { run("pin", String(id)) }
     function clear() { run("clear") }
+    function clearImages() { run("clear-images") }
     function imageUrl(item) { return "file://" + StateDir.dir + "/clipboard-images/" + item.file }
     function copy(id) { run("copy", String(id)) }     // the script pipes the text to wl-copy (no argv size limit)
 
