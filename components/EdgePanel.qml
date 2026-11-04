@@ -13,6 +13,7 @@ PanelWindow {
     property real panelWidth: 300
     property real panelHeight: 300
     property int hotSize: 4
+    property real panelRadius: Theme.radius + 4
     default property alias content: panel.data
 
     property bool shown: false
@@ -44,8 +45,8 @@ PanelWindow {
         // faint hint while hidden
         Rectangle {
             radius: 2
-            color: Theme.fgDim
-            opacity: (1 - win.slide) * 0.45
+            color: Theme.accent
+            opacity: (1 - win.slide) * 0.5
             width: win.edge === "top" ? 44 : 3
             height: win.edge === "top" ? 3 : 44
             x: win.edge === "top" ? (win.width - width) / 2 : (win.edge === "left" ? 0 : win.width - width)
@@ -56,6 +57,7 @@ PanelWindow {
             id: panel
             width: win.panelWidth
             height: win.panelHeight
+            radius: win.panelRadius
             opacity: Math.min(1, win.slide * 1.6)
             x: win.edge === "top"  ? win.gap
              : win.edge === "left" ? -width + (width + win.gap) * win.slide

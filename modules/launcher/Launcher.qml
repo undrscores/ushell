@@ -139,7 +139,7 @@ PanelWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.25 + (win.open ? 0 : -8)
         radius: Theme.radius + 4
-        color: Qt.rgba(Theme.bg.r, Theme.bg.g, Theme.bg.b, 0.82)
+        color: Theme.glass
         border { color: Qt.rgba(1, 1, 1, 0.07); width: 1 }
         opacity: win.open ? 1 : 0
         scale: win.open ? 1 : 0.985
