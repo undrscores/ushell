@@ -1,4 +1,4 @@
-# quickshell-config
+# jrshell
 
 A bouncy Quickshell desktop shell for [niri](https://github.com/YaLTeR/niri).
 
