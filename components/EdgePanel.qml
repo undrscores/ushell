@@ -50,10 +50,7 @@ PanelWindow {
     color: "transparent"
 
     // Input only where something is actually on screen.
-    mask: Region {
-        item: win.shown ? panel : strip
-        Region { item: win.shown ? band : strip }
-    }
+    mask: Region { item: hitbox }
 
     readonly property bool want: hover.hovered || pinned
     onWantChanged: {
@@ -102,19 +99,16 @@ PanelWindow {
         }
     }
 
-    // always-live trigger strip at the screen edge, as long as the panel
+    // The one region that receives input. Hidden: a thin strip at the screen edge
+    // (never smaller than minStrip along the edge, even if the content is empty).
+    // Shown: the panel's final footprint plus the gap to the screen edge.
+    // It is deliberately static (not tied to the sliding panel) so hover can't be lost mid-animation.
+    readonly property real alongW: Math.max(win.animW, 160)
+    readonly property real alongH: Math.max(win.animH, 160)
     Item {
-        id: strip
-        width:  win.vertical ? win.hotSize : win.animW
-        height: win.vertical ? win.animH : win.hotSize
-        x: win.vertical ? (win.edge === "right" ? win.width - width : 0) : (win.width - width) / 2
-        y: win.vertical ? (win.height - height) / 2 : 0
-    }
-    // keeps the gap between screen edge and panel hoverable while shown
-    Item {
-        id: band
-        width:  win.vertical ? win.gap + 2 : win.animW
-        height: win.vertical ? win.animH : win.gap + 2
+        id: hitbox
+        width:  win.vertical ? (win.shown ? win.animW + win.gap + 2 : win.hotSize) : win.alongW
+        height: win.vertical ? win.alongH : (win.shown ? win.animH + win.gap + 2 : win.hotSize)
         x: win.vertical ? (win.edge === "right" ? win.width - width : 0) : (win.width - width) / 2
         y: win.vertical ? (win.height - height) / 2 : 0
     }
