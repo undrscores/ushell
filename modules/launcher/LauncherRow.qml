@@ -45,7 +45,7 @@ Item {
             visible: !row.useImage
             radius: Theme.radiusSmall
             color: row.modelData.kind === "calc" ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
-                : row.armedNow ? Theme.dangerSoft : Qt.rgba(1, 1, 1, 0.08)
+                : row.armedNow ? Theme.dangerSoft : Theme.hover
             Icon {
                 anchors.centerIn: parent
                 text: row.modelData.glyph ?? "\uf2d0"

@@ -70,6 +70,10 @@ Variants {
             function onWorkspacesChanged() { win.syncWorkspaces() }
         }
         Connections {
+            target: Config
+            function onPinnedAppsChanged() { win.rebuildItems() }     // config.json edited
+        }
+        Connections {
             target: DesktopEntries.applications
             function onValuesChanged() { win.rebuildItems() }   // entries finish loading after the first window event
         }

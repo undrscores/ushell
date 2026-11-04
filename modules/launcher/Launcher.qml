@@ -248,7 +248,7 @@ PanelWindow {
         y: parent.height * 0.25 + (win.open ? 0 : -8)
         radius: Theme.radius + 4
         color: Theme.glass
-        border { color: Qt.rgba(1, 1, 1, 0.07); width: 1 }
+        border { color: Theme.line; width: 1 }
         opacity: win.open ? 1 : 0
         scale: win.open ? 1 : 0.84
         clip: true
@@ -264,7 +264,7 @@ PanelWindow {
             anchors { top: parent.top; left: parent.left; right: parent.right; margins: 8 }
             height: 42
             radius: Theme.radius
-            color: Qt.rgba(1, 1, 1, 0.05)
+            color: Theme.tint
 
             Rectangle {
                 id: chip
