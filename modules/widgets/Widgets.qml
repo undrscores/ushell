@@ -49,7 +49,6 @@ Variants {
                 }
 
                 MediaPlayer { Layout.fillWidth: true }
-                Calendar    { Layout.fillWidth: true }
                 StatBars    { Layout.fillWidth: true }
             }
         }
