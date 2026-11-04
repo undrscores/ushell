@@ -21,7 +21,7 @@ Item {
         radius: height / 2
         color: Theme.accentSoft
         border { width: 1; color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.35) }
-        Behavior on x { NumberAnimation { duration: 380; easing.type: Easing.OutBack; easing.overshoot: 1.2 } }
+        Behavior on x { SpringAnimation { spring: 4.5; damping: 0.28; epsilon: 0.3 } }
     }
 
     Repeater {

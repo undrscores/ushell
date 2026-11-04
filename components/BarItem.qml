@@ -12,8 +12,8 @@ Rectangle {
     implicitWidth: row.implicitWidth + 18
     implicitHeight: 30
     radius: 10
-    scale: ma.pressed ? 0.94 : (ma.containsMouse ? 1.05 : 1)
-    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack; easing.overshoot: 2 } }
+    scale: ma.pressed ? 0.9 : (ma.containsMouse ? 1.08 : 1)
+    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
     color: (ma.containsMouse || active) ? Theme.hover : "transparent"
     Behavior on color { ColorAnimation { duration: Theme.animFast } }
 

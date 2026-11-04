@@ -13,14 +13,14 @@ Glass {
     width: Math.min(contentWidth + padding * 2, parent.width - Theme.margin * 2)
     height: Math.min(contentHeight + padding * 2, parent.height - y - Theme.margin)
     anchors.horizontalCenter: parent.horizontalCenter
-    y: Theme.margin + Theme.barHeight + 6 + (open ? 0 : -10)
+    y: Theme.margin + Theme.barHeight + 6 + (open ? 0 : -18)
     opacity: open ? 1 : 0
-    scale: open ? 1 : 0.9
+    scale: open ? 1 : 0.8
     transformOrigin: Item.Top
 
-    Behavior on width   { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
-    Behavior on height  { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
+    Behavior on width   { SpringAnimation { spring: 3.6; damping: 0.34; epsilon: 0.4 } }
+    Behavior on height  { SpringAnimation { spring: 3.6; damping: 0.34; epsilon: 0.4 } }
     Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-    Behavior on y       { NumberAnimation { duration: card.open ? 420 : 200; easing.type: card.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.4 } }
-    Behavior on scale   { NumberAnimation { duration: card.open ? 420 : 200; easing.type: card.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.6 } }
+    Behavior on y       { SpringAnimation { spring: card.open ? 3.4 : 6; damping: card.open ? 0.24 : 0.8; epsilon: 0.2 } }
+    Behavior on scale   { SpringAnimation { spring: card.open ? 3.4 : 6; damping: card.open ? 0.22 : 0.8; epsilon: 0.002 } }
 }

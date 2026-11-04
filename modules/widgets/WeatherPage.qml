@@ -56,7 +56,15 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: 16
-            Icon { text: page.now.icon; size: 56; color: Theme.accent; Layout.alignment: Qt.AlignVCenter }
+            Icon {
+                text: page.now.icon; size: 56; color: Theme.accent; Layout.alignment: Qt.AlignVCenter
+                transform: Translate { id: bob }
+                SequentialAnimation {
+                    running: page.visible; loops: Animation.Infinite
+                    NumberAnimation { target: bob; property: "y"; to: -4; duration: 1500; easing.type: Easing.InOutSine }
+                    NumberAnimation { target: bob; property: "y"; to: 3;  duration: 1500; easing.type: Easing.InOutSine }
+                }
+            }
             ColumnLayout {
                 spacing: 0
                 Text { text: Math.round(Weather.temp) + Weather.tempUnit; color: Theme.fg; font { family: Theme.font; pixelSize: 44; weight: Font.Light } }

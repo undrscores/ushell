@@ -35,7 +35,7 @@ Variants {
                         required property var modelData
                         readonly property bool active: modelData.is_focused || modelData.is_active
                         width: 36; height: active ? 30 : 14
-                        Behavior on height { NumberAnimation { duration: Theme.animNormal; easing.type: Easing.OutBack } }
+                        Behavior on height { SpringAnimation { spring: 5; damping: 0.28; epsilon: 0.3 } }
                         Rectangle {  // glow
                             anchors.centerIn: parent
                             width: 20; height: parent.height + 4; radius: 10
@@ -76,8 +76,8 @@ Variants {
                     color: ma.containsMouse ? Theme.hover : "transparent"
                     Behavior on color { ColorAnimation { duration: Theme.animFast } }
                     z: ma.containsMouse ? 2 : 0
-                    scale: ma.pressed ? 0.9 : (ma.containsMouse ? 1.28 : 1)
-                    Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack; easing.overshoot: 2.2 } }
+                    scale: ma.pressed ? 0.85 : (ma.containsMouse ? 1.38 : 1)
+                    Behavior on scale { NumberAnimation { duration: 500; easing.type: Easing.OutElastic; easing.amplitude: 1.2; easing.period: 0.42 } }
                     transform: Translate { id: hop; x: 0 }
                     SequentialAnimation {
                         id: bounce

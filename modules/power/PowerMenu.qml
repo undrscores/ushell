@@ -26,11 +26,11 @@ Overlay {
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.3 + (root.open ? 0 : -8)
         opacity: root.open ? 1 : 0
-        scale: root.open ? 1 : 0.9
+        scale: root.open ? 1 : 0.8
         Behavior on width   { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on scale   { NumberAnimation { duration: root.open ? 420 : 200; easing.type: root.open ? Easing.OutBack : Easing.InCubic; easing.overshoot: 1.6 } }
+        Behavior on scale   { SpringAnimation { spring: root.open ? 3.4 : 6; damping: root.open ? 0.22 : 0.8; epsilon: 0.002 } }
 
         Row {
             id: row
@@ -50,11 +50,11 @@ Overlay {
                     property real appear: root.open ? 1 : 0
                     Behavior on appear { SequentialAnimation {
                         PauseAnimation { duration: root.open ? 60 + btn.modelData.order * 45 : 0 }
-                        NumberAnimation { duration: root.open ? 380 : 120; easing.type: root.open ? Easing.OutBack : Easing.InQuad; easing.overshoot: 2 }
+                        NumberAnimation { duration: root.open ? 560 : 120; easing.type: root.open ? Easing.OutBack : Easing.InQuad; easing.overshoot: 4 }
                     } }
                     opacity: Math.min(1, appear)
-                    scale: (ma.pressed ? 0.94 : (ma.containsMouse ? 1.08 : 1)) * (0.5 + 0.5 * appear)
-                    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack; easing.overshoot: 2 } }
+                    scale: (ma.pressed ? 0.9 : (ma.containsMouse ? 1.12 : 1)) * (0.4 + 0.6 * appear)
+                    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.5 } }
                     SequentialAnimation on rotation {
                         running: btn.isArmed; loops: Animation.Infinite
                         NumberAnimation { to: 3; duration: 90 } NumberAnimation { to: -3; duration: 90 }

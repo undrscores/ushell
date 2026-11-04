@@ -14,8 +14,8 @@ Rectangle {
     radius: Theme.radiusSmall + 2
     color: active ? Theme.accentSoft : (ma.containsMouse ? Theme.hover : Theme.tint)
     Behavior on color { ColorAnimation { duration: Theme.animFast } }
-    scale: ma.pressed ? 0.92 : (ma.containsMouse ? 1.08 : 1)
-    Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack; easing.overshoot: 2 } }
+    scale: ma.pressed ? 0.88 : (ma.containsMouse ? 1.12 : 1)
+    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
 
     Icon { anchors.centerIn: parent; text: root.icon; color: root.tone }
     MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.clicked() }
