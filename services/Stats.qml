@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// CPU / memory usage. Only polls while the sidebar is open.
+// CPU / memory usage. Only polls while the widgets panel is visible.
 Singleton {
     id: root
     property real cpu: 0
@@ -13,7 +13,7 @@ Singleton {
     Timer {
         interval: 2000
         repeat: true
-        running: Shell.overlay === "sidebar"
+        running: Shell.widgetsShown || Shell.widgetsPinned
         triggeredOnStart: true
         onTriggered: proc.running = true
     }

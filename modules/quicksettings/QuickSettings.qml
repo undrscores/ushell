@@ -12,11 +12,11 @@ Overlay {
         id: card
         width: 340
         height: col.implicitHeight + 32
-        x: root.width - width - Theme.margin
-        y: Theme.margin * 2 + Theme.barHeight + (root.open ? 0 : -10)
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: Theme.margin + Theme.barHeight + 6 + (root.open ? 0 : -10)
         opacity: root.open ? 1 : 0
         scale: root.open ? 1 : 0.98
-        transformOrigin: Item.TopRight
+        transformOrigin: Item.Top
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on scale   { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
