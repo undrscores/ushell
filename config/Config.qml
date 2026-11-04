@@ -13,6 +13,6 @@ Singleton {
     // Command that locks the screen.
     readonly property var lockCommand: ["swaylock", "-f"]
 
-    // Web search for the launcher ("g " prefix and the no-results fallback); the query is appended URL-encoded.
+    // Web search for the launcher ("g " prefix); the query is appended URL-encoded.
     readonly property string searchUrl: "https://duckduckgo.com/?q="
 }

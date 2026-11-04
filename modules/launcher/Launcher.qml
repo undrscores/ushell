@@ -92,10 +92,7 @@ PanelWindow {
         }
 
         out.sort((x, y) => y.score - x.score || x.title.localeCompare(y.title))
-        const top = out.slice(0, 60)
-        if (top.length === 0 && ql !== "")
-            top.push({ kind: "web", title: "Search the web for “" + q + "”", tag: "web", glyph: "", data: q, score: 0 })
-        return top
+        return out.slice(0, 60)
     }
 
     function search(text) {
