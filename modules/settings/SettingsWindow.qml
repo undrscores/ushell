@@ -10,7 +10,7 @@ import "../../components"
 // (`... toggle appearance` jumps to the Appearance section).
 FloatingWindow {
     id: win
-    title: "ushell settings"
+    title: "usettings"
     visible: Shell.settingsOpen
     onVisibleChanged: if (!visible) Shell.settingsOpen = false      // closed from the compositor
     implicitWidth: 960
@@ -43,7 +43,7 @@ FloatingWindow {
 
             Text {
                 x: 24; y: 24
-                text: "Settings"
+                text: "usettings"
                 color: Theme.fg
                 font { family: Theme.font; pixelSize: Theme.fontSize + 6; bold: true }
             }
