@@ -103,6 +103,27 @@ Variants {
                 }
             }
 
+            // Keyboard layout (only when there is more than one) and the mic privacy dot
+            BarItem {
+                visible: Niri.layouts.length > 1
+                Text {
+                    text: Niri.layoutShort
+                    color: Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+            BarItem {
+                visible: Audio.micInUse
+                active: Shell.overlay === "quicksettings"
+                onClicked: Shell.toggle("quicksettings")
+                Icon {
+                    text: Audio.micMuted ? "\uf131" : "\uf130"
+                    color: Audio.micMuted ? Theme.fgDim : Theme.danger
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
             // Network → connections (hidden when NetworkManager is not there)
             BarItem {
                 visible: Network.available

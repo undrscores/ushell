@@ -42,10 +42,20 @@ PanelWindow {
                 text: Osd.glyph
                 color: Osd.muted ? Theme.danger : Theme.fg
             }
+            Text {
+                visible: Osd.isText
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - glyph.width - parent.spacing
+                elide: Text.ElideRight
+                text: Osd.text
+                color: Theme.fg
+                font { family: Theme.font; pixelSize: Theme.fontSize + 1 }
+            }
             Rectangle {
                 id: track
+                visible: !Osd.isText
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - glyph.width - pct.width - 2 * parent.spacing
+                width: parent.width - glyph.width - (pct.visible ? pct.width : 0) - 2 * parent.spacing
                 height: 6
                 radius: 3
                 color: Theme.hover
@@ -59,6 +69,7 @@ PanelWindow {
             }
             Text {
                 id: pct
+                visible: !Osd.isText
                 anchors.verticalCenter: parent.verticalCenter
                 width: 40
                 horizontalAlignment: Text.AlignRight

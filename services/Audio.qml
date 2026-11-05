@@ -29,6 +29,15 @@ Singleton {
         const cls = p ? p["media.class"] : undefined
         return cls ? cls === "Stream/Output/Audio" : n.isSink
     }
+    // Apps recording from a microphone right now (not the ones that only listen to what a speaker plays:
+    // visualizers and recorders of the desktop sound have stream.capture.sink set).
+    readonly property var recorders: streamNodes.filter(n => {
+        const p = n.properties
+        return p && p["media.class"] === "Stream/Input/Audio" && p["stream.capture.sink"] !== "true"
+    })
+    readonly property bool micInUse: recorders.length > 0
+    readonly property string recorderNames: recorders.map(n => root.appName(n)).filter((x, i, a) => a.indexOf(x) === i).join(", ")
+
     function appName(n) {
         if (!n) return ""
         const p = n.properties || {}

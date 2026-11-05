@@ -24,7 +24,7 @@ import "config"
 
 ShellRoot {
     // singletons are created lazily; touch the clipboard and the notification daemon so they start with the shell
-    readonly property var warm: [Clipboard.items.length, Notifications.count]
+    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen]
 
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
@@ -81,6 +81,16 @@ ShellRoot {
         }
         function scan(): void { Network.scan() }
         function wifi(on: bool): void { Network.setWifi(on) }
+    }
+
+    // qs ipc call keys status     (Caps / Num Lock, keyboard layout, apps recording from a microphone)
+    IpcHandler {
+        target: "keys"
+        function status(): string {
+            return JSON.stringify({ caps: LockKeys.caps, num: LockKeys.num, seen: LockKeys.seen, layouts: Niri.layouts, layout: Niri.layoutShort,
+                                    micInUse: Audio.micInUse, recorders: Audio.recorderNames })
+        }
+        function layoutOsd(): void { Osd.showText("layout", Niri.layoutName || "English (US)", true) }
     }
 
     // qs ipc call lock lock     (bind to a key, or call from `loginctl lock-session` handlers)

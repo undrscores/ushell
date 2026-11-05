@@ -13,7 +13,9 @@ import "../config"
 Singleton {
     id: root
 
-    property string kind: "volume"       // volume | mic | brightness
+    property string kind: "volume"       // volume | mic | brightness | caps | num | layout   (the last three show `text`)
+    property string text: ""             // for the text pills
+    readonly property bool isText: kind === "caps" || kind === "num" || kind === "layout"
     property real value: 0               // 1 = 100 %; volume can go above 1 up to Config.maxVolume
     property bool muted: false
     property bool shown: false
@@ -29,6 +31,16 @@ Singleton {
     property bool armed: false
     Timer { interval: 2000; running: true; onTriggered: { root.armed = true; root.sync() } }
     Timer { id: hideTimer; interval: 1600; onTriggered: root.shown = false }
+
+    // a pill with words instead of a bar: Caps Lock on, the keyboard layout that was switched to
+    function showText(k, t, on) {
+        kind = k
+        text = t
+        muted = false
+        value = on ? 1 : 0
+        shown = true
+        hideTimer.restart()
+    }
 
     function show(k, v, m) {
         kind = k
