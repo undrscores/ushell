@@ -7,7 +7,6 @@ import "modules/leftbar"
 import "modules/widgets"
 import "modules/launcher"
 import "modules/quicksettings"
-import "modules/calendar"
 import "modules/clipboard"
 import "modules/settings"
 import "modules/media"
@@ -50,7 +49,6 @@ ShellRoot {
     RadialMenu {}
     Launcher { id: launcher }
     QuickSettings {}
-    CalendarMenu {}
     MediaMenu {}
     ClipboardMenu {}
     SettingsMenu {}
@@ -122,7 +120,7 @@ ShellRoot {
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network>
+    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

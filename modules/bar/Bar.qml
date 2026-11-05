@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "calendar", "media", "notifications", "settings", "appearance", "network"].includes(Shell.overlay)
+        pinned: ["quicksettings", "media", "notifications", "settings", "appearance", "network"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -32,10 +32,11 @@ Variants {
             Workspaces { id: wsRow; anchors.verticalCenter: parent.verticalCenter }
             Rectangle { visible: wsRow.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
 
-            // Clock → calendar
-            BarItem {
-                active: Shell.overlay === "calendar"
-                onClicked: Shell.toggle("calendar")
+            // Clock
+            Row {
+                spacing: 7
+                leftPadding: 9; rightPadding: 9
+                anchors.verticalCenter: parent.verticalCenter
                 Text {
                     text: Qt.formatDateTime(clock.date, "HH:mm")
                     color: Theme.fg

@@ -23,7 +23,6 @@ Variants {
         readonly property real cy: height - inset - hub / 2 - 4
 
         readonly property var actions: [
-            { glyph: "", label: "Calendar",   run: () => Shell.toggle("calendar") },
             { glyph: "", label: "Stats",      run: () => Actions.widgetsTab(0) },
             { glyph: "", label: "Clipboard",  run: () => Shell.toggle("clipboard") },
             { glyph: "", label: "Wallpapers", run: () => Shell.toggle("wallpapers") },
