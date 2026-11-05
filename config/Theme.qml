@@ -52,17 +52,17 @@ Singleton {
     Behavior on ink       { enabled: root.fading; ColorAnimation { duration: root.animFade; easing.type: Easing.InOutQuad } }
 
     // Shape & spacing
-    readonly property int radius:      14
-    readonly property int radiusSmall: 8
+    readonly property int radius:      16
+    readonly property int radiusSmall: 10
     readonly property int margin:      8
     readonly property int barHeight:   38
     readonly property int dockWidth:   68      // left dock; the clipboard flyout opens beside it
 
     // Typography
     readonly property string font: "Sans"
-    readonly property int fontSize: 13
+    readonly property int fontSize: 14
     readonly property string iconFont: "Symbols Nerd Font"
-    readonly property int iconSize: 16
+    readonly property int iconSize: 17
 
     // Motion
     readonly property int animFast:   120
