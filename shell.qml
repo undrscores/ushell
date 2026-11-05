@@ -20,6 +20,8 @@ import "modules/network"
 import "modules/lock"
 import "modules/idle"
 import "modules/frame"
+import "modules/capsule"
+import "modules/radial"
 import "services"
 import "config"
 
@@ -44,6 +46,8 @@ ShellRoot {
     Bar {}
     LeftBar {}
     Widgets {}
+    MediaCapsule {}
+    RadialMenu {}
     Launcher { id: launcher }
     QuickSettings {}
     CalendarMenu {}

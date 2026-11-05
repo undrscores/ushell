@@ -16,6 +16,8 @@ var RULES = {
     glassOpacity: { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.max(0.5, Math.min(1, v)),               hint: "a number from 0.5 to 1" },
     frame:        { ok: v => typeof v === "boolean",                   fix: v => v,                                          hint: "true (a frame around the screen) or false" },
     frameSize:    { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.round(Math.max(4, Math.min(20, v))),    hint: "a number of pixels from 4 to 20" },
+    mediaCapsule: { ok: v => typeof v === "boolean",                   fix: v => v,                                          hint: "true or false" },
+    radialMenu:   { ok: v => typeof v === "boolean",                   fix: v => v,                                          hint: "true or false" },
     maxVolume:    { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.max(1, Math.min(1.5, v)),               hint: "a number from 1 to 1.5 (1 = 100%)" }
 }
 

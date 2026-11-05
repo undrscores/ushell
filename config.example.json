@@ -8,5 +8,7 @@
   "maxVolume": 1.0,
   "wallpaperDir": "~/wallpapers",
   "frame": true,
-  "frameSize": 8
+  "frameSize": 8,
+  "mediaCapsule": true,
+  "radialMenu": true
 }
