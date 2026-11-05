@@ -22,3 +22,4 @@ ThemeExport 1.0 ThemeExport.qml
 singleton Countdown 1.0 Countdown.qml
 singleton Notes 1.0 Notes.qml
 singleton NightLight 1.0 NightLight.qml
+singleton Bt 1.0 Bt.qml
