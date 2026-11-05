@@ -10,8 +10,7 @@ Singleton {
     readonly property int count: 28
     property var bars: new Array(count).fill(0)
     readonly property real bass: bars.length >= 4 ? (bars[0] + bars[1] + bars[2] + bars[3]) / 400 : 0
-    readonly property bool wanted: Media.playing
-        && (((Shell.widgetsShown || Shell.widgetsPinned) && Shell.widgetsTab === 0) || Shell.overlay === "media")
+    readonly property bool wanted: Media.playing && Shell.overlay === "media"
 
     Process {
         id: proc

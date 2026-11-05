@@ -74,6 +74,12 @@ Variants {
                     bottomLeftRadius: win.attached ? 0 : Theme.radiusLarge
                     bottomRightRadius: win.attached ? 0 : Theme.radiusLarge
                 }
+                // clicking the capsule opens the full player
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Shell.toggle("media")
+                }
                 // concave corners where the capsule meets the frame
                 Fillet { visible: win.attached; r: win.fillet; x: -r;          y: pivot.height - r; cx: r; cy: r }
                 Fillet { visible: win.attached; r: win.fillet; x: pivot.width; y: pivot.height - r; cx: 0; cy: r }

@@ -35,7 +35,7 @@ Singleton {
     // asked again until the System tab is opened the next time.
     property int gpuFailures: 0
 
-    readonly property bool wanted: (Shell.widgetsShown || Shell.widgetsPinned) && Shell.widgetsTab === 1
+    readonly property bool wanted: (Shell.widgetsShown || Shell.widgetsPinned) && Shell.widgetsTab === 0
     onWantedChanged: if (wanted) gpuFailures = 0
 
     Timer {

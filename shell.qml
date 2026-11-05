@@ -128,7 +128,7 @@ ShellRoot {
         function toggle(name: string): void { Shell.toggle(name) }
         function open(name: string): void   { Shell.open(name) }
         function close(): void              { Shell.close() }
-        // qs ipc call shell tab <0|1|2>   open the widgets panel on a tab
+        // qs ipc call shell tab <0|1>   open the widgets panel on a tab
         // qs ipc call shell brightness <+N|-N>   change brightness of all monitors by N percent
         function brightness(delta: int): void { Brightness.step(delta) }
         function tab(index: int): void      { Shell.widgetsTab = index; Shell.widgetsPinned = true }
