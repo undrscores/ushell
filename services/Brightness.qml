@@ -6,6 +6,7 @@ import QtQuick
 // Monitor brightness over DDC/CI (ddcutil) — these monitors have no kernel backlight.
 // ddcutil is slow (~1s per call), so writes are throttled and coalesced: dragging a
 // slider updates the UI instantly and sends only the latest value.
+// Monitors are detected on first use (quick settings opened, or a brightness keybind), not at login.
 Singleton {
     id: root
     property var displays: []         // [{ bus, name, value }]  value 0..100
@@ -17,7 +18,6 @@ Singleton {
     property var pending: ({})        // bus -> value waiting to be written
     property var queue: []            // buses still to read during detection
 
-    Component.onCompleted: ensure()
     function ensure() { if (!ready && !detecting) detect() }
     function detect() { detecting = true; missing = false; displays = []; detectProc.running = true }
 
@@ -27,7 +27,12 @@ Singleton {
         pending[bus] = value
         flush.restart()
     }
-    function step(delta) { ensure(); for (const d of displays) set(d.bus, d.value + delta) }
+    // Relative change for all monitors. The very first call also triggers detection and is applied once that finishes.
+    property real queuedStep: 0
+    function step(delta) {
+        if (!ready) { if (!missing) { queuedStep += delta; ensure() } return }
+        for (const d of displays) set(d.bus, d.value + delta)
+    }
 
     function writeNext() {
         if (writer.running) return
@@ -66,6 +71,9 @@ Singleton {
             detecting = false
             ready = displays.length > 0
             missing = displays.length === 0
+            const queued = queuedStep
+            queuedStep = 0
+            if (ready && queued !== 0) step(queued)
             return
         }
         readProc.bus = queue[0].bus

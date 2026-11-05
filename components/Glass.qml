@@ -13,7 +13,7 @@ Rectangle {
         height: 40
         radius: parent.radius
         gradient: Gradient {
-            GradientStop { position: 0; color: Qt.rgba(1, 1, 1, 0.055) }
+            GradientStop { position: 0; color: Theme.sheen }
             GradientStop { position: 1; color: "transparent" }
         }
     }

@@ -47,6 +47,14 @@ Overlay {
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+            Text { text: "Appearance"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            Row_ {
+                title: "Theme and wallpaper"
+                hint: (Theme.mode === "light" ? "Light" : "Dark") + " · " + (Wallpapers.useColors ? "colours from the wallpaper" : Theme.accentName)
+                Pill { label: "Open"; onClicked: Shell.open("appearance") }
+            }
+
+            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
             Text { text: "Weather"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
             Row_ {
                 title: "Metric units"; hint: "°C and km/h instead of °F and mph"
@@ -67,7 +75,7 @@ Overlay {
                     clip: true
                     text: Prefs.weatherCity
                     font { family: Theme.font; pixelSize: Theme.fontSize }
-                    onAccepted: { Prefs.set("weatherCity", text.trim()); focus = false }
+                    onAccepted: focus = false                       // leaving the field is what saves it
                     onActiveFocusChanged: if (!activeFocus) Prefs.set("weatherCity", text.trim())
                     Keys.onEscapePressed: Shell.close()
                     Text { visible: !city.text; text: "City (empty = detect by IP)"; color: Theme.fgDim; font: city.font; anchors.verticalCenter: parent.verticalCenter }

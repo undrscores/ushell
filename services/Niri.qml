@@ -3,11 +3,12 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Thin wrapper over `niri msg`. Re-queries state (debounced) on every niri event.
+// Thin wrapper over `niri msg`. Re-queries only what a niri event can have changed (debounced),
+// ignores events that don't affect anything shown (layout shuffles, overview, keyboard layout, ...),
+// and applies simple window changes (title edits, closes) straight from the event.
 Singleton {
     id: root
     property var workspaces: []
-    property string title: ""
     property string focusedOutput: ""
     property var windows: []
 
@@ -17,10 +18,11 @@ Singleton {
         const ids = [entry.id, entry.startupClass, entry.name].filter(x => x).map(x => x.toLowerCase())
         return windows.find(w => w.app_id && ids.includes(w.app_id.toLowerCase())) ?? null
     }
-    function closeWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", String(id)]) }
     function focusWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(id)]) }
 
-    function refresh() { wsProc.running = true; winProc.running = true; outProc.running = true; allWinProc.running = true }
+    function refreshWorkspaces() { wsProc.running = true; outProc.running = true }
+    function refreshWindows() { allWinProc.running = true }
+    function refresh() { refreshWorkspaces(); refreshWindows() }
     function focusWorkspace(idx) { Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", String(idx)]) }
 
     Process {
@@ -29,16 +31,6 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try { root.workspaces = JSON.parse(text).sort((a, b) => a.idx - b.idx) } catch (e) {}
-            }
-        }
-    }
-    Process {
-        id: winProc
-        command: ["niri", "msg", "-j", "focused-window"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try { const w = JSON.parse(text); root.title = w ? (w.title || w.app_id || "") : "" }
-                catch (e) { root.title = "" }
             }
         }
     }
@@ -56,11 +48,63 @@ Singleton {
             onStreamFinished: { try { root.focusedOutput = JSON.parse(text).name } catch (e) {} }
         }
     }
+    // Event names from `niri msg -j event-stream` (one JSON object per line, keyed by event name).
+    readonly property var ignoredEvents: ["WindowLayoutsChanged", "KeyboardLayoutsChanged", "KeyboardLayoutSwitched",
+        "OverviewOpenedOrClosed", "ConfigLoaded", "ScreenshotCaptured", "WorkspaceUrgencyChanged", "WindowUrgencyChanged"]
+    readonly property var windowEvents: ["WindowsChanged", "WindowOpenedOrChanged", "WindowClosed"]
+    readonly property var workspaceEvents: ["WorkspacesChanged", "WorkspaceActivated", "WorkspaceActiveWindowChanged"]
+    property bool staleWorkspaces: false
+    property bool staleWindows: false
+    property bool staleOutput: false      // keyboard focus moved: the focused output may have changed
+
+    // A window that is already known and only changed (its title, mostly: browser tabs change it all
+    // the time) is patched from the event itself, so no `niri msg windows` process is needed.
+    // Opening a window still asks niri, which keeps the list in niri's own order.
+    function patchWindow(w) {
+        if (!w || w.id === undefined) return false
+        const i = windows.findIndex(x => x.id === w.id)
+        if (i < 0) return false
+        const list = windows.slice()
+        list[i] = w
+        windows = list
+        return true
+    }
+    function dropWindow(id) {
+        if (id === undefined || !windows.some(x => x.id === id)) return false
+        windows = windows.filter(x => x.id !== id)
+        return true
+    }
+
+    function handleEvent(line) {
+        let ev = null, name = ""
+        try { ev = JSON.parse(line); name = Object.keys(ev)[0] } catch (e) {}      // unparsable: refresh everything
+        if (ignoredEvents.includes(name)) return
+        const body = ev && ev[name] ? ev[name] : {}
+        if (name === "WindowOpenedOrChanged" && patchWindow(body.window)) return
+        if (name === "WindowClosed" && dropWindow(body.id)) return
+        if (name === "WindowFocusChanged") staleOutput = true
+        else if (windowEvents.includes(name)) staleWindows = true
+        else if (workspaceEvents.includes(name)) staleWorkspaces = true
+        else { staleWorkspaces = true; staleWindows = true }              // unknown event: refresh everything
+        debounce.restart()
+    }
+
     Process {
         running: true
         command: ["niri", "msg", "-j", "event-stream"]
-        stdout: SplitParser { onRead: debounce.restart() }
+        stdout: SplitParser { onRead: line => root.handleEvent(line) }
     }
-    Timer { id: debounce; interval: 40; onTriggered: root.refresh() }
+    Timer {
+        id: debounce
+        interval: 40
+        onTriggered: {
+            if (root.staleWorkspaces) root.refreshWorkspaces()          // includes the focused output
+            else if (root.staleOutput) outProc.running = true
+            if (root.staleWindows) root.refreshWindows()
+            root.staleWorkspaces = false
+            root.staleWindows = false
+            root.staleOutput = false
+        }
+    }
     Component.onCompleted: refresh()
 }

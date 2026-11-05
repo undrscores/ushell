@@ -64,6 +64,6 @@ function format(v) {
 function tryCalc(text) {
     const t = text.trim()
     if (!/\d/.test(t)) return null
-    if (!/[\d)piе][+\-*/^%×÷]|[a-z]+\(/i.test(t.replace(/\s+/g, ""))) return null
+    if (!/[\d)pie][+\-*/^%×÷]|[a-z]+\(/i.test(t.replace(/\s+/g, ""))) return null
     try { return format(evaluate(t)) } catch (e) { return null }
 }

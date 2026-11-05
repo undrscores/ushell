@@ -5,8 +5,11 @@ import "../config"
 Column {
     id: root
     property date view: new Date()
+    property date today: new Date()
     function shift(d) { view = new Date(view.getFullYear(), view.getMonth() + d, 1) }
-    Component.onCompleted: view = new Date()
+    // The calendar lives as long as the shell does: call this when it opens so "today" and the month are current.
+    function reset() { today = new Date(); view = today }
+    Component.onCompleted: reset()
     spacing: 8
 
     RowLayout {
@@ -28,7 +31,6 @@ Column {
         readonly property real cell: width / 7
         readonly property int offset: (new Date(root.view.getFullYear(), root.view.getMonth(), 1).getDay() + 6) % 7
         readonly property int days: new Date(root.view.getFullYear(), root.view.getMonth() + 1, 0).getDate()
-        readonly property var today: new Date()
 
         Repeater {
             model: ["M", "T", "W", "T", "F", "S", "S"]
@@ -47,9 +49,9 @@ Column {
                 required property int index
                 readonly property int day: index - grid.offset + 1
                 readonly property bool valid: day >= 1 && day <= grid.days
-                readonly property bool isToday: valid && day === grid.today.getDate()
-                    && root.view.getMonth() === grid.today.getMonth()
-                    && root.view.getFullYear() === grid.today.getFullYear()
+                readonly property bool isToday: valid && day === root.today.getDate()
+                    && root.view.getMonth() === root.today.getMonth()
+                    && root.view.getFullYear() === root.today.getFullYear()
                 width: grid.cell; height: 34
                 Rectangle { anchors.centerIn: parent; width: 30; height: 30; radius: 15
                             color: parent.isToday ? Theme.accent : (dayMa.containsMouse && parent.valid ? Theme.hover : "transparent")

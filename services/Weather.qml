@@ -34,8 +34,8 @@ Singleton {
 
     Connections {
         target: Prefs
-        function onWeatherCityChanged() { root.attempt = 0; root.refresh() }
-        function onWeatherMetricChanged() { root.refresh() }
+        function onWeatherCityChanged() { root.restart(true) }
+        function onWeatherMetricChanged() { root.restart(false) }
     }
     function ensure() { if (!loading && Date.now() - updated > 20 * 60 * 1000) refresh() }
     function refresh() {
@@ -46,7 +46,24 @@ Singleton {
         if (located) forecast.running = true
         else locate.running = true
     }
-    function fail(msg) { loading = false; error = msg; if (!ok) place = "" }
+    function fail(msg) { error = msg; if (!ok) place = ""; finish() }
+
+    // A setting changed. A new city must be geocoded again (`located` would otherwise pin the old
+    // coordinates); if a fetch is already running, go again when it ends instead of being ignored.
+    property bool rerun: false
+    property bool relocate: false
+    function restart(newPlace) {
+        if (loading) { rerun = true; relocate = relocate || newPlace; return }
+        if (newPlace) located = false
+        refresh()
+    }
+    function finish() {
+        loading = false
+        if (!rerun) return
+        rerun = false
+        if (relocate) { located = false; relocate = false }
+        refresh()
+    }
 
     // WMO weather code -> label + Nerd Font glyph
     function describe(code, day) {
@@ -84,12 +101,13 @@ Singleton {
                     // try the next IP provider before giving up
                     if (Prefs.weatherCity === "" && root.attempt + 1 < root.ipProviders.length) {
                         root.attempt++
-                        locate.running = true
+                        retryLocate.restart()     // not straight away: this process may not have been marked finished yet
                     } else root.fail("Couldn't find your location")
                 }
             }
         }
     }
+    Timer { id: retryLocate; interval: 250; onTriggered: locate.running = true }
     Process {
         id: forecast
         command: ["curl", "-sf", "-m", "10",
@@ -112,7 +130,7 @@ Singleton {
                     root.daily = d.time.map((t, i) => ({ date: t, code: d.weather_code[i], max: d.temperature_2m_max[i], min: d.temperature_2m_min[i] }))
                     root.ok = true
                     root.updated = Date.now()
-                    root.loading = false
+                    root.finish()
                 } catch (e) { root.fail("Couldn't reach the weather service") }
             }
         }
