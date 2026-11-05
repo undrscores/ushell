@@ -65,7 +65,7 @@ Singleton {
     readonly property int edgeGap:     frame > 0 ? frame : margin             // where bar / dock / dropdowns sit: flush with the frame, or floating
     readonly property int inset:       frame + margin                          // where floating panels sit from the screen edge
     readonly property int barHeight:   38
-    readonly property int dockWidth:   68      // left dock; the clipboard flyout opens beside it
+    readonly property int dockWidth:   68      // left dock
 
     // Typography
     readonly property string font: "JetBrains Mono"      // install jetbrains-mono-fonts; Qt falls back to the default sans without it

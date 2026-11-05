@@ -16,7 +16,7 @@ Variants {
         screen: modelData
 
         readonly property real inset: Theme.edgeGap
-        readonly property real orbit: 112            // distance of the actions from the centre button
+        readonly property real orbit: 124            // distance of the actions from the centre button
         readonly property real hub: 52               // centre button diameter
         // where the centre button sits when open
         readonly property real cx: width - inset - hub / 2 - 4
@@ -24,7 +24,8 @@ Variants {
 
         readonly property var actions: [
             { glyph: "", label: "Calendar",   run: () => Shell.toggle("calendar") },
-            { glyph: "", label: "Stats",      run: () => Actions.widgetsTab(1) },
+            { glyph: "", label: "Stats",      run: () => Actions.widgetsTab(0) },
+            { glyph: "", label: "Clipboard",  run: () => Shell.toggle("clipboard") },
             { glyph: "", label: "Wallpapers", run: () => Shell.toggle("wallpapers") },
             { glyph: "", label: "Power",      run: () => Shell.toggle("power") }
         ]
@@ -78,7 +79,7 @@ Variants {
                     required property var modelData
                     required property int index
                     // evenly spaced along the quarter circle from "left" to "up"
-                    readonly property real theta: (180 - 6 - index * 28) * Math.PI / 180
+                    readonly property real theta: (180 - 6 - index * (84 / Math.max(1, win.actions.length - 1))) * Math.PI / 180
                     // staggered pop-out
                     property real appear: win.shown ? 1 : 0
                     Behavior on appear { SequentialAnimation {
