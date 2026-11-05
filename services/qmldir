@@ -13,3 +13,4 @@ singleton StateDir 1.0 StateDir.qml
 singleton Actions 1.0 Actions.qml
 singleton Wallpapers 1.0 Wallpapers.qml
 singleton Osd 1.0 Osd.qml
+singleton Notifications 1.0 Notifications.qml
