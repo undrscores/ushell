@@ -75,6 +75,10 @@ Singleton {
         watchChanges: true
         onLoaded: root.apply(file.text())
         onFileChanged: reload()
-        onLoadFailed: root.apply("{}")      // no file (the normal case) or unreadable: defaults
+        printErrors: false                  // a missing file is the normal case, not something to warn about
+        onLoadFailed: error => {
+            if (error !== FileViewError.FileNotFound) console.warn("ushell config.json: cannot read " + root.path + " (using defaults)")
+            root.apply("{}")
+        }
     }
 }
