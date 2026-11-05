@@ -14,6 +14,7 @@ Singleton {
     readonly property var defaults: ({
         pinnedApps: ["firefox", "alacritty", "keepassxc", "mpv"],
         terminal: "alacritty",
+        nativeLock: true,
         lockCommand: ["swaylock", "-f"],
         searchUrl: "https://duckduckgo.com/?q=",
         glassOpacity: 1.0,
@@ -27,7 +28,10 @@ Singleton {
     // Terminal for launcher jobs that need one (package install/remove): runs `<terminal> -e bash -c ...`.
     property string terminal: defaults.terminal
 
-    // Command that locks the screen: the program and its arguments.
+    // true = ushell's own lock screen (password checked with PAM); false = run lockCommand instead.
+    property bool nativeLock: defaults.nativeLock
+
+    // Command that locks the screen when nativeLock is false: the program and its arguments.
     property var lockCommand: defaults.lockCommand
 
     // Web search for the launcher ("g " prefix); the query is appended URL-encoded.

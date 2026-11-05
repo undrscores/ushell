@@ -9,6 +9,7 @@ function isTextList(v) { return Array.isArray(v) && v.every(isText) }
 var RULES = {
     pinnedApps:   { ok: isTextList,                                    fix: v => v.map(s => s.trim()),                        hint: "a list of app names" },
     terminal:     { ok: isText,                                        fix: v => v.trim(),                                    hint: "a command name" },
+    nativeLock:   { ok: v => typeof v === "boolean",                   fix: v => v,                                          hint: "true (ushell's own lock screen) or false (run lockCommand instead)" },
     lockCommand:  { ok: v => isTextList(v) && v.length > 0,            fix: v => v.map(s => s.trim()),                        hint: "a non-empty list: the command and its arguments" },
     searchUrl:    { ok: v => typeof v === "string" && /^https?:\/\/\S+$/.test(v.trim()), fix: v => v.trim(),                   hint: "an http(s) URL the search text is appended to" },
     wallpaperDir: { ok: isText,                                        fix: v => v.trim(),                                    hint: "a folder path (~ is your home)" },

@@ -25,7 +25,7 @@ Singleton {
     // { id, title, glyph, words, run, danger?, power?, label? }   (power ones also show in the power menu)
     readonly property var defs: [
         { id: "lock", power: true, label: "Lock",     title: "Lock screen",     glyph: "", words: "lock screen secure",
-          run: () => Quickshell.execDetached(Config.lockCommand) },
+          run: () => Lock.lock() },
         { id: "sleep", power: true, label: "Suspend",    title: "Sleep",           glyph: "", words: "suspend sleep",
           run: () => Quickshell.execDetached(["systemctl", "suspend"]) },
         { id: "logout", power: true, label: "Log out",   title: "Log out",         glyph: "", words: "logout sign out exit niri", danger: true,
