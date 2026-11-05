@@ -27,6 +27,7 @@ Singleton {
     property color accentFg:  pal.accentFg       // text on top of the accent colour
     readonly property color danger:    pal.danger
     readonly property color ok:        pal.ok
+    readonly property color scrimColor: "#000000"     // dims the screen behind modal panels
     readonly property color dangerSoft: Qt.rgba(danger.r, danger.g, danger.b, 0.26)   // armed / hovered destructive buttons
 
     // Glass surfaces (shared by every panel). Overlays are white on dark and ink on light.

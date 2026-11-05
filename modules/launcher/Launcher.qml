@@ -236,7 +236,9 @@ PanelWindow {
     // click outside to dismiss
     Rectangle {
         anchors.fill: parent
-        color: "transparent"
+        color: Theme.scrimColor
+        opacity: win.open ? 0.3 : 0
+        Behavior on opacity { NumberAnimation { duration: Theme.animSlow; easing.type: Theme.easing } }
         MouseArea { anchors.fill: parent; onClicked: Shell.close() }
     }
 
