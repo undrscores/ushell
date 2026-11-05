@@ -205,9 +205,13 @@ def watch():
             # MPD simply not running (refused / gone) is a one-line note; anything else gets a traceback.
             # Each distinct error is reported once, not every retry.
             msg = "%s: %s" % (type(e).__name__, e)
+            # MPD not running (nothing listening / no socket) is the normal offline state, already
+            # reported as "offline" to the shell, so it stays quiet.
+            quiet = isinstance(e, (ConnectionRefusedError, FileNotFoundError))
             if msg != last_error:
                 last_error = msg
-                print(msg if isinstance(e, OSError) else traceback.format_exc(), file=sys.stderr, flush=True)
+                if not quiet:
+                    print(msg if isinstance(e, OSError) else traceback.format_exc(), file=sys.stderr, flush=True)
             with lock:
                 if state["last"] != offline:
                     state["snap"] = None
