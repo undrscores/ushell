@@ -116,7 +116,7 @@ Variants {
                             required property bool hasWindow
                             readonly property bool active: focused
                             width: 30; height: active ? 28 : 13
-                            Behavior on height { SpringAnimation { spring: 5; damping: 0.28; epsilon: 0.3 } }
+                            Behavior on height { Spring { preset: "glide" } }
                             Rectangle {
                                 anchors.centerIn: parent
                                 width: 18; height: parent.height + 6; radius: 9
@@ -165,7 +165,7 @@ Variants {
                             width: 38; height: 38
                             scale: ima.pressed ? 0.86 : slot.magnify * Math.max(0.01, slot.appear)
                             opacity: Math.min(1, slot.appear)
-                            Behavior on scale { SpringAnimation { spring: 7; damping: 0.55; epsilon: 0.002 } }
+                            Behavior on scale { Spring { preset: "snap"; epsilon: 0.002 } }
                             transform: Translate { id: hop }
                             SequentialAnimation {
                                 id: bounce
@@ -192,7 +192,7 @@ Variants {
                             width: 4; radius: 2
                             height: slot.running ? 4 : 0
                             color: Theme.accent
-                            Behavior on height { SpringAnimation { spring: 6; damping: 0.3; epsilon: 0.2 } }
+                            Behavior on height { Spring { preset: "snap"; epsilon: 0.2 } }
                         }
                         MouseArea {
                             id: ima

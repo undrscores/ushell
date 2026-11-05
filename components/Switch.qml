@@ -17,7 +17,7 @@ Rectangle {
         x: root.checked ? root.width - width - 3 : 3
         color: root.checked ? Theme.accentFg : Theme.fg
         scale: ma.pressed ? 1.2 : 1
-        Behavior on x { SpringAnimation { spring: 6; damping: 0.3; epsilon: 0.2 } }
+        Behavior on x { Spring { preset: "snap"; epsilon: 0.2 } }
         Behavior on scale { NumberAnimation { duration: 150 } }
     }
     MouseArea { id: ma; anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.toggled(!root.checked) }

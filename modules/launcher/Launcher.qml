@@ -246,7 +246,7 @@ PanelWindow {
         height: Math.min(42 + 8 + Math.max(listView.contentHeight, win.emptyText !== "" ? 46 : 4) + 16, 372)
         anchors.horizontalCenter: parent.horizontalCenter
         y: parent.height * 0.25 + (win.open ? 0 : -8)
-        radius: Theme.radius + 4
+        radius: Theme.radiusLarge
         color: Theme.glass
         border { color: Theme.line; width: 1 }
         opacity: win.open ? 1 : 0
@@ -254,9 +254,9 @@ PanelWindow {
         clip: true
 
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on scale   { SpringAnimation { spring: win.open ? 3.6 : 6; damping: win.open ? 0.24 : 0.8; epsilon: 0.002 } }
+        Behavior on scale   { Spring { preset: win.open ? "popIn" : "popOut"; epsilon: 0.002 } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on height  { SpringAnimation { spring: 4.5; damping: 0.4; epsilon: 0.4 } }
+        Behavior on height  { Spring { preset: "glide"; epsilon: 0.4 } }
 
         // Search field
         Rectangle {
@@ -342,7 +342,7 @@ PanelWindow {
                 color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.16)
                 visible: listView.count > 0
                 y: listView.currentIndex * 40
-                Behavior on y { SpringAnimation { spring: 6; damping: 0.5; epsilon: 0.3 } }
+                Behavior on y { Spring { preset: "snap" } }
             }
 
             delegate: LauncherRow {

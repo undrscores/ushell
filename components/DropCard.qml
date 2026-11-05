@@ -19,9 +19,9 @@ Glass {
     scale: open ? 1 : 0.8
     transformOrigin: Item.Top
 
-    Behavior on width   { SpringAnimation { spring: 3.6; damping: 0.34; epsilon: 0.4 } }
-    Behavior on height  { SpringAnimation { spring: 3.6; damping: 0.34; epsilon: 0.4 } }
+    Behavior on width   { Spring { preset: "settle"; epsilon: 0.4 } }
+    Behavior on height  { Spring { preset: "settle"; epsilon: 0.4 } }
     Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-    Behavior on y       { SpringAnimation { spring: card.open ? 3.4 : 6; damping: card.open ? 0.24 : 0.8; epsilon: 0.2 } }
-    Behavior on scale   { SpringAnimation { spring: card.open ? 3.4 : 6; damping: card.open ? 0.22 : 0.8; epsilon: 0.002 } }
+    Behavior on y       { Spring { preset: card.open ? "popIn" : "popOut"; epsilon: 0.2 } }
+    Behavior on scale   { Spring { preset: card.open ? "popIn" : "popOut"; epsilon: 0.002 } }
 }
