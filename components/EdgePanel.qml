@@ -28,7 +28,9 @@ PanelWindow {
     default property alias content: panel.data
 
     readonly property bool vertical: edge !== "top"
-    readonly property real gap: Theme.inset
+    readonly property bool attached: Theme.frame > 0     // flush with the screen frame, with concave fillets where they meet
+    readonly property real gap: Theme.edgeGap
+    readonly property real fillet: 14
     readonly property real screenW: screen ? screen.width : 1920
     readonly property real screenH: screen ? screen.height : 1080
 
@@ -89,10 +91,10 @@ PanelWindow {
             color: Theme.glass
             border { width: 1; color: Theme.line }
             readonly property real along: Math.max(0, win.tipPos - height / 2)
-            x: win.edge === "left" ? panel.x + panel.width + 10 + 6 * (1 - opacity)
-             : win.edge === "right" ? panel.x - width - 10 - 6 * (1 - opacity)
+            x: win.edge === "left" ? pivot.x + pivot.width + 10 + 6 * (1 - opacity)
+             : win.edge === "right" ? pivot.x - width - 10 - 6 * (1 - opacity)
              : Math.max(0, win.tipPos - width / 2)
-            y: win.edge === "top" ? panel.y + panel.height + 10 + 6 * (1 - opacity) : along
+            y: win.edge === "top" ? pivot.y + pivot.height + 10 + 6 * (1 - opacity) : along
             z: 5
             Text {
                 id: tipLabel
@@ -103,12 +105,12 @@ PanelWindow {
             }
         }
 
-        Glass {
-            id: panel
+        // The panel plus its frame fillets, moved and scaled as one.
+        Item {
+            id: pivot
             visible: win.slide > 0.002        // nothing renders or animates while hidden
             width: win.animW
             height: win.animH
-            radius: win.panelRadius
             opacity: Math.max(0, Math.min(1, win.slide * 1.6))
             // grows out of the screen edge
             scale: 0.86 + 0.14 * Math.max(0, Math.min(1.15, win.slide))
@@ -117,6 +119,25 @@ PanelWindow {
              : win.edge === "left" ? -width + (width + win.gap) * win.slide
              :                       win.width - win.gap - width + (width + win.gap) * (1 - win.slide)
             y: win.edge === "top"  ? -height + (height + win.gap) * win.slide : (win.height - height) / 2
+
+            Glass {
+                id: panel
+                anchors.fill: parent
+                radius: win.panelRadius
+                // the side against the frame is square
+                topLeftRadius:     win.attached && (win.edge === "top" || win.edge === "left")  ? 0 : win.panelRadius
+                topRightRadius:    win.attached && (win.edge === "top" || win.edge === "right") ? 0 : win.panelRadius
+                bottomLeftRadius:  win.attached && win.edge === "left"  ? 0 : win.panelRadius
+                bottomRightRadius: win.attached && win.edge === "right" ? 0 : win.panelRadius
+            }
+
+            // concave corners where the panel meets the frame
+            Fillet { visible: win.attached && win.edge === "top";   r: win.fillet; x: -r;         y: 0;       cx: r; cy: 0 }
+            Fillet { visible: win.attached && win.edge === "top";   r: win.fillet; x: pivot.width; y: 0;       cx: 0; cy: 0 }
+            Fillet { visible: win.attached && win.edge === "left";  r: win.fillet; x: 0;          y: -r;      cx: 0; cy: r }
+            Fillet { visible: win.attached && win.edge === "left";  r: win.fillet; x: 0;          y: pivot.height; cx: 0; cy: 0 }
+            Fillet { visible: win.attached && win.edge === "right"; r: win.fillet; x: pivot.width - r; y: -r; cx: r; cy: r }
+            Fillet { visible: win.attached && win.edge === "right"; r: win.fillet; x: pivot.width - r; y: pivot.height; cx: r; cy: 0 }
         }
     }
 
