@@ -102,18 +102,37 @@ Overlay {
                 Layout.fillWidth: true
                 spacing: 12
                 IconButton {
-                    icon: Notifications.dnd ? "\uf1f6" : "\uf0f3"; size: 34
-                    active: Notifications.dnd
-                    tone: Notifications.dnd ? Theme.danger : Theme.fg
+                    icon: Notifications.silent ? "\uf1f6" : "\uf0f3"; size: 34
+                    active: Notifications.silent
+                    tone: Notifications.silent ? Theme.danger : Theme.fg
                     onClicked: Notifications.toggleDnd()
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: "Do not disturb"
+                    text: Notifications.scheduled && !Notifications.dnd ? "Do not disturb · quiet hours" : "Do not disturb"
                     color: Theme.fg
                     font { family: Theme.font; pixelSize: Theme.fontSize }
                 }
                 Switch { checked: Notifications.dnd; onToggled: v => Notifications.setDnd(v) }
+            }
+
+            // Keep awake (no idle lock / screen-off)
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                IconButton {
+                    icon: "\uf0f4"; size: 34
+                    active: Idle.keepAwake
+                    tone: Idle.keepAwake ? Theme.accent : Theme.fg
+                    onClicked: Idle.toggle()
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: "Keep awake"
+                    color: Theme.fg
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+                Switch { checked: Idle.keepAwake; onToggled: v => Idle.keepAwake = v }
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }

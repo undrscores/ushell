@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Services.Notifications
 import QtQuick
 import "../config"
+import "dnd.js" as Dnd
 
 // The notification daemon: ushell owns org.freedesktop.Notifications, so stop mako / dunst / swaync
 // (only one program can own that name). Messages that arrive are kept in a history (the bell in the top
@@ -17,9 +18,19 @@ Singleton {
     readonly property int maxPopups: 4
     readonly property int maxHistory: 50
 
-    readonly property bool dnd: Prefs.doNotDisturb
+    readonly property bool dnd: Prefs.doNotDisturb                  // the switch
     function setDnd(on) { Prefs.set("doNotDisturb", on) }
     function toggleDnd() { setDnd(!dnd) }
+
+    // Quiet hours: Do Not Disturb every day between Prefs.dndFrom and Prefs.dndTo (see services/dnd.js).
+    SystemClock { id: clock; precision: SystemClock.Minutes }
+    readonly property bool scheduled: Prefs.dndSchedule && Dnd.inWindow(Prefs.dndFrom, Prefs.dndTo, clock.date)
+    readonly property bool silent: dnd || scheduled                  // popups are held back, for either reason
+
+    // Apps whose popups are switched off for good (their messages still reach the history).
+    function isMuted(app) { return app !== "" && Prefs.mutedApps.includes(app) }
+    function mute(app)   { if (app !== "" && !isMuted(app)) Prefs.set("mutedApps", Prefs.mutedApps.concat([app])) }
+    function unmute(app) { Prefs.set("mutedApps", Prefs.mutedApps.filter(a => a !== app)) }
 
     readonly property var history: server.trackedNotifications.values.filter(n => !n.transient).reverse()
     readonly property int count: history.length
@@ -84,7 +95,8 @@ Singleton {
         if (n.tracked && !n.resident) n.dismiss()      // answered: it is done (resident ones stay until dismissed)
     }
 
-    function silenced(n) { return dnd && n.urgency !== NotificationUrgency.Critical }
+    // Urgent messages always get through; everything else waits in the history while DND, quiet hours or the app's mute applies.
+    function silenced(n) { return (silent || isMuted(n.appName)) && n.urgency !== NotificationUrgency.Critical }
 
     function arrived(n) {
         n.tracked = true

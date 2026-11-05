@@ -163,6 +163,13 @@ Glass {
                         onClicked: Notifications.invoke(card.notification, modelData)
                     }
                 }
+                Pill {   // history only: stop this app's popups
+                    visible: !card.popup && card.notification.appName !== ""
+                    readonly property bool muted: Notifications.isMuted(card.notification.appName)
+                    label: (muted ? "Unmute " : "Mute ") + card.notification.appName
+                    active: muted
+                    onClicked: muted ? Notifications.unmute(card.notification.appName) : Notifications.mute(card.notification.appName)
+                }
             }
         }
     }
