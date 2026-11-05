@@ -46,6 +46,8 @@ Singleton {
           run: () => Shell.open("media") },
         { id: "w-system", title: "System monitor",  glyph: "", words: "cpu gpu memory ram disk stats performance usage widgets",
           run: () => root.widgetsTab(0) },
+        { id: "w-focus",   title: "Focus timer and note", glyph: "\uf017", words: "timer pomodoro countdown notes scratch widgets",
+          run: () => root.widgetsTab(2) },
         { id: "w-weather", title: "Weather",        glyph: "", words: "forecast temperature rain sun widgets",
           run: () => root.widgetsTab(1) },
         { id: "network", title: "Network and Wi-Fi", glyph: "\uf1eb", words: "network wifi wi-fi internet connection ethernet wireless online",

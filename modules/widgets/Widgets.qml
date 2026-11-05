@@ -16,6 +16,7 @@ Variants {
         screen: modelData
         edge: "right"
         pinned: Shell.widgetsPinned
+        takesFocus: Shell.widgetsTab === 2        // the Focus tab has a text box
         panelWidth: 340
         // Remember the last real height: the content only exists while shown, and a
         // collapsed (0) height would leave the hover strip with no area.
@@ -31,7 +32,8 @@ Variants {
 
         readonly property var tabs: [
             { icon: "", label: "System" },
-            { icon: "", label: "Weather" }
+            { icon: "", label: "Weather" },
+            { icon: "\uf017", label: "Focus" }
         ]
 
         // Content only exists while the panel is on screen: no hidden animations, no polling.
@@ -64,6 +66,7 @@ Variants {
 
                     SystemPage  { width: view.width }
                     WeatherPage { width: view.width }
+                    FocusPage   { width: view.width }
                 }
 
                 // fetch weather the first time (and when stale) the tab is shown

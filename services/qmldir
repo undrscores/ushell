@@ -19,3 +19,5 @@ singleton Lock 1.0 Lock.qml
 singleton Idle 1.0 Idle.qml
 singleton LockKeys 1.0 LockKeys.qml
 ThemeExport 1.0 ThemeExport.qml
+singleton Countdown 1.0 Countdown.qml
+singleton Notes 1.0 Notes.qml

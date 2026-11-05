@@ -12,7 +12,7 @@ Singleton {
     property string settingsPage: "general"
     readonly property var settingsPages: ["general", "appearance", "notifications", "power", "weather", "about"]
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
-    property int  widgetsTab: 0          // 0 system, 1 weather
+    property int  widgetsTab: 0          // 0 system, 1 weather, 2 focus
     // Each screen has its own widgets panel; it reports here whether it is on screen.
     property var shownOn: ({})           // screen name -> bool
     readonly property bool widgetsShown: Object.values(shownOn).some(v => v === true)
