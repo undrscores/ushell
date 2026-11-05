@@ -43,11 +43,12 @@ Variants {
         Timer { id: showTimer; interval: 120; onTriggered: win.shown = true }
         Timer { id: hideTimer; interval: 500; onTriggered: win.shown = false }
 
-        // peek for a moment when the track changes
+        // peek for a moment when the track changes, on the monitor you are working on only
+        readonly property bool onFocusedOutput: Niri.focusedOutput === "" || (screen !== null && screen.name === Niri.focusedOutput)
         Timer { id: flash; interval: 4500 }
         Connections {
             target: Media
-            function onTitleChanged() { if (Media.title !== "" && Media.available) flash.restart() }
+            function onTitleChanged() { if (Media.title !== "" && Media.available && win.onFocusedOutput) flash.restart() }
         }
 
         Item {
