@@ -97,6 +97,25 @@ Overlay {
                 font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
             }
 
+            // Do Not Disturb
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                IconButton {
+                    icon: Notifications.dnd ? "\uf1f6" : "\uf0f3"; size: 34
+                    active: Notifications.dnd
+                    tone: Notifications.dnd ? Theme.danger : Theme.fg
+                    onClicked: Notifications.toggleDnd()
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: "Do not disturb"
+                    color: Theme.fg
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+                Switch { checked: Notifications.dnd; onToggled: v => Notifications.setDnd(v) }
+            }
+
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
 
             // Output devices

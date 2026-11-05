@@ -18,6 +18,7 @@ Singleton {
     property string accent: "mauve"      // see config/palette.js (unknown names fall back to mauve there)
     property string wallpaper: ""        // picture path; empty = ushell draws no wallpaper
     property bool wallpaperColors: false // accent colour taken from the wallpaper
+    property bool doNotDisturb: false    // no notification popups (urgent ones still show); history still fills
 
     // setting name -> "is this a valid value?"
     readonly property var schema: ({
@@ -28,7 +29,8 @@ Singleton {
         themeMode:       v => v === "dark" || v === "light",
         accent:          v => typeof v === "string",
         wallpaper:       v => typeof v === "string",
-        wallpaperColors: v => typeof v === "boolean"
+        wallpaperColors: v => typeof v === "boolean",
+        doNotDisturb:    v => typeof v === "boolean"
     })
 
     // True once prefs.json has been read (or turned out not to exist). Until then a change is held back,

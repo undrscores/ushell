@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "calendar", "media", "settings", "power", "appearance"].includes(Shell.overlay)
+        pinned: ["quicksettings", "calendar", "media", "notifications", "settings", "power", "appearance"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -99,6 +99,24 @@ Variants {
                     text: Math.round(Audio.volume * 100)
                     color: Audio.muted ? Theme.danger : Theme.fgDim
                     font { family: Theme.font; pixelSize: Theme.fontSize }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            // Notifications → history (right click: Do Not Disturb)
+            BarItem {
+                active: Shell.overlay === "notifications"
+                onClicked: mouse => { if (mouse.button === Qt.RightButton) Notifications.toggleDnd(); else Shell.toggle("notifications") }
+                Icon {
+                    text: Notifications.dnd ? "\uf1f6" : "\uf0f3"
+                    color: Notifications.dnd ? Theme.danger : Theme.fgDim
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                Text {
+                    visible: Notifications.unread > 0
+                    text: Notifications.unread
+                    color: Theme.accent
+                    font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
