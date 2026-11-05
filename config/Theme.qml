@@ -59,8 +59,8 @@ Singleton {
     readonly property int dockWidth:   68      // left dock; the clipboard flyout opens beside it
 
     // Typography
-    readonly property string font: "Sans"
-    readonly property int fontSize: 14
+    readonly property string font: "JetBrains Mono"      // install jetbrains-mono-fonts; Qt falls back to the default sans without it
+    readonly property int fontSize: 13       // JetBrains Mono is wide: 13 here sets about as wide as 14 in a proportional font
     readonly property string iconFont: "Symbols Nerd Font"
     readonly property int iconSize: 17
 

@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "../config"
 
 // The one panel surface used everywhere: translucent, hairline border.
@@ -7,6 +8,19 @@ Rectangle {
     color: Theme.glass
     border { color: Qt.rgba(Theme.ink.r, Theme.ink.g, Theme.ink.b, 0.12); width: 1 }
     clip: true
+
+    // A soft drop shadow under the panel (dropdown cards turn it on). It is drawn outside the panel, so the
+    // window the panel sits in must be bigger than it; windows that hug their panel leave it off.
+    property bool shadow: false
+    layer.enabled: shadow
+    layer.effect: MultiEffect {
+        shadowEnabled: true
+        shadowColor: "#000000"
+        shadowOpacity: 0.5
+        shadowBlur: 1.0
+        shadowVerticalOffset: 10
+        autoPaddingEnabled: true
+    }
     // soft top sheen
     Rectangle {
         anchors { top: parent.top; left: parent.left; right: parent.right; margins: 1 }

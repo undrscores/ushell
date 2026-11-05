@@ -8,7 +8,8 @@ Glass {
     required property bool open
     property real contentWidth: 300
     property real contentHeight: 100
-    property real padding: 16
+    property real padding: 18
+    shadow: true
 
     width: Math.min(contentWidth + padding * 2, parent.width - Theme.margin * 2)
     height: Math.min(contentHeight + padding * 2, parent.height - y - Theme.margin)

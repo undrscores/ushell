@@ -19,9 +19,16 @@ Overlay {
             id: r
             property string title
             property string hint
+            property string icon
             default property alias control: slot.data
             Layout.fillWidth: true
             spacing: 12
+            Icon {
+                visible: r.icon !== ""
+                Layout.alignment: Qt.AlignTop
+                Layout.preferredWidth: 24; Layout.topMargin: 1
+                text: r.icon; size: 16; color: Theme.accent
+            }
             Column {
                 Layout.fillWidth: true
                 Layout.minimumWidth: 0
@@ -63,18 +70,18 @@ Overlay {
 
             SectionLabel { text: "Panels" }
             Row_ {
-                title: "Auto-hide top pill"; hint: "Off keeps it visible and reserves space"
+                icon: "\uf2d0"; title: "Auto-hide top pill"; hint: "Off keeps it visible and reserves space"
                 Switch { checked: Prefs.topAutoHide; onToggled: v => Prefs.set("topAutoHide", v) }
             }
             Row_ {
-                title: "Auto-hide left dock"; hint: "Off keeps it visible and reserves space"
+                icon: "\uf0c9"; title: "Auto-hide left dock"; hint: "Off keeps it visible and reserves space"
                 Switch { checked: Prefs.leftAutoHide; onToggled: v => Prefs.set("leftAutoHide", v) }
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
             SectionLabel { text: "Appearance" }
             Row_ {
-                title: "Theme and wallpaper"
+                icon: "\uf1fc"; title: "Theme and wallpaper"
                 hint: (Theme.mode === "light" ? "Light" : "Dark") + " · " + (Wallpapers.useColors ? "colours from the wallpaper" : Theme.accentName)
                 Pill { label: "Open"; onClicked: Shell.open("appearance") }
             }
@@ -82,7 +89,7 @@ Overlay {
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
             SectionLabel { text: "Weather" }
             Row_ {
-                title: "Metric units"; hint: "°C and km/h instead of °F and mph"
+                icon: "\uf2c9"; title: "Metric units"; hint: "°C and km/h instead of °F and mph"
                 Switch { checked: Prefs.weatherMetric; onToggled: v => Prefs.set("weatherMetric", v) }
             }
             Rectangle {
@@ -110,7 +117,7 @@ Overlay {
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
             SectionLabel { text: "Notifications" }
             Row_ {
-                title: "Quiet hours"; hint: "Do Not Disturb every day in this window (urgent ones still show)"
+                icon: "\uf186"; title: "Quiet hours"; hint: "Do Not Disturb every day in this window (urgent ones still show)"
                 Switch { checked: Prefs.dndSchedule; onToggled: v => Prefs.set("dndSchedule", v) }
             }
             RowLayout {
@@ -141,7 +148,7 @@ Overlay {
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
             SectionLabel { text: "Idle" }
             Row_ {
-                title: "Lock after"; hint: "Of no keyboard or mouse use; a playing video holds it back"
+                icon: "\uf023"; title: "Lock after"; hint: "Of no keyboard or mouse use; a playing video holds it back"
                 Row {
                     spacing: 4
                     Repeater {
@@ -152,7 +159,7 @@ Overlay {
                 }
             }
             Row_ {
-                title: "Screens off after"
+                icon: "\uf108"; title: "Screens off after"
                 Row {
                     spacing: 4
                     Repeater {
@@ -163,7 +170,7 @@ Overlay {
                 }
             }
             Row_ {
-                title: "Keep awake"; hint: "No lock or screen-off until you turn it off or restart the shell"
+                icon: "\uf0f4"; title: "Keep awake"; hint: "No lock or screen-off until you turn it off or restart the shell"
                 Switch { checked: Idle.keepAwake; onToggled: v => Idle.keepAwake = v }
             }
         }
