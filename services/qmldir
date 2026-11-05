@@ -18,3 +18,4 @@ singleton Network 1.0 Network.qml
 singleton Lock 1.0 Lock.qml
 singleton Idle 1.0 Idle.qml
 singleton LockKeys 1.0 LockKeys.qml
+ThemeExport 1.0 ThemeExport.qml

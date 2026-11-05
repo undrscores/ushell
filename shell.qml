@@ -32,6 +32,7 @@ ShellRoot {
     Binding { target: Theme; property: "wallHue"; value: Wallpapers.useColors ? Wallpapers.hue : -1 }
     Binding { target: Theme; property: "wallSat"; value: Wallpapers.sat }
 
+    ThemeExport {}
     Wallpaper {}
     LockScreen {}
     IdleHandler {}
