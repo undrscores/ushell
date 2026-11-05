@@ -39,7 +39,7 @@ Item {
             }
             Text {
                 anchors { right: parent.right; rightMargin: 16; top: parent.top; topMargin: 14 }
-                text: "load " + Stats.load.toFixed(2)
+                text: (Stats.hasCpuTemp ? Math.round(Stats.cpuTemp) + "°C  ·  " : "") + "load " + Stats.load.toFixed(2)
                 color: Theme.fgDim
                 font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
             }
@@ -54,7 +54,10 @@ Item {
         StatRow { Layout.fillWidth: true; icon: "󰍛"; label: "Memory"; value: Stats.mem
                   detail: page.gb(Stats.memUsed) + " / " + page.gb(Stats.memTotal) + " GB" }
         StatRow { Layout.fillWidth: true; visible: Stats.hasGpu; icon: ""; label: "GPU"; value: Stats.gpu
-                  detail: Math.round(Stats.gpu * 100) + "%  ·  " + Math.round(Stats.gpuTemp) + "°C" }
+                  detail: [Math.round(Stats.gpu * 100) + "%",
+                           Stats.hasGpuTemp ? Math.round(Stats.gpuTemp) + "°C" : "",
+                           Stats.hasGpuPower ? Math.round(Stats.gpuPower) + " W" : "",
+                           Stats.hasGpuClock ? Math.round(Stats.gpuClock) + " MHz" : ""].filter(s => s !== "").join("  ·  ") }
         StatRow { Layout.fillWidth: true; visible: Stats.hasGpu; icon: ""; label: "VRAM"; value: Stats.vram
                   detail: page.gb(Stats.vramUsed) + " / " + page.gb(Stats.vramTotal) + " GB" }
 

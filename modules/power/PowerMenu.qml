@@ -8,17 +8,8 @@ Overlay {
     id: root
     name: "power"
 
-    // First click arms a destructive action, second click runs it.
-    property string armed: ""
-    onOpenChanged: armed = ""
-
-    readonly property var actions: [
-        { id: "lock", order: 0,     icon: "", label: "Lock",     cmd: ["swaylock", "-f"],                    danger: false },
-        { id: "suspend", order: 1,  icon: "", label: "Suspend",  cmd: ["systemctl", "suspend"],              danger: false },
-        { id: "logout", order: 2,   icon: "", label: "Log out",  cmd: ["niri", "msg", "action", "quit", "-s"], danger: true },
-        { id: "reboot", order: 3,   icon: "", label: "Reboot",   cmd: ["systemctl", "reboot"],               danger: true },
-        { id: "shutdown", order: 4, icon: "", label: "Shut down", cmd: ["systemctl", "poweroff"],            danger: true }
-    ]
+    // Actions live in services/Actions.qml; a destructive one is armed by the first click and runs on the second.
+    onOpenChanged: Actions.disarm()
 
     Glass {
         width: row.implicitWidth + 24
@@ -37,19 +28,20 @@ Overlay {
             anchors.centerIn: parent
             spacing: 8
             Repeater {
-                model: root.actions
+                model: Actions.power
                 delegate: Rectangle {
                     id: btn
                     required property var modelData
-                    readonly property bool isArmed: root.armed === modelData.id
+                    required property int index
+                    readonly property bool isArmed: Actions.armed === modelData.id
                     width: 80; height: 80
                     radius: Theme.radius
-                    color: isArmed ? Qt.rgba(0.953, 0.545, 0.659, 0.25) : (ma.containsMouse ? Theme.hover : Theme.tint)
+                    color: isArmed ? Theme.dangerSoft : (ma.containsMouse ? Theme.hover : Theme.tint)
                     Behavior on color { ColorAnimation { duration: Theme.animFast } }
                     // staggered pop-in
                     property real appear: root.open ? 1 : 0
                     Behavior on appear { SequentialAnimation {
-                        PauseAnimation { duration: root.open ? 60 + btn.modelData.order * 45 : 0 }
+                        PauseAnimation { duration: root.open ? 60 + btn.index * 45 : 0 }
                         NumberAnimation { duration: root.open ? 560 : 120; easing.type: root.open ? Easing.OutBack : Easing.InQuad; easing.overshoot: 4 }
                     } }
                     opacity: Math.min(1, appear)
@@ -65,7 +57,7 @@ Overlay {
                         anchors.centerIn: parent
                         spacing: 8
                         Icon { anchors.horizontalCenter: parent.horizontalCenter; size: 22
-                               text: btn.modelData.icon; color: btn.isArmed ? Theme.danger : Theme.fg }
+                               text: btn.modelData.glyph; color: btn.isArmed ? Theme.danger : Theme.fg }
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: btn.isArmed ? "Confirm" : btn.modelData.label
@@ -79,9 +71,8 @@ Overlay {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (btn.modelData.danger && !btn.isArmed) { root.armed = btn.modelData.id; return }
+                            if (!Actions.trigger(btn.modelData)) return
                             Shell.close()
-                            Quickshell.execDetached(btn.modelData.cmd)
                         }
                     }
                 }

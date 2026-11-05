@@ -48,6 +48,7 @@ Singleton {
                 root.stamp = Date.now()
             }
         }
+        stderr: SplitParser { onRead: line => console.warn("mpd_bridge: " + line) }
         onExited: restart.start()
     }
     Timer { id: restart; interval: 3000; onTriggered: proc.running = true }

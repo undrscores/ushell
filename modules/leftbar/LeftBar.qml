@@ -17,13 +17,19 @@ Variants {
         screen: modelData
         edge: "left"
         autoHide: Prefs.leftAutoHide
-        panelWidth: 68
+        panelWidth: Theme.dockWidth
         panelHeight: col.implicitHeight + 28
         panelRadius: 24
 
         // ── what the dock shows ───────────────────────────────────────────
         // pinned apps in config order, then one icon per other open app
-        readonly property var items: {
+        // Both models below are only replaced when what they show actually changed. Niri re-sends
+        // fresh JSON on every event (window titles change all the time), and a Repeater over a
+        // replaced JS array rebuilds every delegate: icons would re-pop and the workspace pills
+        // could never animate.
+        property var items: []
+        property string itemsSig: ""
+        function rebuildItems() {
             const out = []
             const pinnedIds = []
             for (const name of Config.pinnedApps) {
@@ -40,8 +46,38 @@ Variants {
                 const e = DesktopEntries.heuristicLookup(w.app_id)
                 out.push({ key: "w:" + id, entry: e, name: e ? e.name : (w.app_id || w.title), icon: e ? e.icon : "", pinned: false })
             }
-            return out
+            const sig = out.map(o => o.key + "|" + o.name + "|" + o.icon + "|" + (o.entry ? 1 : 0)).join(";")
+            if (sig === itemsSig) return
+            itemsSig = sig
+            items = out
         }
+
+        // workspace pills: rows updated in place so the delegates (and their springs) survive
+        ListModel { id: wsModel }
+        function syncWorkspaces() {
+            const list = Niri.workspaces
+            while (wsModel.count > list.length) wsModel.remove(wsModel.count - 1)
+            for (let i = 0; i < list.length; i++) {
+                const w = list[i]
+                const row = { wsIdx: w.idx, focused: w.is_focused === true || w.is_active === true, hasWindow: !!w.active_window_id }
+                if (i < wsModel.count) wsModel.set(i, row)
+                else wsModel.append(row)
+            }
+        }
+        Connections {
+            target: Niri
+            function onWindowsChanged() { win.rebuildItems() }
+            function onWorkspacesChanged() { win.syncWorkspaces() }
+        }
+        Connections {
+            target: Config
+            function onPinnedAppsChanged() { win.rebuildItems() }     // config.json edited
+        }
+        Connections {
+            target: DesktopEntries.applications
+            function onValuesChanged() { win.rebuildItems() }   // entries finish loading after the first window event
+        }
+        Component.onCompleted: { rebuildItems(); syncWorkspaces() }
 
         Item {
             id: dock
@@ -61,12 +97,24 @@ Variants {
                 Column {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 5
+                    // scroll over the pills to move between workspaces
+                    WheelHandler {
+                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                        onWheel: e => {
+                            if (wsCool.running || e.angleDelta.y === 0) return
+                            Quickshell.execDetached(["niri", "msg", "action", e.angleDelta.y < 0 ? "focus-workspace-down" : "focus-workspace-up"])
+                            wsCool.restart()
+                        }
+                    }
+                    Timer { id: wsCool; interval: 180 }
                     Repeater {
-                        model: Niri.workspaces
+                        model: wsModel
                         delegate: Item {
                             id: ws
-                            required property var modelData
-                            readonly property bool active: modelData.is_focused || modelData.is_active
+                            required property int wsIdx
+                            required property bool focused
+                            required property bool hasWindow
+                            readonly property bool active: focused
                             width: 30; height: active ? 28 : 13
                             Behavior on height { SpringAnimation { spring: 5; damping: 0.28; epsilon: 0.3 } }
                             Rectangle {
@@ -79,10 +127,10 @@ Variants {
                             Rectangle {
                                 anchors.centerIn: parent
                                 width: 8; height: parent.height - 3; radius: 4
-                                color: ws.active ? Theme.accent : (ws.modelData.active_window_id ? Theme.fgDim : Theme.surfaceHi)
+                                color: ws.active ? Theme.accent : (ws.hasWindow ? Theme.fgDim : Theme.surfaceHi)
                                 Behavior on color { ColorAnimation { duration: Theme.animNormal } }
                             }
-                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Niri.focusWorkspace(ws.modelData.idx) }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Niri.focusWorkspace(ws.wsIdx) }
                         }
                     }
                 }
@@ -151,6 +199,7 @@ Variants {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
+                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                             onContainsMouseChanged: {
                                 if (containsMouse) {
                                     win.tipText = slot.modelData.name
@@ -158,9 +207,10 @@ Variants {
                                     win.tipShown = true
                                 } else if (win.tipText === slot.modelData.name) win.tipShown = false
                             }
-                            onClicked: {
+                            onClicked: mouse => {
                                 bounce.restart()
-                                if (slot.running) Niri.focusWindow(slot.win_.id)
+                                // left: jump to the running window, or start the app; middle: always a new window
+                                if (slot.running && mouse.button !== Qt.MiddleButton) Niri.focusWindow(slot.win_.id)
                                 else if (slot.modelData.entry) slot.modelData.entry.execute()
                             }
                         }
@@ -207,6 +257,15 @@ Variants {
                             id: tma
                             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                             acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                            readonly property string label: t.modelData.tooltipTitle || t.modelData.title || ""
+                            onContainsMouseChanged: {
+                                if (containsMouse && label !== "") {
+                                    win.tipText = label
+                                    win.tipPos = t.mapToItem(null, 0, t.height / 2).y
+                                    win.tipShown = true
+                                } else if (win.tipText === label) win.tipShown = false
+                            }
+                            onWheel: w => { if (w.angleDelta.y !== 0) t.modelData.scroll(w.angleDelta.y, false) }
                             onClicked: mouse => {
                                 if (mouse.button === Qt.RightButton || t.modelData.onlyMenu) {
                                     if (t.modelData.hasMenu) {

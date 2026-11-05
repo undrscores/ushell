@@ -25,7 +25,9 @@ Variants {
             target: loader.item
             function onImplicitHeightChanged() { if (loader.item) win.lastHeight = loader.item.implicitHeight }
         }
-        onShownChanged: Shell.widgetsShown = shown
+        readonly property string screenName: modelData.name      // cached: the screen object may already be gone on destruction
+        onShownChanged: Shell.setWidgetsShown(screenName, shown)
+        Component.onDestruction: Shell.setWidgetsShown(screenName, false)   // monitor unplugged while shown
 
         readonly property var tabs: [
             { icon: "", label: "Media" },

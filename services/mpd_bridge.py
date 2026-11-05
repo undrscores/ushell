@@ -8,13 +8,25 @@
   mpd_bridge.py playuri URI      add a song to the queue and play it now
   mpd_bridge.py queue URI        add a song to the end of the queue
 
-Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600).
+Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600). MPD_HOST may also be
+"password@host", a unix socket path (/run/mpd/socket), or an abstract socket (@name),
+the same conventions mpc uses. Errors go to stderr (Quickshell logs them).
 """
-import hashlib, json, os, socket, sys, time
+import hashlib, json, os, select, socket, sys, threading, time, traceback
 
-HOST = os.environ.get("MPD_HOST", "127.0.0.1")
-PORT = int(os.environ.get("MPD_PORT", "6600"))
-CACHE = os.path.expanduser("~/.cache/quickshell-config/mpd-art")
+PORT = int(os.environ.get("MPD_PORT") or "6600")
+CACHE = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "ushell", "mpd-art")
+
+
+def parse_host(value):
+    """MPD_HOST -> (password or None, host, is_unix_socket)."""
+    password = None
+    if "@" in value and not value.startswith("@"):
+        password, value = value.split("@", 1)
+    return password, value or "127.0.0.1", value.startswith(("/", "@"))
+
+
+PASSWORD, HOST, UNIX = parse_host(os.environ.get("MPD_HOST", "127.0.0.1"))
 
 
 def quote(arg):
@@ -23,14 +35,24 @@ def quote(arg):
 
 class Mpd:
     def __init__(self):
-        self.sock = socket.create_connection((HOST, PORT), timeout=3)
+        if UNIX:
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self.sock.settimeout(3)
+            # "@name" is a Linux abstract socket: a leading NUL byte instead of the "@"
+            self.sock.connect("\0" + HOST[1:] if HOST.startswith("@") else HOST)
+        else:
+            self.sock = socket.create_connection((HOST, PORT), timeout=3)
         self.f = self.sock.makefile("rb")
         if not self.f.readline().startswith(b"OK MPD"):
             raise OSError("not an MPD server")
+        if PASSWORD:
+            self.run("password " + quote(PASSWORD))
 
-    def run(self, line):
-        """Returns (list of (key, value), binary-or-None)."""
+    def send(self, line):
         self.sock.sendall((line + "\n").encode())
+
+    def read_reply(self):
+        """Returns (list of (key, value), binary-or-None)."""
         pairs, binary = [], None
         while True:
             raw = self.f.readline()
@@ -47,6 +69,22 @@ class Mpd:
                 self.f.read(1)  # trailing newline
             else:
                 pairs.append((key, value))
+
+    def run(self, line):
+        self.send(line)
+        return self.read_reply()
+
+    def idle(self, subsystems, timeout):
+        """Sleep inside MPD's `idle` until one of the subsystems changes, or `timeout` seconds pass.
+
+        select() waits on the raw socket (a read timeout would poison the buffered reader);
+        on timeout we send `noidle`, which makes MPD end the idle with a plain OK.
+        """
+        self.send("idle " + " ".join(subsystems))
+        ready, _, _ = select.select([self.sock], [], [], timeout)
+        if not ready:
+            self.send("noidle")
+        self.read_reply()
 
     def close(self):
         try:
@@ -89,13 +127,11 @@ def fetch_art(uri):
     return ""
 
 
-def snapshot(m, art_cache):
+def snapshot(m):
+    """Current player state. `art` is filled in by the caller (cover art is fetched in the background)."""
     status = dict(m.run("status")[0])
     song = dict(m.run("currentsong")[0])
     uri = song.get("file", "")
-    if uri not in art_cache:
-        art_cache.clear()
-        art_cache[uri] = fetch_art(uri)
     title = song.get("Title") or (os.path.splitext(os.path.basename(uri))[0] if uri else "")
     return {
         "online": True,
@@ -106,31 +142,76 @@ def snapshot(m, art_cache):
         "uri": uri,
         "elapsed": float(status.get("elapsed", 0) or 0),
         "duration": float(song.get("duration") or status.get("duration") or 0),
-        "volume": int(status.get("volume", -1) or -1),
-        "art": art_cache[uri],
+        "art": "",
     }
 
 
+IDLE_SUBSYSTEMS = ("player", "options", "playlist")
+IDLE_TIMEOUT = 30  # seconds; also re-syncs `elapsed` so interpolation on the QML side can't drift
+
+
 def watch():
-    last, beat, art_cache = None, 0, {}
+    """Print one JSON line when something changes. No polling: MPD tells us (idle).
+
+    Cover art can take a few round trips to fetch, so it never holds up the track info: the line goes out
+    at once with art "", and a background thread prints it again with the cover when that is ready.
+    """
+    lock = threading.RLock()
+    art = {}                      # uri -> cover path ('' while pending or if there is none); only the current song
+    state = {"last": None, "snap": None}
+
+    def emit(snap):
+        with lock:
+            if snap == state["last"]:
+                return
+            state["last"] = snap
+            try:
+                print(json.dumps(snap), flush=True)
+            except BrokenPipeError:
+                os._exit(0)       # Quickshell went away (also reached from the art thread)
+
+    def fetch_in_background(uri):
+        path = fetch_art(uri)
+        with lock:
+            if uri not in art or not path:
+                return            # the song changed meanwhile, or no cover
+            art[uri] = path
+            snap = state["snap"]
+            if snap and snap.get("uri") == uri:
+                state["snap"] = dict(snap, art=path)
+                emit(state["snap"])
+
+    offline = {"online": False}
+    last_error = ""
     while True:
         try:
             m = Mpd()
             while True:
-                snap = snapshot(m, art_cache)
-                beat += 1
-                if snap != last or snap["state"] == "play" or beat >= 5:
-                    print(json.dumps(snap), flush=True)
-                    last, beat = snap, 0
-                time.sleep(0.7)
-        except BrokenPipeError:
-            return  # Quickshell went away
-        except Exception:
-            try:
-                print(json.dumps({"online": False}), flush=True)
-            except BrokenPipeError:
-                return
-            last = None
+                snap = snapshot(m)
+                last_error = ""
+                with lock:
+                    uri = snap["uri"]
+                    start = uri != "" and uri not in art
+                    if uri not in art:
+                        art.clear()
+                        art[uri] = ""
+                    snap["art"] = art[uri]
+                    state["snap"] = snap
+                    emit(snap)
+                if start:
+                    threading.Thread(target=fetch_in_background, args=(uri,), daemon=True).start()
+                m.idle(IDLE_SUBSYSTEMS, IDLE_TIMEOUT)
+        except Exception as e:
+            # MPD simply not running (refused / gone) is a one-line note; anything else gets a traceback.
+            # Each distinct error is reported once, not every retry.
+            msg = "%s: %s" % (type(e).__name__, e)
+            if msg != last_error:
+                last_error = msg
+                print(msg if isinstance(e, OSError) else traceback.format_exc(), file=sys.stderr, flush=True)
+            with lock:
+                if state["last"] != offline:
+                    state["snap"] = None
+                    emit(offline)
             time.sleep(2)
 
 
