@@ -16,6 +16,7 @@ import "modules/wallpaper"
 import "modules/appearance"
 import "modules/notifications"
 import "modules/osd"
+import "modules/network"
 import "services"
 import "config"
 
@@ -43,6 +44,7 @@ ShellRoot {
     PowerMenu {}
     WallpaperPicker {}
     AppearanceMenu {}
+    NetworkMenu {}
     NotificationPopups {}
     NotificationsMenu {}
     OsdWindow {}
@@ -62,13 +64,25 @@ ShellRoot {
         function test(): void { Notifications.test() }
     }
 
+    // qs ipc call network <status | scan | wifi true|false>
+    IpcHandler {
+        target: "network"
+        function status(): string {
+            return JSON.stringify({ available: Network.available, kind: Network.kind, name: Network.name, online: Network.online,
+                                    connectivity: Network.connectivity, wifiPresent: Network.wifiPresent, wifiOn: Network.wifiOn,
+                                    networks: Network.networks.map(n => n.ssid + " " + n.signal + (n.active ? " *" : "")) })
+        }
+        function scan(): void { Network.scan() }
+        function wifi(on: bool): void { Network.setWifi(on) }
+    }
+
     // qs ipc call osd test   (show the volume pill)
     IpcHandler {
         target: "osd"
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications>
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

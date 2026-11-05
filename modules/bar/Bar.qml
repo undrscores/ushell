@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "calendar", "media", "notifications", "settings", "power", "appearance"].includes(Shell.overlay)
+        pinned: ["quicksettings", "calendar", "media", "notifications", "settings", "power", "appearance", "network"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -101,6 +101,14 @@ Variants {
                     font { family: Theme.font; pixelSize: Theme.fontSize }
                     anchors.verticalCenter: parent.verticalCenter
                 }
+            }
+
+            // Network → connections (hidden when NetworkManager is not there)
+            BarItem {
+                visible: Network.available
+                active: Shell.overlay === "network"
+                onClicked: Shell.toggle("network")
+                Icon { text: Network.glyph; color: Network.dim ? Theme.danger : Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
             }
 
             // Notifications → history (right click: Do Not Disturb)
