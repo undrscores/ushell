@@ -15,6 +15,7 @@ import "modules/power"
 import "modules/wallpaper"
 import "modules/appearance"
 import "modules/notifications"
+import "modules/osd"
 import "services"
 import "config"
 
@@ -44,6 +45,7 @@ ShellRoot {
     AppearanceMenu {}
     NotificationPopups {}
     NotificationsMenu {}
+    OsdWindow {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
     IpcHandler {
@@ -58,6 +60,12 @@ ShellRoot {
         function dnd(on: bool): void { Notifications.setDnd(on) }
         function clear(): void { Notifications.clear() }
         function test(): void { Notifications.test() }
+    }
+
+    // qs ipc call osd test   (show the volume pill)
+    IpcHandler {
+        target: "osd"
+        function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
     // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications>
