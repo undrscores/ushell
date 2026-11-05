@@ -61,7 +61,8 @@ write(out + "/alacritty.toml", a)
 
 # ── foot ────────────────────────────────────────────────────────────────────
 nb = lambda h: h.lstrip("#")
-f = "[colors]\n"
+sec = "colors-light" if c.get("mode") == "light" else "colors-dark"
+f = f"[main]\ninitial-color-theme={'light' if c.get('mode') == 'light' else 'dark'}\n\n[{sec}]\n"
 f += f"background={nb(bg)}\nforeground={nb(fg)}\nselection-background={nb(hi)}\nselection-foreground={nb(fg)}\n"
 f += f"cursor={nb(bg)} {nb(acc)}\n"
 for i, v in enumerate(ansi_normal):
