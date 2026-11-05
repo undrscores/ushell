@@ -20,10 +20,7 @@ Singleton {
         glassOpacity: 1.0,
         maxVolume: 1.0,
         wallpaperDir: "~/wallpapers",
-        frame: true,
-        frameSize: 8,
-        mediaCapsule: true,
-        radialMenu: true
+        frameSize: 8
     })
 
     // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
@@ -50,14 +47,9 @@ Singleton {
     // Folder the wallpaper picker lists (pictures up to one folder deep).
     property string wallpaperDir: defaults.wallpaperDir
 
-    // A frame around the screen edges that the bar, dock and menus grow out of (false = none), and how thick it is in pixels.
-    property bool frame: defaults.frame
+    // How thick the frame around the screen edges is, in pixels (it is switched on and off in Settings). Keep niri's
+    // `gaps` at least this large so windows sit inside it.
     property int frameSize: defaults.frameSize
-
-    // The now-playing capsule at the bottom left (slides up on hover and on track changes), and the radial
-    // quick-action menu in the bottom right corner.
-    property bool mediaCapsule: defaults.mediaCapsule
-    property bool radialMenu: defaults.radialMenu
 
     readonly property string path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/ushell/config.json"
 

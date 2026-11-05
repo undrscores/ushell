@@ -77,6 +77,18 @@ Overlay {
                 icon: "\uf0c9"; title: "Auto-hide left dock"; hint: "Off keeps it visible and reserves space"
                 Switch { checked: Prefs.leftAutoHide; onToggled: v => Prefs.set("leftAutoHide", v) }
             }
+            Row_ {
+                icon: ""; title: "Screen frame"; hint: "A border around the screen that the bar, dock and menus grow out of"
+                Switch { checked: Prefs.frame; onToggled: v => Prefs.set("frame", v) }
+            }
+            Row_ {
+                icon: ""; title: "Now-playing capsule"; hint: "Slides up at the bottom left on hover and when the track changes"
+                Switch { checked: Prefs.mediaCapsule; onToggled: v => Prefs.set("mediaCapsule", v) }
+            }
+            Row_ {
+                icon: ""; title: "Radial menu"; hint: "Quick actions from the bottom right corner"
+                Switch { checked: Prefs.radialMenu; onToggled: v => Prefs.set("radialMenu", v) }
+            }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
             SectionLabel { text: "Appearance" }

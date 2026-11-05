@@ -31,6 +31,7 @@ ShellRoot {
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
     Binding { target: Theme; property: "accentName"; value: Prefs.accent }
+    Binding { target: Theme; property: "frameOn"; value: Prefs.frame }
     Binding { target: Theme; property: "wallHue"; value: Wallpapers.useColors ? Wallpapers.hue : -1 }
     Binding { target: Theme; property: "wallSat"; value: Wallpapers.sat }
     Binding { target: Theme; property: "wallHue2"; value: Wallpapers.hue2 }

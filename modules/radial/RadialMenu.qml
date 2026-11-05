@@ -6,9 +6,9 @@ import "../../services"
 import "../../components"
 
 // Radial quick-action menu in the bottom right corner. Pushing the pointer into the corner makes a round
-// button spring out of the screen edge, and four actions fan out around it. (Config: radialMenu)
+// button spring out of the screen edge, and four actions fan out around it. (Setting: Settings → Panels)
 Variants {
-    model: Config.radialMenu ? Quickshell.screens : []
+    model: Prefs.radialMenu ? Quickshell.screens : []
 
     PanelWindow {
         id: win
