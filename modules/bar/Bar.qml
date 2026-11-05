@@ -116,8 +116,8 @@ Variants {
                 active: Shell.overlay === "notifications"
                 onClicked: mouse => { if (mouse.button === Qt.RightButton) Notifications.toggleDnd(); else Shell.toggle("notifications") }
                 Icon {
-                    text: Notifications.dnd ? "\uf1f6" : "\uf0f3"
-                    color: Notifications.dnd ? Theme.danger : Theme.fgDim
+                    text: Notifications.silent ? "\uf1f6" : "\uf0f3"
+                    color: Notifications.silent ? Theme.danger : Theme.fgDim
                     anchors.verticalCenter: parent.verticalCenter
                 }
                 Text {

@@ -59,12 +59,15 @@ ShellRoot {
         function query(text: string): void { launcher.query(text) }
     }
 
-    // qs ipc call notifications <toggleDnd | dnd true|false | clear | test>   (history: qs ipc call shell toggle notifications)
+    // qs ipc call notifications <toggleDnd | dnd true|false | clear | test | mute APP | unmute APP | status>   (history: qs ipc call shell toggle notifications)
     IpcHandler {
         target: "notifications"
         function toggleDnd(): void { Notifications.toggleDnd() }
         function dnd(on: bool): void { Notifications.setDnd(on) }
         function clear(): void { Notifications.clear() }
+        function mute(app: string): void { Notifications.mute(app) }       // popups off for one app (by its name in the popup)
+        function unmute(app: string): void { Notifications.unmute(app) }
+        function status(): string { return JSON.stringify({ dnd: Notifications.dnd, scheduled: Notifications.scheduled, silent: Notifications.silent, muted: Prefs.mutedApps, count: Notifications.count, popups: Notifications.popups.length }) }
         function test(): void { Notifications.test() }
     }
 
