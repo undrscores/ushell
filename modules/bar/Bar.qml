@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "calendar", "media", "notifications", "settings", "power", "appearance", "network"].includes(Shell.overlay)
+        pinned: ["quicksettings", "calendar", "media", "notifications", "settings", "appearance", "network"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -27,6 +27,10 @@ Variants {
             id: row
             anchors.centerIn: parent
             spacing: 4
+
+            // Workspaces (only shown when there is more than one)
+            Workspaces { id: wsRow; anchors.verticalCenter: parent.verticalCenter }
+            Rectangle { visible: wsRow.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
 
             // Clock → calendar
             BarItem {
@@ -46,27 +50,9 @@ Variants {
                 }
             }
 
-            // Now playing → media player
-            Rectangle { visible: Media.available; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
-            BarItem {
-                visible: Media.available
-                active: Shell.overlay === "media"
-                onClicked: Shell.toggle("media")
-                Rectangle {
-                    width: 20; height: 20; radius: 6
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: Theme.tint
-                    clip: true
-                    Image { anchors.fill: parent; source: Media.art; fillMode: Image.PreserveAspectCrop; asynchronous: true }
-                }
-                Text {
-                    width: Math.min(implicitWidth, 150); elide: Text.ElideRight
-                    text: Media.title
-                    color: Media.playing ? Theme.fg : Theme.fgDim
-                    font { family: Theme.font; pixelSize: Theme.fontSize }
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
+            // Tray
+            Rectangle { visible: tray.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+            TrayRow { id: tray; window: win; anchors.verticalCenter: parent.verticalCenter }
 
             // Volume → quick settings
             Rectangle { width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
@@ -155,13 +141,6 @@ Variants {
                 active: Shell.overlay === "settings"
                 onClicked: Shell.toggle("settings")
                 Icon { text: "\uf013"; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
-            }
-
-            // Power
-            BarItem {
-                active: Shell.overlay === "power"
-                onClicked: Shell.toggle("power")
-                Icon { text: ""; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
             }
         }
     }

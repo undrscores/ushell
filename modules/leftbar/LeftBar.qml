@@ -1,5 +1,4 @@
 import Quickshell
-import Quickshell.Services.SystemTray
 import QtQuick
 import "../../config"
 import "../../services"
@@ -25,8 +24,7 @@ Variants {
         // pinned apps in config order, then one icon per other open app
         // Both models below are only replaced when what they show actually changed. Niri re-sends
         // fresh JSON on every event (window titles change all the time), and a Repeater over a
-        // replaced JS array rebuilds every delegate: icons would re-pop and the workspace pills
-        // could never animate.
+        // replaced JS array rebuilds every delegate and the icons would re-pop.
         property var items: []
         property string itemsSig: ""
         function rebuildItems() {
@@ -52,22 +50,9 @@ Variants {
             items = out
         }
 
-        // workspace pills: rows updated in place so the delegates (and their springs) survive
-        ListModel { id: wsModel }
-        function syncWorkspaces() {
-            const list = Niri.workspaces
-            while (wsModel.count > list.length) wsModel.remove(wsModel.count - 1)
-            for (let i = 0; i < list.length; i++) {
-                const w = list[i]
-                const row = { wsIdx: w.idx, focused: w.is_focused === true || w.is_active === true, hasWindow: !!w.active_window_id }
-                if (i < wsModel.count) wsModel.set(i, row)
-                else wsModel.append(row)
-            }
-        }
         Connections {
             target: Niri
             function onWindowsChanged() { win.rebuildItems() }
-            function onWorkspacesChanged() { win.syncWorkspaces() }
         }
         Connections {
             target: Config
@@ -77,7 +62,7 @@ Variants {
             target: DesktopEntries.applications
             function onValuesChanged() { win.rebuildItems() }   // entries finish loading after the first window event
         }
-        Component.onCompleted: { rebuildItems(); syncWorkspaces() }
+        Component.onCompleted: rebuildItems()
 
         Item {
             id: dock
@@ -92,50 +77,6 @@ Variants {
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 14
                 spacing: 8
-
-                // workspaces
-                Column {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 5
-                    // scroll over the pills to move between workspaces
-                    WheelHandler {
-                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-                        onWheel: e => {
-                            if (wsCool.running || e.angleDelta.y === 0) return
-                            Quickshell.execDetached(["niri", "msg", "action", e.angleDelta.y < 0 ? "focus-workspace-down" : "focus-workspace-up"])
-                            wsCool.restart()
-                        }
-                    }
-                    Timer { id: wsCool; interval: 180 }
-                    Repeater {
-                        model: wsModel
-                        delegate: Item {
-                            id: ws
-                            required property int wsIdx
-                            required property bool focused
-                            required property bool hasWindow
-                            readonly property bool active: focused
-                            width: 30; height: active ? 28 : 13
-                            Behavior on height { Spring { preset: "glide" } }
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 18; height: parent.height + 6; radius: 9
-                                color: Theme.accent
-                                opacity: ws.active ? 0.2 : 0
-                                Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
-                            }
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 8; height: parent.height - 3; radius: 4
-                                color: ws.active ? Theme.accent : (ws.hasWindow ? Theme.fgDim : Theme.surfaceHi)
-                                Behavior on color { ColorAnimation { duration: Theme.animNormal } }
-                            }
-                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Niri.focusWorkspace(ws.wsIdx) }
-                        }
-                    }
-                }
-
-                Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 28; height: 1; color: Theme.line }
 
                 // apps
                 Repeater {
@@ -212,68 +153,6 @@ Variants {
                                 // left: jump to the running window, or start the app; middle: always a new window
                                 if (slot.running && mouse.button !== Qt.MiddleButton) Niri.focusWindow(slot.win_.id)
                                 else if (slot.modelData.entry) slot.modelData.entry.execute()
-                            }
-                        }
-                    }
-                }
-
-                Rectangle { anchors.horizontalCenter: parent.horizontalCenter; width: 28; height: 1; color: Theme.line }
-
-                // clipboard history flyout
-                Rectangle {
-                    id: clipBtn
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 38; height: 38; radius: 12
-                    color: Shell.overlay === "clipboard" ? Theme.accentSoft : (cma.containsMouse ? Theme.hover : Theme.tint)
-                    Behavior on color { ColorAnimation { duration: Theme.animFast } }
-                    scale: cma.pressed ? 0.88 : (cma.containsMouse ? 1.14 : 1)
-                    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
-                    Icon { anchors.centerIn: parent; text: ""; color: Shell.overlay === "clipboard" ? Theme.accent : Theme.fg }
-                    MouseArea {
-                        id: cma
-                        anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                        onContainsMouseChanged: {
-                            if (containsMouse) { win.tipText = "Clipboard"; win.tipPos = clipBtn.mapToItem(null, 0, clipBtn.height / 2).y; win.tipShown = true }
-                            else if (win.tipText === "Clipboard") win.tipShown = false
-                        }
-                        onClicked: Shell.toggle("clipboard")
-                    }
-                }
-
-                // tray
-                Repeater {
-                    model: SystemTray.items
-                    delegate: Rectangle {
-                        id: t
-                        required property var modelData
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: 34; height: 34; radius: 11
-                        color: tma.containsMouse ? Theme.hover : "transparent"
-                        Behavior on color { ColorAnimation { duration: Theme.animFast } }
-                        scale: tma.containsMouse ? 1.15 : 1
-                        Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
-                        Image { anchors.centerIn: parent; width: 20; height: 20; source: t.modelData.icon; sourceSize: Qt.size(40, 40) }
-                        MouseArea {
-                            id: tma
-                            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                            readonly property string label: t.modelData.tooltipTitle || t.modelData.title || ""
-                            onContainsMouseChanged: {
-                                if (containsMouse && label !== "") {
-                                    win.tipText = label
-                                    win.tipPos = t.mapToItem(null, 0, t.height / 2).y
-                                    win.tipShown = true
-                                } else if (win.tipText === label) win.tipShown = false
-                            }
-                            onWheel: w => { if (w.angleDelta.y !== 0) t.modelData.scroll(w.angleDelta.y, false) }
-                            onClicked: mouse => {
-                                if (mouse.button === Qt.RightButton || t.modelData.onlyMenu) {
-                                    if (t.modelData.hasMenu) {
-                                        const p = t.mapToItem(null, t.width, 0)
-                                        t.modelData.display(win, p.x + 6, p.y)
-                                    }
-                                } else if (mouse.button === Qt.MiddleButton) t.modelData.secondaryActivate()
-                                else t.modelData.activate()
                             }
                         }
                     }
