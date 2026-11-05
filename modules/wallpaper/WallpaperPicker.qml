@@ -103,8 +103,8 @@ Overlay {
                         scale: !cell.shown ? 0.82 : (lifted ? 1.06 : 1)
                         y: cell.shown ? 0 : 16
                         z: lifted ? 2 : 0
-                        Behavior on scale { NumberAnimation { duration: 340; easing.type: Easing.OutBack; easing.overshoot: 2 } }
-                        Behavior on y { NumberAnimation { duration: 420; easing.type: Easing.OutBack; easing.overshoot: 1.4 } }
+                        Behavior on scale { Pop { duration: 340; overshoot: 2 } }
+                        Behavior on y { Pop { duration: 420; overshoot: 1.4 } }
                         Behavior on border.width { NumberAnimation { duration: Theme.animFast } }
 
                         Image {
@@ -114,7 +114,7 @@ Overlay {
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             opacity: status === Image.Ready ? 1 : 0
-                            Behavior on opacity { NumberAnimation { duration: 400 } }
+                            Behavior on opacity { NumberAnimation { duration: Theme.animSlow } }
                         }
                         Rectangle {          // file name, on hover
                             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }

@@ -275,7 +275,7 @@ PanelWindow {
                 opacity: win.mode !== "app" ? 1 : 0
                 scale: win.mode !== "app" ? 1 : 0.7
                 Behavior on opacity { NumberAnimation { duration: Theme.animFast } }
-                Behavior on scale   { NumberAnimation { duration: 380; easing.type: Easing.OutBack; easing.overshoot: 3 } }
+                Behavior on scale   { Pop { duration: Theme.animSlow; overshoot: 3 } }
                 width: chipText.implicitWidth + 16; height: 22; radius: 11
                 color: Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2)
                 Text {

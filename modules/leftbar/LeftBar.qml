@@ -97,7 +97,7 @@ Variants {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 48; height: 44 * Math.min(1, appear)
                         Component.onCompleted: appear = 1
-                        Behavior on appear { NumberAnimation { duration: 500; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+                        Behavior on appear { Pop { duration: 500 } }
                         z: ima.containsMouse ? 3 : 0
 
                         Item {

@@ -36,7 +36,7 @@ Variants {
             sourceSize: Qt.size(Math.round(win.modelData.width * win.modelData.devicePixelRatio),
                                 Math.round(win.modelData.height * win.modelData.devicePixelRatio))
             opacity: 0
-            Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.InOutQuad } }
+            Behavior on opacity { NumberAnimation { duration: Theme.animSlow; easing.type: Easing.InOutQuad } }
             onStatusChanged: {
                 if (status === Image.Ready) opacity = 1
                 else if (status === Image.Error && source.toString() === win.wanted) {

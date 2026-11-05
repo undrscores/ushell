@@ -34,7 +34,7 @@ Item {
             x: 3 + index * root.tabW; y: 0
             width: root.tabW; height: root.height
             scale: ma.pressed ? 0.95 : 1
-            Behavior on scale { NumberAnimation { duration: 140; easing.type: Theme.easing } }
+            Behavior on scale { NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
 
             Row {
                 anchors.centerIn: parent

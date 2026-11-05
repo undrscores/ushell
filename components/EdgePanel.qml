@@ -85,7 +85,7 @@ PanelWindow {
             id: tip
             visible: opacity > 0.01
             opacity: win.tipShown && win.shown ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: 140 } }
+            Behavior on opacity { NumberAnimation { duration: Theme.animFast } }
             height: tipLabel.implicitHeight + 14
             width: tipLabel.implicitWidth + 22
             radius: height / 2

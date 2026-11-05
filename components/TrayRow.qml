@@ -23,7 +23,7 @@ Row {
                 color: ma.containsMouse ? Theme.hover : "transparent"
                 Behavior on color { ColorAnimation { duration: Theme.animFast } }
                 scale: ma.containsMouse ? 1.12 : 1
-                Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
+                Behavior on scale { Bounce {} }
                 Image { anchors.centerIn: parent; width: 17; height: 17; source: t.modelData.icon; sourceSize: Qt.size(34, 34) }
             }
             MouseArea {

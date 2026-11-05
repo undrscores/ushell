@@ -33,7 +33,7 @@ ColumnLayout {
                     color: p.bg
                     border { width: chosen ? 2 : 1; color: chosen ? Theme.accent : Theme.line }
                     scale: mma.pressed ? 0.96 : (mma.containsMouse ? 1.03 : 1)
-                    Behavior on scale { NumberAnimation { duration: 320; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+                    Behavior on scale { Pop {} }
                     Behavior on color { ColorAnimation { duration: Theme.animFade } }
 
                     Rectangle {          // a miniature window
@@ -57,7 +57,7 @@ ColumnLayout {
                         opacity: mc.chosen ? 1 : 0
                         scale: mc.chosen ? 1 : 0.4
                         Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
-                        Behavior on scale { NumberAnimation { duration: 360; easing.type: Easing.OutBack; easing.overshoot: 3 } }
+                        Behavior on scale { Pop { duration: 360; overshoot: 3 } }
                     }
                     MouseArea {
                         id: mma
@@ -87,7 +87,7 @@ ColumnLayout {
                     opacity: Wallpapers.useColors ? 0.45 : 1
                     Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
                     scale: swMa.pressed ? 0.85 : (swMa.containsMouse ? 1.18 : (chosen ? 1.08 : 1))
-                    Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+                    Behavior on scale { Pop {} }
                     MouseArea {
                         id: swMa
                         anchors.fill: parent
@@ -106,7 +106,7 @@ ColumnLayout {
                 border { width: Prefs.wallpaperColors ? 2 : 1; color: Prefs.wallpaperColors ? Theme.fg : Theme.line }
                 opacity: usable ? 1 : 0.35
                 scale: wMa.pressed ? 0.85 : (wMa.containsMouse && usable ? 1.18 : (Prefs.wallpaperColors ? 1.08 : 1))
-                Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutBack; easing.overshoot: 2.5 } }
+                Behavior on scale { Pop {} }
                 Icon { anchors.centerIn: parent; text: ""; size: 11; color: Wallpapers.colorsOk ? Theme.accentFg : Theme.fgDim }
                 MouseArea {
                     id: wMa

@@ -13,7 +13,7 @@ Rectangle {
     implicitHeight: 30
     radius: 10
     scale: ma.pressed ? 0.9 : (ma.containsMouse ? 1.08 : 1)
-    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
+    Behavior on scale { Bounce {} }
     color: (ma.containsMouse || active) ? Theme.hover : "transparent"
     Behavior on color { ColorAnimation { duration: Theme.animFast } }
 

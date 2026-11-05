@@ -47,7 +47,7 @@ Overlay {
                     } }
                     opacity: Math.min(1, appear)
                     scale: (ma.pressed ? 0.9 : (ma.containsMouse ? 1.12 : 1)) * (0.4 + 0.6 * appear)
-                    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.5 } }
+                    Behavior on scale { Bounce {} }
                     SequentialAnimation on rotation {
                         running: btn.isArmed; loops: Animation.Infinite
                         NumberAnimation { to: 3; duration: 90 } NumberAnimation { to: -3; duration: 90 }

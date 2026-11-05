@@ -79,6 +79,8 @@ Singleton {
     readonly property int animNormal: 220
     readonly property int animSlow:   380
     readonly property int animFade:   450      // theme changes
+    readonly property int animBounce: 420      // elastic hover / press feedback (components/Bounce.qml)
+    readonly property int animPop:    320      // pop-ins with overshoot (components/Pop.qml)
     readonly property int easing:     Easing.OutCubic
     // Spring presets for Spring.qml (spring = stiffness, damping = how fast the wobble dies)
     readonly property var springs: ({

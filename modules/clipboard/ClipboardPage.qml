@@ -77,7 +77,7 @@ Item {
             color: page.clearArmed ? Theme.dangerSoft : (cma.containsMouse ? Theme.hover : Theme.tint)
             Behavior on color { ColorAnimation { duration: Theme.animFast } }
             scale: cma.pressed ? 0.9 : (cma.containsMouse ? 1.08 : 1)
-            Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
+            Behavior on scale { Bounce {} }
             Icon { anchors.centerIn: parent; text: ""; size: 14; color: page.clearArmed ? Theme.danger : Theme.fgDim }
             Timer { id: disarm; interval: 2500; onTriggered: page.clearArmed = false }
             MouseArea {
@@ -110,7 +110,7 @@ Item {
             radius: Theme.radius
             color: flash ? Theme.accentSoft : (ema.containsMouse ? Theme.hover : Theme.tint)
             Behavior on color { ColorAnimation { duration: entry.flash ? 80 : 220 } }
-            Behavior on height { NumberAnimation { duration: 200; easing.type: Theme.easing } }
+            Behavior on height { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
 
             Timer { id: unflash; interval: 900; onTriggered: entry.flash = false }
 

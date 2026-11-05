@@ -91,7 +91,7 @@ Variants {
                     x: win.cx - width / 2 + Math.cos(theta) * win.orbit * appear
                     y: win.cy - height / 2 - Math.sin(theta) * win.orbit * appear
                     scale: (ima.pressed ? 0.9 : (ima.containsMouse ? 1.14 : 1)) * (0.4 + 0.6 * Math.min(1, appear))
-                    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.5 } }
+                    Behavior on scale { Bounce {} }
 
                     Rectangle {
                         anchors.fill: parent; radius: width / 2
