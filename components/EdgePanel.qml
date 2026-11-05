@@ -28,7 +28,7 @@ PanelWindow {
     default property alias content: panel.data
 
     readonly property bool vertical: edge !== "top"
-    readonly property real gap: Theme.margin
+    readonly property real gap: Theme.inset
     readonly property real screenW: screen ? screen.width : 1920
     readonly property real screenH: screen ? screen.height : 1080
 
@@ -54,7 +54,7 @@ PanelWindow {
     implicitHeight: vertical ? screenH : 120
     // Always-shown panels push tiled windows out of their way; auto-hiding ones float over them.
     exclusionMode: autoHide ? ExclusionMode.Ignore : ExclusionMode.Normal
-    exclusiveZone: autoHide ? 0 : (vertical ? panelWidth : panelHeight) + gap * 2
+    exclusiveZone: autoHide ? 0 : (vertical ? panelWidth : panelHeight) + Theme.margin * 2
     WlrLayershell.keyboardFocus: takesFocus ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     color: "transparent"
 
