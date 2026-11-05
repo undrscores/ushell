@@ -55,14 +55,29 @@ Overlay {
                     width: list.width
                 }
             }
-            Text {
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: 6; Layout.bottomMargin: 10
+                Layout.topMargin: 14; Layout.bottomMargin: 18
                 visible: Notifications.count === 0
-                horizontalAlignment: Text.AlignHCenter
-                text: Notifications.dnd ? "Nothing new, and Do Not Disturb is on" : "Nothing new"
-                color: Theme.fgDim
-                font { family: Theme.font; pixelSize: Theme.fontSize }
+                spacing: 10
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    width: 56; height: 56; radius: 28
+                    color: Theme.accentSoft
+                    Icon { anchors.centerIn: parent; text: Notifications.silent ? "\uf1f6" : "\uf0f3"; size: 24; color: Theme.accent }
+                }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "All caught up"
+                    color: Theme.fg
+                    font { family: Theme.font; pixelSize: Theme.fontSize + 1; bold: true }
+                }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Notifications.silent ? "Do Not Disturb is on" : "Nothing new"
+                    color: Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize - 1 }
+                }
             }
         }
     }
