@@ -30,9 +30,9 @@ Singleton {
 
     // glyph for the bar: wired, Wi-Fi, or a warning triangle for "no network"
     readonly property string glyph: {
-        if (kind === "ethernet") return ""
+        if (kind === "ethernet") return "󰈀"
         if (kind === "wifi") return ""
-        return wifiOn || !wifiPresent ? "" : ""
+        return wifiOn || !wifiPresent ? "" : ""
     }
     readonly property bool dim: kind === "none" || connectivity === "limited" || connectivity === "portal"
 
