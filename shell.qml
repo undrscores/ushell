@@ -9,6 +9,7 @@ import "modules/launcher"
 import "modules/quicksettings"
 import "modules/clipboard"
 import "modules/settings"
+import "modules/bluetooth"
 import "modules/media"
 import "modules/power"
 import "modules/wallpaper"
@@ -52,6 +53,7 @@ ShellRoot {
     MediaMenu {}
     ClipboardMenu {}
     SettingsWindow {}
+    BluetoothMenu {}
     PowerMenu {}
     WallpaperPicker {}
     NetworkMenu {}
@@ -140,7 +142,7 @@ ShellRoot {
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network>   (settings is a window)
+    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth>   (settings is a window)
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

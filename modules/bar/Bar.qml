@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "media", "notifications", "network"].includes(Shell.overlay)
+        pinned: ["quicksettings", "media", "notifications", "network", "bluetooth"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -132,6 +132,14 @@ Variants {
                 active: Shell.overlay === "network"
                 onClicked: Shell.toggle("network")
                 Icon { text: Network.glyph; color: Network.dim ? Theme.danger : Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
+            }
+
+            // Bluetooth → devices (hidden when there is no adapter)
+            BarItem {
+                visible: Bt.available
+                active: Shell.overlay === "bluetooth"
+                onClicked: Shell.toggle("bluetooth")
+                Icon { text: Bt.glyph; color: Bt.connectedCount > 0 ? Theme.accent : (Bt.on ? Theme.fgDim : Theme.line); anchors.verticalCenter: parent.verticalCenter }
             }
 
             // Notifications → history (right click: Do Not Disturb)
