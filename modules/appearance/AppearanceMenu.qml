@@ -140,9 +140,12 @@ Overlay {
                 color: Theme.fgDim
                 font { family: Theme.font; pixelSize: Theme.fontSize - 3 }
                 text: Prefs.wallpaper === "" ? "Choose a wallpaper below to colour the theme from it"
+                    : Wallpapers.failed === Prefs.wallpaper ? "Couldn't load this picture; it may have been moved or deleted. Pick another one below."
                     : !Prefs.wallpaperColors ? "The last swatch colours the whole theme from the wallpaper"
                     : Wallpapers.colorsOk ? "Colours follow the wallpaper"
-                    : "Reading the wallpaper… (a grey picture has no colour to use)"
+                    : !Wallpapers.colorsRead ? "Reading the wallpaper…"
+                    : Wallpapers.colorError !== "" ? "Couldn't read this picture's colours: " + Wallpapers.colorError
+                    : "This picture is grey, so it has no colour to use"
             }
 
             // ── wallpaper ───────────────────────────────────────────────────

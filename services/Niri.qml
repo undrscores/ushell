@@ -4,7 +4,8 @@ import Quickshell.Io
 import QtQuick
 
 // Thin wrapper over `niri msg`. Re-queries only what a niri event can have changed (debounced),
-// and ignores events that don't affect anything shown (layout shuffles, overview, keyboard layout, ...).
+// ignores events that don't affect anything shown (layout shuffles, overview, keyboard layout, ...),
+// and applies simple window changes (title edits, closes) straight from the event.
 Singleton {
     id: root
     property var workspaces: []
@@ -56,10 +57,31 @@ Singleton {
     property bool staleWindows: false
     property bool staleOutput: false      // keyboard focus moved: the focused output may have changed
 
+    // A window that is already known and only changed (its title, mostly: browser tabs change it all
+    // the time) is patched from the event itself, so no `niri msg windows` process is needed.
+    // Opening a window still asks niri, which keeps the list in niri's own order.
+    function patchWindow(w) {
+        if (!w || w.id === undefined) return false
+        const i = windows.findIndex(x => x.id === w.id)
+        if (i < 0) return false
+        const list = windows.slice()
+        list[i] = w
+        windows = list
+        return true
+    }
+    function dropWindow(id) {
+        if (id === undefined || !windows.some(x => x.id === id)) return false
+        windows = windows.filter(x => x.id !== id)
+        return true
+    }
+
     function handleEvent(line) {
-        let name = ""
-        try { name = Object.keys(JSON.parse(line))[0] } catch (e) {}      // unparsable: refresh everything
+        let ev = null, name = ""
+        try { ev = JSON.parse(line); name = Object.keys(ev)[0] } catch (e) {}      // unparsable: refresh everything
         if (ignoredEvents.includes(name)) return
+        const body = ev && ev[name] ? ev[name] : {}
+        if (name === "WindowOpenedOrChanged" && patchWindow(body.window)) return
+        if (name === "WindowClosed" && dropWindow(body.id)) return
         if (name === "WindowFocusChanged") staleOutput = true
         else if (windowEvents.includes(name)) staleWindows = true
         else if (workspaceEvents.includes(name)) staleWorkspaces = true

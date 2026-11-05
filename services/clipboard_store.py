@@ -9,7 +9,7 @@
   clipboard_store.py clear-images remove every unpinned image
   clipboard_store.py copy ID      put one entry back on the clipboard (via wl-copy)
 
-History lives in ~/.local/state/ushell/clipboard.json, and images next to it in clipboard-images/
+History lives in $XDG_STATE_HOME/ushell/clipboard.json (default ~/.local/state/ushell), and images next to it in clipboard-images/
 (private: files 0600, folders 0700). Anything a password manager marks as secret is never stored.
 
 Entries:  text   {id, time, pinned, text}
@@ -18,7 +18,7 @@ Entries:  text   {id, time, pinned, text}
 """
 import fcntl, hashlib, json, os, struct, subprocess, sys, time
 
-DIR = os.path.expanduser("~/.local/state/ushell")
+DIR = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "ushell")   # same as StateDir.qml
 FILE = os.path.join(DIR, "clipboard.json")
 IMG_DIR = os.path.join(DIR, "clipboard-images")
 MAX_ITEMS = 200

@@ -8,13 +8,25 @@
   mpd_bridge.py playuri URI      add a song to the queue and play it now
   mpd_bridge.py queue URI        add a song to the end of the queue
 
-Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600).
+Host/port come from MPD_HOST / MPD_PORT (default 127.0.0.1:6600). MPD_HOST may also be
+"password@host", a unix socket path (/run/mpd/socket), or an abstract socket (@name),
+the same conventions mpc uses. Errors go to stderr (Quickshell logs them).
 """
-import hashlib, json, os, select, socket, sys, threading, time
+import hashlib, json, os, select, socket, sys, threading, time, traceback
 
-HOST = os.environ.get("MPD_HOST", "127.0.0.1")
-PORT = int(os.environ.get("MPD_PORT", "6600"))
-CACHE = os.path.expanduser("~/.cache/ushell/mpd-art")
+PORT = int(os.environ.get("MPD_PORT") or "6600")
+CACHE = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"), "ushell", "mpd-art")
+
+
+def parse_host(value):
+    """MPD_HOST -> (password or None, host, is_unix_socket)."""
+    password = None
+    if "@" in value and not value.startswith("@"):
+        password, value = value.split("@", 1)
+    return password, value or "127.0.0.1", value.startswith(("/", "@"))
+
+
+PASSWORD, HOST, UNIX = parse_host(os.environ.get("MPD_HOST", "127.0.0.1"))
 
 
 def quote(arg):
@@ -23,10 +35,18 @@ def quote(arg):
 
 class Mpd:
     def __init__(self):
-        self.sock = socket.create_connection((HOST, PORT), timeout=3)
+        if UNIX:
+            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self.sock.settimeout(3)
+            # "@name" is a Linux abstract socket: a leading NUL byte instead of the "@"
+            self.sock.connect("\0" + HOST[1:] if HOST.startswith("@") else HOST)
+        else:
+            self.sock = socket.create_connection((HOST, PORT), timeout=3)
         self.f = self.sock.makefile("rb")
         if not self.f.readline().startswith(b"OK MPD"):
             raise OSError("not an MPD server")
+        if PASSWORD:
+            self.run("password " + quote(PASSWORD))
 
     def send(self, line):
         self.sock.sendall((line + "\n").encode())
@@ -162,11 +182,13 @@ def watch():
                 emit(state["snap"])
 
     offline = {"online": False}
+    last_error = ""
     while True:
         try:
             m = Mpd()
             while True:
                 snap = snapshot(m)
+                last_error = ""
                 with lock:
                     uri = snap["uri"]
                     start = uri != "" and uri not in art
@@ -179,7 +201,13 @@ def watch():
                 if start:
                     threading.Thread(target=fetch_in_background, args=(uri,), daemon=True).start()
                 m.idle(IDLE_SUBSYSTEMS, IDLE_TIMEOUT)
-        except Exception:
+        except Exception as e:
+            # MPD simply not running (refused / gone) is a one-line note; anything else gets a traceback.
+            # Each distinct error is reported once, not every retry.
+            msg = "%s: %s" % (type(e).__name__, e)
+            if msg != last_error:
+                last_error = msg
+                print(msg if isinstance(e, OSError) else traceback.format_exc(), file=sys.stderr, flush=True)
             with lock:
                 if state["last"] != offline:
                     state["snap"] = None

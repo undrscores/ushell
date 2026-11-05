@@ -5,10 +5,11 @@ import "../../config"
 import "../../services"
 
 // Draws the chosen wallpaper behind everything, one window per screen. Nothing is created until a
-// wallpaper has been chosen, so another wallpaper program keeps working if you prefer it.
+// wallpaper has been chosen (or while the chosen one can't be loaded), so another wallpaper program
+// keeps working if you prefer it.
 Variants {
     id: root
-    readonly property bool active: Prefs.wallpaper !== ""
+    readonly property bool active: Prefs.wallpaper !== "" && Wallpapers.failed !== Prefs.wallpaper
     model: root.active ? Quickshell.screens : []
 
     PanelWindow {
@@ -36,7 +37,13 @@ Variants {
                                 Math.round(win.modelData.height * win.modelData.devicePixelRatio))
             opacity: 0
             Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.InOutQuad } }
-            onStatusChanged: if (status === Image.Ready) opacity = 1
+            onStatusChanged: {
+                if (status === Image.Ready) opacity = 1
+                else if (status === Image.Error && source.toString() === win.wanted) {
+                    console.warn("ushell wallpaper: can't load " + Prefs.wallpaper)
+                    Wallpapers.failed = Prefs.wallpaper      // the windows go away; the Appearance panel says why
+                }
+            }
         }
         onWantedChanged: if (img.source.toString() !== wanted) { img.opacity = 0; swap.restart() }
         Timer { id: swap; interval: 420; onTriggered: img.source = win.wanted }
