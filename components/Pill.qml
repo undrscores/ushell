@@ -13,7 +13,7 @@ Rectangle {
     color: active ? Theme.accentSoft : (ma.containsMouse ? Theme.hover : Theme.tint)
     Behavior on color { ColorAnimation { duration: Theme.animFast } }
     scale: ma.pressed ? 0.94 : 1
-    Behavior on scale { NumberAnimation { duration: 140; easing.type: Theme.easing } }
+    Behavior on scale { NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
     Text {
         id: text
         anchors.centerIn: parent

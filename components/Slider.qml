@@ -19,7 +19,7 @@ Item {
         width: parent.width; height: ma.containsMouse || ma.pressed ? 8 : 6; radius: height / 2
         anchors.verticalCenter: parent.verticalCenter
         color: Theme.hover
-        Behavior on height { NumberAnimation { duration: 140; easing.type: Theme.easing } }
+        Behavior on height { NumberAnimation { duration: Theme.animFast; easing.type: Theme.easing } }
         Rectangle {
             height: parent.height; radius: height / 2
             width: Math.max(height, track.width * root.clamped)
@@ -28,7 +28,7 @@ Item {
                 GradientStop { position: 0; color: root.tone }
                 GradientStop { position: 1; color: Qt.lighter(root.tone, 1.25) }
             }
-            Behavior on width { enabled: !ma.pressed; NumberAnimation { duration: 200; easing.type: Theme.easing } }
+            Behavior on width { enabled: !ma.pressed; NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         }
     }
     // handle + glow ring
@@ -37,19 +37,19 @@ Item {
         width: 16; height: 16
         anchors.verticalCenter: parent.verticalCenter
         x: (track.width - width) * root.clamped
-        Behavior on x { enabled: !ma.pressed; NumberAnimation { duration: 200; easing.type: Theme.easing } }
+        Behavior on x { enabled: !ma.pressed; NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Rectangle {
             anchors.centerIn: parent
             width: ma.pressed ? 30 : (ma.containsMouse ? 24 : 0); height: width; radius: width / 2
             color: root.tone; opacity: 0.22
-            Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+            Behavior on width { Pop { duration: Theme.animNormal; overshoot: 1.7 } }
         }
         Rectangle {
             anchors.centerIn: parent
             width: 14; height: 14; radius: 7
             color: Theme.fg
             scale: ma.pressed ? 1.3 : (ma.containsMouse ? 1.15 : 1)
-            Behavior on scale { NumberAnimation { duration: 380; easing.type: Easing.OutElastic; easing.amplitude: 1.1; easing.period: 0.45 } }
+            Behavior on scale { Bounce { duration: Theme.animSlow } }
         }
     }
     MouseArea {

@@ -62,7 +62,7 @@ Item {
                     color: Theme.accent
                     opacity: Media.playing ? 0.12 + 0.35 * Cava.bass : 0
                     Behavior on width { NumberAnimation { duration: 80 } }
-                    Behavior on opacity { NumberAnimation { duration: 200 } }
+                    Behavior on opacity { NumberAnimation { duration: Theme.animNormal } }
                 }
                 Item {
                     id: disc
@@ -101,7 +101,7 @@ Item {
                         source: art
                         maskEnabled: true; maskSource: mask
                         opacity: art.status === Image.Ready ? 1 : 0
-                        Behavior on opacity { NumberAnimation { duration: 400 } }
+                        Behavior on opacity { NumberAnimation { duration: Theme.animSlow } }
                     }
                     Rectangle {  // spindle hole
                         anchors.centerIn: parent; width: 14; height: 14; radius: 7
@@ -145,8 +145,8 @@ Item {
                 // track-change flourish
                 ParallelAnimation {
                     id: swap
-                    NumberAnimation { target: info; property: "opacity"; from: 0; to: 1; duration: 380; easing.type: Theme.easing }
-                    NumberAnimation { target: infoShift; property: "x"; from: 14; to: 0; duration: 380; easing.type: Easing.OutBack }
+                    NumberAnimation { target: info; property: "opacity"; from: 0; to: 1; duration: Theme.animSlow; easing.type: Theme.easing }
+                    NumberAnimation { target: infoShift; property: "x"; from: 14; to: 0; duration: Theme.animSlow; easing.type: Easing.OutBack }
                 }
             }
         }
