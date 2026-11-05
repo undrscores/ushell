@@ -19,7 +19,7 @@ Singleton {
         searchUrl: "https://duckduckgo.com/?q=",
         glassOpacity: 1.0,
         maxVolume: 1.0,
-        wallpaperDir: "~/Pictures/Wallpapers"
+        wallpaperDir: "~/wallpapers"
     })
 
     // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
