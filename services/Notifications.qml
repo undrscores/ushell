@@ -25,7 +25,7 @@ Singleton {
     // Quiet hours: Do Not Disturb every day between Prefs.dndFrom and Prefs.dndTo (see services/dnd.js).
     SystemClock { id: clock; precision: SystemClock.Minutes }
     readonly property bool scheduled: Prefs.dndSchedule && Dnd.inWindow(Prefs.dndFrom, Prefs.dndTo, clock.date)
-    readonly property bool silent: dnd || scheduled                  // popups are held back, for either reason
+    readonly property bool silent: dnd || scheduled || Prefs.focusMode                  // popups are held back, for either reason
 
     // Apps whose popups are switched off for good (their messages still reach the history).
     function isMuted(app) { return app !== "" && Prefs.mutedApps.includes(app) }

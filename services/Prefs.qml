@@ -26,6 +26,9 @@ Singleton {
     property bool dndSchedule: false     // Do Not Disturb every day between dndFrom and dndTo
     property string dndFrom: "22:00"
     property string dndTo: "07:00"
+    property bool focusMode: false       // silences notifications and hides the capsule and radial menu
+    property bool nightLight: false      // warm screen tint (needs wlsunset)
+    property int nightTemp: 4000         // its colour temperature in kelvin; lower is warmer
     property int idleLockMin: 0          // lock after this many idle minutes; 0 = never
     property int idleOffMin: 0           // turn the screens off after this many idle minutes; 0 = never
 
@@ -47,6 +50,9 @@ Singleton {
         dndSchedule:     v => typeof v === "boolean",
         dndFrom:         v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
         dndTo:           v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+        focusMode:       v => typeof v === "boolean",
+        nightLight:      v => typeof v === "boolean",
+        nightTemp:       v => Number.isInteger(v) && v >= 2500 && v <= 6000,
         idleLockMin:     v => Number.isInteger(v) && v >= 0 && v <= 240,
         idleOffMin:      v => Number.isInteger(v) && v >= 0 && v <= 240
     })

@@ -135,6 +135,46 @@ Overlay {
                 Switch { checked: Idle.keepAwake; onToggled: v => Idle.keepAwake = v }
             }
 
+            // Focus mode (silent notifications, no capsule or radial menu)
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                IconButton {
+                    icon: "\uf06e"; size: 34
+                    active: Prefs.focusMode
+                    tone: Prefs.focusMode ? Theme.accent : Theme.fg
+                    onClicked: Prefs.set("focusMode", !Prefs.focusMode)
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: "Focus mode"
+                    color: Theme.fg
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+                Switch { checked: Prefs.focusMode; onToggled: v => Prefs.set("focusMode", v) }
+            }
+
+            // Night light
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                opacity: NightLight.available ? 1 : 0.55
+                IconButton {
+                    icon: "\uf186"; size: 34
+                    active: NightLight.on
+                    tone: NightLight.on ? Theme.accent : Theme.fg
+                    onClicked: if (NightLight.available) Prefs.set("nightLight", !Prefs.nightLight)
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: !NightLight.available ? "Night light · not installed" : (NightLight.failed ? "Night light · could not start" : "Night light")
+                    color: Theme.fg
+                    elide: Text.ElideRight
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+                Switch { enabled: NightLight.available; checked: Prefs.nightLight; onToggled: v => Prefs.set("nightLight", v) }
+            }
+
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
 
             // Output devices
