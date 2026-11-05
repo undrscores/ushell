@@ -25,12 +25,13 @@ PanelWindow {
     property real panelHeight: 300
     property int hotSize: 4
     property real panelRadius: Theme.radiusLarge
-    default property alias content: panel.data
+    default property alias content: body.data
 
     readonly property bool vertical: edge !== "top"
     readonly property bool attached: Theme.frame > 0     // flush with the screen frame, with concave fillets where they meet
     readonly property real gap: Theme.edgeGap
     readonly property real fillet: 14
+    readonly property real bleed: 3                     // how far an attached panel reaches under the frame
     readonly property real screenW: screen ? screen.width : 1920
     readonly property real screenH: screen ? screen.height : 1080
 
@@ -122,7 +123,14 @@ PanelWindow {
 
             Glass {
                 id: panel
-                anchors.fill: parent
+                // reaches a little under the frame so niri's window border (which pokes into the frame band)
+                // and anti-aliasing don't show as a line where the panel meets the frame
+                anchors {
+                    fill: parent
+                    topMargin:   win.attached && win.edge === "top"   ? -win.bleed : 0
+                    leftMargin:  win.attached && win.edge === "left"  ? -win.bleed : 0
+                    rightMargin: win.attached && win.edge === "right" ? -win.bleed : 0
+                }
                 radius: win.panelRadius
                 flat: win.attached
                 color: win.attached ? Theme.frameColor : Theme.glass
@@ -132,6 +140,17 @@ PanelWindow {
                 topRightRadius:    win.attached && (win.edge === "top" || win.edge === "right") ? 0 : win.panelRadius
                 bottomLeftRadius:  win.attached && win.edge === "left"  ? 0 : win.panelRadius
                 bottomRightRadius: win.attached && win.edge === "right" ? 0 : win.panelRadius
+
+                // the panel's content keeps the size and position it would have without the bleed
+                Item {
+                    id: body
+                    anchors {
+                        fill: parent
+                        topMargin:   win.attached && win.edge === "top"   ? win.bleed : 0
+                        leftMargin:  win.attached && win.edge === "left"  ? win.bleed : 0
+                        rightMargin: win.attached && win.edge === "right" ? win.bleed : 0
+                    }
+                }
             }
 
             // concave corners where the panel meets the frame
