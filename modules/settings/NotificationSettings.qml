@@ -1,0 +1,50 @@
+import QtQuick
+import QtQuick.Layouts
+import "../../config"
+import "../../services"
+import "../../components"
+
+// Notifications: quiet hours and muted apps.
+ColumnLayout {
+    spacing: 22
+
+    SettingsGroup {
+        title: "Quiet hours"
+        SettingRow {
+            icon: ""; title: "Do Not Disturb on a schedule"; hint: "Popups stay quiet every day in this window; urgent ones still show"
+            Switch { checked: Prefs.dndSchedule; onToggled: v => Prefs.set("dndSchedule", v) }
+        }
+        RowLayout {
+            visible: Prefs.dndSchedule
+            Layout.fillWidth: true
+            Layout.leftMargin: 40
+            spacing: 10
+            Text { text: "From"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize } }
+            TimeField { value: Prefs.dndFrom; onEdited: v => Prefs.set("dndFrom", v) }
+            Text { text: "to"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize } }
+            TimeField { value: Prefs.dndTo; onEdited: v => Prefs.set("dndTo", v) }
+            Item { Layout.fillWidth: true }
+        }
+    }
+
+    SettingsGroup {
+        title: "Muted apps"
+        Text {
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            color: Theme.fgDim
+            font { family: Theme.font; pixelSize: Theme.fontSize - 1 }
+            text: Prefs.mutedApps.length > 0 ? "These apps never pop up, but their notifications still reach the history. Click one to unmute it."
+                                              : "No muted apps. Mute one with  qs ipc call notifications mute \"App name\"."
+        }
+        Flow {
+            visible: Prefs.mutedApps.length > 0
+            Layout.fillWidth: true
+            spacing: 6
+            Repeater {
+                model: Prefs.mutedApps
+                delegate: Pill { required property string modelData; label: modelData + "  "; onClicked: Notifications.unmute(modelData) }
+            }
+        }
+    }
+}

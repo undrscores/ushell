@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "media", "notifications", "settings", "appearance", "network"].includes(Shell.overlay)
+        pinned: ["quicksettings", "media", "notifications", "network"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -139,7 +139,7 @@ Variants {
 
             // Settings
             BarItem {
-                active: Shell.overlay === "settings"
+                active: Shell.settingsOpen
                 onClicked: Shell.toggle("settings")
                 Icon { text: "\uf013"; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
             }

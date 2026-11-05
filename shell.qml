@@ -12,7 +12,6 @@ import "modules/settings"
 import "modules/media"
 import "modules/power"
 import "modules/wallpaper"
-import "modules/appearance"
 import "modules/notifications"
 import "modules/osd"
 import "modules/network"
@@ -52,10 +51,9 @@ ShellRoot {
     QuickSettings {}
     MediaMenu {}
     ClipboardMenu {}
-    SettingsMenu {}
+    SettingsWindow {}
     PowerMenu {}
     WallpaperPicker {}
-    AppearanceMenu {}
     NetworkMenu {}
     NotificationPopups {}
     NotificationsMenu {}
@@ -121,11 +119,13 @@ ShellRoot {
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network>
+    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network>   (settings is a window)
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }
         function open(name: string): void   { Shell.open(name) }
+        // qs ipc call shell settings <general|appearance|notifications|power|weather|about>   open the settings window on a section
+        function settings(page: string): void { Shell.openSettings(page) }
         function close(): void              { Shell.close() }
         // qs ipc call shell tab <0|1>   open the widgets panel on a tab
         // qs ipc call shell brightness <+N|-N>   change brightness of all monitors by N percent
