@@ -79,6 +79,8 @@ Singleton {
     // ── colours from the wallpaper ──────────────────────────────────────────
     property real hue: -1
     property real sat: 0
+    property real hue2: -1              // second colour of the picture, -1 = none
+    property real sat2: 0
     property bool colorsOk: false       // false: off, not read yet, failed, or the picture has no colour (grey)
     property bool colorsRead: false     // the reader has finished for the current picture
     property string colorError: ""      // why it failed, e.g. no image decoder for a JPEG (shown in the Appearance panel)
@@ -112,7 +114,7 @@ Singleton {
                 if (colorProc.path !== root.current) { again.restart(); return }     // changed while it was running
                 let j = null
                 try { j = JSON.parse(text) } catch (e) {}
-                if (j && typeof j.hue === "number") { root.hue = j.hue; root.sat = j.sat ?? 0.5; root.colorsOk = true; root.colorError = "" }
+                if (j && typeof j.hue === "number") { root.hue = j.hue; root.sat = j.sat ?? 0.5; root.hue2 = typeof j.hue2 === "number" ? j.hue2 : -1; root.sat2 = j.sat2 ?? 0; root.colorsOk = true; root.colorError = "" }
                 else {
                     root.colorsOk = false
                     // {"error": ...} from the script; no output at all means it never ran (python3 missing?)

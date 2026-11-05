@@ -13,7 +13,7 @@ Overlay {
     onOpenChanged: if (open) Wallpapers.refresh()
 
     // the wallpaper's colour, when the theme is following it (used by the previews)
-    readonly property var wall: Wallpapers.useColors ? ({ hue: Wallpapers.hue, sat: Wallpapers.sat }) : null
+    readonly property var wall: Wallpapers.useColors ? ({ hue: Wallpapers.hue, sat: Wallpapers.sat, hue2: Wallpapers.hue2 >= 0 ? Wallpapers.hue2 : undefined, sat2: Wallpapers.sat2 }) : null
 
     DropCard {
         id: card
@@ -117,7 +117,7 @@ Overlay {
                     id: wsw
                     readonly property bool usable: Prefs.wallpaper !== ""
                     width: 24; height: 24; radius: 12
-                    color: Wallpapers.colorsOk ? Palette.make(Theme.mode, "mauve", { hue: Wallpapers.hue, sat: Wallpapers.sat }).accent : Theme.surfaceHi
+                    color: Wallpapers.colorsOk ? Palette.make(Theme.mode, "mauve", { hue: Wallpapers.hue, sat: Wallpapers.sat, hue2: Wallpapers.hue2 >= 0 ? Wallpapers.hue2 : undefined, sat2: Wallpapers.sat2 }).accent : Theme.surfaceHi
                     Behavior on color { ColorAnimation { duration: Theme.animFade } }
                     border { width: Prefs.wallpaperColors ? 2 : 1; color: Prefs.wallpaperColors ? Theme.fg : Theme.line }
                     opacity: usable ? 1 : 0.35

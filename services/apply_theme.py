@@ -42,10 +42,33 @@ def mix(a, b, t):
 
 bg, fg, acc, acc2 = c["bg"], c["fg"], c["accent"], c["accent2"]
 dim, surf, hi = c["fgDim"], c["surface"], c["surfaceHi"]
-red, green = c["danger"], c["ok"]
-yellow, cyan = "#f9e2af", "#94e2d5"
-if c.get("mode") == "light":
-    yellow, cyan = "#df8e1d", "#179299"
+import colorsys
+
+
+def contrast(a, b):
+    def lum(h):
+        f = lambda v: v / 12.92 if v <= 0.03928 else ((v + 0.055) / 1.055) ** 2.4
+        r, g, bl = (f(x / 255) for x in rgb(h))
+        return 0.2126 * r + 0.7152 * g + 0.0722 * bl
+    x, y = lum(a), lum(b)
+    return (max(x, y) + 0.05) / (min(x, y) + 0.05)
+
+
+def tuned(hue):
+    """A terminal colour of the given hue (degrees) that shares the accent's saturation and brightness,
+    so the palette feels like one family, eased until it reads on the background."""
+    _, s, v = colorsys.rgb_to_hsv(*(x / 255 for x in rgb(acc)))
+    light = c.get("mode") == "light"
+    s = min(max(s, 0.3), 0.6) if not light else max(s, 0.6)
+    while True:
+        r, g, b = colorsys.hsv_to_rgb(hue / 360, s, v)
+        h = "#%02x%02x%02x" % (round(r * 255), round(g * 255), round(b * 255))
+        if contrast(h, bg) >= 4.5 or v <= 0.35 or v >= 0.99:
+            return h
+        v = v - 0.04 if light else v + 0.04
+
+
+red, green, yellow, cyan = tuned(350), tuned(125), tuned(45), tuned(180)
 
 ansi_normal = [surf, red, green, yellow, acc, acc2, cyan, fg]
 ansi_bright = [hi, red, green, yellow, acc, acc2, cyan, c["fg"]]

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Dominant colour of a wallpaper, for the theme's "colours from wallpaper" option.
 
-  wallpaper_colors.py PATH    prints  {"hue": 0..360 or null, "sat": 0..1, "luma": 0..1}
-                              (hue is null for a grey picture), or  {"error": "..."}  and exits 1.
+  wallpaper_colors.py PATH    prints  {"hue", "sat", "hue2", "sat2", "luma"}
+                              (hue 0..360 and sat 0..1 for the main colour, hue2/sat2 for a second distinct
+                              colour; hue is null for a grey picture, hue2 when there is no second colour), or  {"error": "..."}  and exits 1.
 
 Reads the picture at ~64x64 with the first decoder that works: Pillow, ImageMagick, ffmpeg,
 or a built-in PNG reader (stdlib only) as the last resort.
@@ -140,7 +141,11 @@ def read_pixels(path):
 
 
 def analyze(pixels):
-    """The hue most of the picture's colourful pixels agree on (grey, dark and washed-out pixels barely count)."""
+    """The picture's main colours: the accent hue most of its colourful pixels agree on, and a second,
+    clearly different hue when the picture really has one (grey, dark and washed-out pixels barely count).
+
+    Each pixel votes for its hue with the weight saturation x brightness, so a big patch of moderately
+    colourful sky beats a few neon pixels, but vivid colours still beat dull ones."""
     weight = [0.0] * BINS
     cos_sum, sin_sum, sat_sum = [0.0] * BINS, [0.0] * BINS, [0.0] * BINS
     luma = 0.0
@@ -156,15 +161,26 @@ def analyze(pixels):
         sin_sum[k] += wgt * math.sin(h * 2 * math.pi)
         sat_sum[k] += wgt * s
     result = {"luma": round(luma / (255 * max(1, len(pixels))), 3)}
-    if sum(weight) < 0.02 * len(pixels):             # practically grey
-        return dict(result, hue=None, sat=0.0)
+    if sum(weight) < 0.003 * len(pixels):             # practically grey
+        return dict(result, hue=None, sat=0.0, hue2=None, sat2=0.0)
     score = [weight[(k - 1) % BINS] * 0.5 + weight[k] + weight[(k + 1) % BINS] * 0.5 for k in range(BINS)]
+
+    def colour(k):
+        near = [(k - 1) % BINS, k, (k + 1) % BINS]
+        c, s_ = sum(cos_sum[i] for i in near), sum(sin_sum[i] for i in near)
+        total = sum(weight[i] for i in near)
+        return round((math.degrees(math.atan2(s_, c)) + 360) % 360, 1), round(sum(sat_sum[i] for i in near) / total, 3)
+
     best = max(range(BINS), key=lambda k: score[k])
-    near = [(best - 1) % BINS, best, (best + 1) % BINS]
-    c, s_ = sum(cos_sum[k] for k in near), sum(sin_sum[k] for k in near)
-    total = sum(weight[k] for k in near)
-    hue = (math.degrees(math.atan2(s_, c)) + 360) % 360
-    return dict(result, hue=round(hue, 1), sat=round(sum(sat_sum[k] for k in near) / total, 3))
+    hue, sat = colour(best)
+    # second colour: the strongest hue at least 50 degrees away from the first, and at least a third as strong
+    far = [k for k in range(BINS) if min((k - best) % BINS, (best - k) % BINS) >= 5]
+    best2 = max(far, key=lambda k: score[k])
+    if score[best2] >= 0.33 * score[best]:
+        hue2, sat2 = colour(best2)
+    else:
+        hue2, sat2 = None, 0.0
+    return dict(result, hue=hue, sat=sat, hue2=hue2, sat2=sat2)
 
 
 def main(argv):
