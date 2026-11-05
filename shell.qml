@@ -14,12 +14,13 @@ import "modules/media"
 import "modules/power"
 import "modules/wallpaper"
 import "modules/appearance"
+import "modules/notifications"
 import "services"
 import "config"
 
 ShellRoot {
-    // singletons are created lazily; touch the clipboard so its history watcher starts with the shell
-    readonly property var warm: [Clipboard.items.length]
+    // singletons are created lazily; touch the clipboard and the notification daemon so they start with the shell
+    readonly property var warm: [Clipboard.items.length, Notifications.count]
 
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
@@ -41,6 +42,8 @@ ShellRoot {
     PowerMenu {}
     WallpaperPicker {}
     AppearanceMenu {}
+    NotificationPopups {}
+    NotificationsMenu {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
     IpcHandler {
@@ -48,7 +51,16 @@ ShellRoot {
         function query(text: string): void { launcher.query(text) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance>
+    // qs ipc call notifications <toggleDnd | dnd true|false | clear | test>   (history: qs ipc call shell toggle notifications)
+    IpcHandler {
+        target: "notifications"
+        function toggleDnd(): void { Notifications.toggleDnd() }
+        function dnd(on: bool): void { Notifications.setDnd(on) }
+        function clear(): void { Notifications.clear() }
+        function test(): void { Notifications.test() }
+    }
+
+    // qs ipc call shell toggle <launcher|quicksettings|calendar|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications>
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }
