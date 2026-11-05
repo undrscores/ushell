@@ -61,6 +61,7 @@ Singleton {
     readonly property int margin:      8
     readonly property int frame:       Config.frame ? Config.frameSize : 0     // screen-edge frame thickness (0 = off)
     readonly property int frameRadius: 22                                      // rounding of the frame's inner corners
+    readonly property int edgeGap:     frame > 0 ? frame : margin             // where bar / dock / dropdowns sit: flush with the frame, or floating
     readonly property int inset:       frame + margin                          // where floating panels sit from the screen edge
     readonly property int barHeight:   38
     readonly property int dockWidth:   68      // left dock; the clipboard flyout opens beside it
