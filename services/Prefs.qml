@@ -19,6 +19,12 @@ Singleton {
     property string wallpaper: ""        // picture path; empty = ushell draws no wallpaper
     property bool wallpaperColors: false // accent colour taken from the wallpaper
     property bool doNotDisturb: false    // no notification popups (urgent ones still show); history still fills
+    property var mutedApps: []           // app names whose notifications never pop up (they still reach the history)
+    property bool dndSchedule: false     // Do Not Disturb every day between dndFrom and dndTo
+    property string dndFrom: "22:00"
+    property string dndTo: "07:00"
+    property int idleLockMin: 0          // lock after this many idle minutes; 0 = never
+    property int idleOffMin: 0           // turn the screens off after this many idle minutes; 0 = never
 
     // setting name -> "is this a valid value?"
     readonly property var schema: ({
@@ -30,7 +36,13 @@ Singleton {
         accent:          v => typeof v === "string",
         wallpaper:       v => typeof v === "string",
         wallpaperColors: v => typeof v === "boolean",
-        doNotDisturb:    v => typeof v === "boolean"
+        doNotDisturb:    v => typeof v === "boolean",
+        mutedApps:       v => Array.isArray(v) && v.every(x => typeof x === "string" && x !== ""),
+        dndSchedule:     v => typeof v === "boolean",
+        dndFrom:         v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+        dndTo:           v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+        idleLockMin:     v => Number.isInteger(v) && v >= 0 && v <= 240,
+        idleOffMin:      v => Number.isInteger(v) && v >= 0 && v <= 240
     })
 
     // True once prefs.json has been read (or turned out not to exist). Until then a change is held back,

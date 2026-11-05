@@ -17,6 +17,8 @@ import "modules/appearance"
 import "modules/notifications"
 import "modules/osd"
 import "modules/network"
+import "modules/lock"
+import "modules/idle"
 import "services"
 import "config"
 
@@ -31,6 +33,8 @@ ShellRoot {
     Binding { target: Theme; property: "wallSat"; value: Wallpapers.sat }
 
     Wallpaper {}
+    LockScreen {}
+    IdleHandler {}
 
     Bar {}
     LeftBar {}
@@ -74,6 +78,20 @@ ShellRoot {
         }
         function scan(): void { Network.scan() }
         function wifi(on: bool): void { Network.setWifi(on) }
+    }
+
+    // qs ipc call lock lock     (bind to a key, or call from `loginctl lock-session` handlers)
+    // qs ipc call idle <toggle | keepAwake true|false>   hold back idle lock / screen-off
+    IpcHandler {
+        target: "lock"
+        function lock(): void { Lock.lock() }
+        function locked(): bool { return Lock.locked }
+    }
+    IpcHandler {
+        target: "idle"
+        function toggle(): void { Idle.toggle() }
+        function keepAwake(on: bool): void { Idle.keepAwake = on }
+        function status(): string { return JSON.stringify({ keepAwake: Idle.keepAwake, lockMin: Prefs.idleLockMin, offMin: Prefs.idleOffMin }) }
     }
 
     // qs ipc call osd test   (show the volume pill)
