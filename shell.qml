@@ -31,6 +31,8 @@ ShellRoot {
     Binding { target: Theme; property: "accentName"; value: Prefs.accent }
     Binding { target: Theme; property: "wallHue"; value: Wallpapers.useColors ? Wallpapers.hue : -1 }
     Binding { target: Theme; property: "wallSat"; value: Wallpapers.sat }
+    Binding { target: Theme; property: "wallHue2"; value: Wallpapers.hue2 }
+    Binding { target: Theme; property: "wallSat2"; value: Wallpapers.sat2 }
 
     ThemeExport {}
     Wallpaper {}

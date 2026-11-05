@@ -13,7 +13,9 @@ Singleton {
     // Accent taken from the wallpaper (hue in degrees, -1 = not in use); set from Wallpapers via shell.qml.
     property real wallHue: -1
     property real wallSat: 0
-    readonly property var pal: Palette.make(mode, accentName, wallHue >= 0 ? ({ hue: wallHue, sat: wallSat }) : null)
+    property real wallHue2: -1          // the wallpaper's second colour (-1 = none): used for accent2
+    property real wallSat2: 0
+    readonly property var pal: Palette.make(mode, accentName, wallHue >= 0 ? ({ hue: wallHue, sat: wallSat, hue2: wallHue2 >= 0 ? wallHue2 : undefined, sat2: wallSat2 }) : null)
 
     property color bg:        pal.bg
     property color surface:   pal.surface

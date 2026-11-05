@@ -115,7 +115,10 @@ function make(mode, accentName, auto) {
         bg: n.bg, surface: n.surface, surfaceHi: n.surfaceHi,
         fg: n.fg, fgDim: n.fgDim, danger: base.danger, ok: base.ok,
         ink: n.ink, sheen: base.sheen,
-        accent: accent, accent2: custom ? fromHue(m, auto.hue + 40, auto.sat, n.bg, n.surface) : ACCENTS.pink[i],
+        accent: accent, accent2: custom ? (typeof auto.hue2 === "number" && isFinite(auto.hue2)
+            ? fromHue(m, auto.hue2, auto.sat2, n.bg, n.surface)       // the wallpaper's own second colour
+            : fromHue(m, auto.hue + 40, auto.sat, n.bg, n.surface))   // single-colour picture: a neighbour hue
+            : ACCENTS.pink[i],
         accentFg: contrast(accent, "#1e1e2e") >= contrast(accent, "#eff1f5") ? "#1e1e2e" : "#eff1f5"
     }
 }
