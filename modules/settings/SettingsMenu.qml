@@ -75,7 +75,7 @@ Overlay {
                     clip: true
                     text: Prefs.weatherCity
                     font { family: Theme.font; pixelSize: Theme.fontSize }
-                    onAccepted: { Prefs.set("weatherCity", text.trim()); focus = false }
+                    onAccepted: focus = false                       // leaving the field is what saves it
                     onActiveFocusChanged: if (!activeFocus) Prefs.set("weatherCity", text.trim())
                     Keys.onEscapePressed: Shell.close()
                     Text { visible: !city.text; text: "City (empty = detect by IP)"; color: Theme.fgDim; font: city.font; anchors.verticalCenter: parent.verticalCenter }

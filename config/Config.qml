@@ -17,6 +17,7 @@ Singleton {
         lockCommand: ["swaylock", "-f"],
         searchUrl: "https://duckduckgo.com/?q=",
         glassOpacity: 1.0,
+        maxVolume: 1.0,
         wallpaperDir: "~/Pictures/Wallpapers"
     })
 
@@ -34,6 +35,9 @@ Singleton {
 
     // How opaque panels are: 1 = solid, down to 0.5 = see-through.
     property real glassOpacity: defaults.glassOpacity
+
+    // Loudest the volume sliders and the bar's scroll wheel go: 1 = 100%, up to 1.5 (amplified, can distort).
+    property real maxVolume: defaults.maxVolume
 
     // Folder the wallpaper picker lists (pictures up to one folder deep).
     property string wallpaperDir: defaults.wallpaperDir

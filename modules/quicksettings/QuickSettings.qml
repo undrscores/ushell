@@ -30,9 +30,9 @@ Overlay {
                 }
                 Slider {
                     Layout.fillWidth: true
-                    value: Audio.volume
+                    value: Audio.volume / Config.maxVolume
                     tone: Audio.muted ? Theme.fgDim : Theme.accent
-                    onMoved: v => Audio.setVolume(v)
+                    onMoved: v => Audio.setVolume(v * Config.maxVolume)
                 }
                 Text {
                     Layout.preferredWidth: 34
@@ -100,30 +100,61 @@ Overlay {
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
 
             // Output devices
-            Column {
+            ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 2
-                Repeater {
-                    model: Audio.sinks
-                    delegate: Rectangle {
-                        id: dev
-                        required property var modelData
-                        readonly property bool current: Audio.sink && Audio.sink.id === modelData.id
-                        width: parent.width; height: 36
-                        radius: Theme.radiusSmall + 2
-                        color: current ? Theme.accentSoft : (ma.containsMouse ? Theme.hover : "transparent")
-                        Behavior on color { ColorAnimation { duration: Theme.animFast } }
-                        Text {
-                            anchors { left: parent.left; leftMargin: 12; right: tick.left; rightMargin: 8; verticalCenter: parent.verticalCenter }
-                            elide: Text.ElideRight
-                            text: Audio.nodeName(dev.modelData)
-                            color: dev.current ? Theme.fg : Theme.fgDim
-                            font { family: Theme.font; pixelSize: Theme.fontSize }
+                spacing: 4
+                SectionLabel { text: "Output" }
+                Column {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    Repeater {
+                        model: Audio.sinks
+                        delegate: DeviceRow {
+                            required property var modelData
+                            width: parent.width
+                            label: Audio.nodeName(modelData)
+                            current: !!Audio.sink && Audio.sink.id === modelData.id
+                            onClicked: Audio.setSink(modelData)
                         }
-                        Icon { id: tick; visible: dev.current; text: ""; size: 12; color: Theme.accent
-                               anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter } }
-                        MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                    onClicked: Audio.setSink(dev.modelData) }
+                    }
+                }
+            }
+
+            // Input devices: only worth a list when there is something to choose between
+            ColumnLayout {
+                Layout.fillWidth: true
+                visible: Audio.sources.length > 1
+                spacing: 4
+                SectionLabel { text: "Input" }
+                Column {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    Repeater {
+                        model: Audio.sources
+                        delegate: DeviceRow {
+                            required property var modelData
+                            width: parent.width
+                            label: Audio.nodeName(modelData)
+                            current: !!Audio.source && Audio.source.id === modelData.id
+                            onClicked: Audio.setSource(modelData)
+                        }
+                    }
+                }
+            }
+
+            // Per-application volume (the first few; a browser can have many streams)
+            ColumnLayout {
+                Layout.fillWidth: true
+                visible: Audio.streams.length > 0
+                spacing: 8
+                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+                SectionLabel { text: "Applications" }
+                Repeater {
+                    model: Audio.streams.slice(0, 6)
+                    delegate: AppVolumeRow {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        node: modelData
                     }
                 }
             }
