@@ -8,6 +8,7 @@ import "../../components"
 Overlay {
     id: root
     name: "wallpapers"
+    scrim: 0.35
     onOpenChanged: if (open) {
         Wallpapers.refresh()
         Qt.callLater(() => { grid.currentIndex = Math.max(0, Wallpapers.files.indexOf(Wallpapers.current)); grid.positionViewAtIndex(grid.currentIndex, GridView.Center); grid.forceActiveFocus() })

@@ -7,6 +7,7 @@ import "../../components"
 Overlay {
     id: root
     name: "power"
+    scrim: 0.45
 
     // Actions live in services/Actions.qml; a destructive one is armed by the first click and runs on the second.
     onOpenChanged: Actions.disarm()
