@@ -24,9 +24,10 @@ Overlay {
             spacing: 12
             Column {
                 Layout.fillWidth: true
+                Layout.minimumWidth: 0
                 spacing: 2
-                Text { text: r.title; color: Theme.fg; font { family: Theme.font; pixelSize: Theme.fontSize } }
-                Text { visible: r.hint !== ""; text: r.hint; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 3 } }
+                Text { width: parent.width; wrapMode: Text.Wrap; text: r.title; color: Theme.fg; font { family: Theme.font; pixelSize: Theme.fontSize } }
+                Text { width: parent.width; wrapMode: Text.Wrap; visible: r.hint !== ""; text: r.hint; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2 } }
             }
             Item { id: slot; implicitWidth: childrenRect.width; implicitHeight: childrenRect.height }
         }
@@ -60,7 +61,7 @@ Overlay {
             x: card.padding; y: card.padding; width: card.contentWidth
             spacing: 14
 
-            Text { text: "Panels"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            SectionLabel { text: "Panels" }
             Row_ {
                 title: "Auto-hide top pill"; hint: "Off keeps it visible and reserves space"
                 Switch { checked: Prefs.topAutoHide; onToggled: v => Prefs.set("topAutoHide", v) }
@@ -71,7 +72,7 @@ Overlay {
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
-            Text { text: "Appearance"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            SectionLabel { text: "Appearance" }
             Row_ {
                 title: "Theme and wallpaper"
                 hint: (Theme.mode === "light" ? "Light" : "Dark") + " · " + (Wallpapers.useColors ? "colours from the wallpaper" : Theme.accentName)
@@ -79,7 +80,7 @@ Overlay {
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
-            Text { text: "Weather"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            SectionLabel { text: "Weather" }
             Row_ {
                 title: "Metric units"; hint: "°C and km/h instead of °F and mph"
                 Switch { checked: Prefs.weatherMetric; onToggled: v => Prefs.set("weatherMetric", v) }
@@ -107,7 +108,7 @@ Overlay {
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
-            Text { text: "Notifications"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            SectionLabel { text: "Notifications" }
             Row_ {
                 title: "Quiet hours"; hint: "Do Not Disturb every day in this window (urgent ones still show)"
                 Switch { checked: Prefs.dndSchedule; onToggled: v => Prefs.set("dndSchedule", v) }
@@ -138,7 +139,7 @@ Overlay {
             }
 
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
-            Text { text: "Idle"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 2; letterSpacing: 0.6 } }
+            SectionLabel { text: "Idle" }
             Row_ {
                 title: "Lock after"; hint: "Of no keyboard or mouse use; a playing video holds it back"
                 Row {
