@@ -77,6 +77,17 @@ ShellRoot {
         function test(): void { Notifications.test() }
     }
 
+    // qs ipc call timer <start | pause | toggle | reset | set MINUTES | status>   (set takes whole or fractional minutes)
+    IpcHandler {
+        target: "timer"
+        function start(): void { Countdown.start() }
+        function pause(): void { Countdown.pause() }
+        function toggle(): void { Countdown.toggle() }
+        function reset(): void { Countdown.reset() }
+        function set(minutes: real): void { Countdown.setMinutes(minutes) }
+        function status(): string { return JSON.stringify({ running: Countdown.running, remaining: Math.round(Countdown.remaining), total: Countdown.total }) }
+    }
+
     // qs ipc call network <status | scan | wifi true|false>
     IpcHandler {
         target: "network"

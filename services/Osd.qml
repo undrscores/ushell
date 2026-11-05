@@ -13,15 +13,16 @@ import "../config"
 Singleton {
     id: root
 
-    property string kind: "volume"       // volume | mic | brightness | caps | num | layout   (the last three show `text`)
+    property string kind: "volume"       // volume | mic | brightness | caps | num | layout | timer   (the last four show `text`)
     property string text: ""             // for the text pills
-    readonly property bool isText: kind === "caps" || kind === "num" || kind === "layout"
+    readonly property bool isText: kind === "caps" || kind === "num" || kind === "layout" || kind === "timer"
     property real value: 0               // 1 = 100 %; volume can go above 1 up to Config.maxVolume
     property bool muted: false
     property bool shown: false
 
     readonly property real limit: kind === "volume" ? Math.max(1, Config.maxVolume) : 1   // value at which the bar is full
     readonly property string glyph: {
+        if (kind === "timer") return "\uf017"
         if (kind === "brightness") return ""
         if (kind === "mic") return muted ? "" : ""
         if (muted || value <= 0) return ""

@@ -55,6 +55,21 @@ Variants {
             Rectangle { visible: tray.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
             TrayRow { id: tray; window: win; anchors.verticalCenter: parent.verticalCenter }
 
+            // Timer (only while one is running or paused) → Focus tab
+            Rectangle { visible: timerItem.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+            BarItem {
+                id: timerItem
+                visible: Countdown.active
+                onClicked: { Shell.widgetsTab = 2; Shell.widgetsPinned = true }
+                Icon { text: "\uf017"; color: Countdown.running ? Theme.accent : Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
+                Text {
+                    text: Countdown.fmt(Countdown.remaining)
+                    color: Countdown.running ? Theme.fg : Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
             // Volume → quick settings
             Rectangle { width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
             BarItem {
