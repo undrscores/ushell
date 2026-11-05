@@ -124,6 +124,9 @@ PanelWindow {
                 id: panel
                 anchors.fill: parent
                 radius: win.panelRadius
+                flat: win.attached
+                color: win.attached ? Theme.frameColor : Theme.glass
+                border.width: win.attached ? 0 : 1
                 // the side against the frame is square
                 topLeftRadius:     win.attached && (win.edge === "top" || win.edge === "left")  ? 0 : win.panelRadius
                 topRightRadius:    win.attached && (win.edge === "top" || win.edge === "right") ? 0 : win.panelRadius

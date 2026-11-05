@@ -60,7 +60,8 @@ Singleton {
     readonly property int radiusLarge: radius + 4     // panels and cards
     readonly property int margin:      8
     readonly property int frame:       Config.frame ? Config.frameSize : 0     // screen-edge frame thickness (0 = off)
-    readonly property int frameRadius: 22                                      // rounding of the frame's inner corners
+    readonly property int frameRadius: 16                                      // rounding of the frame's inner corners (niri's window radius, so windows sit flush in the hole)
+    readonly property color frameColor: Qt.rgba(bg.r * 0.35 + surface.r * 0.65, bg.g * 0.35 + surface.g * 0.65, bg.b * 0.35 + surface.b * 0.65, 1)   // a step lighter than the panels so the frame reads against dark windows
     readonly property int edgeGap:     frame > 0 ? frame : margin             // where bar / dock / dropdowns sit: flush with the frame, or floating
     readonly property int inset:       frame + margin                          // where floating panels sit from the screen edge
     readonly property int barHeight:   38

@@ -12,6 +12,8 @@ Rectangle {
     // A soft drop shadow under the panel (dropdown cards turn it on). It is drawn outside the panel, so the
     // window the panel sits in must be bigger than it; windows that hug their panel leave it off.
     property bool shadow: false
+    // flat = no sheen, shade or outline: for panels that are part of the screen frame
+    property bool flat: false
     layer.enabled: shadow
     layer.effect: MultiEffect {
         shadowEnabled: true
@@ -23,6 +25,7 @@ Rectangle {
     }
     // soft top sheen
     Rectangle {
+        visible: !parent.flat
         anchors { top: parent.top; left: parent.left; right: parent.right; margins: 1 }
         height: 40
         radius: parent.radius
@@ -33,6 +36,7 @@ Rectangle {
     }
     // soft shade toward the bottom edge, so the panel reads as a raised surface
     Rectangle {
+        visible: !parent.flat
         anchors { bottom: parent.bottom; left: parent.left; right: parent.right; margins: 1 }
         height: Math.min(80, parent.height / 2)
         radius: parent.radius

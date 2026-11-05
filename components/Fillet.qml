@@ -10,7 +10,7 @@ Shape {
     property real r: 14
     property real cx: 0
     property real cy: 0
-    property color color: Theme.bg
+    property color color: Theme.frameColor
     width: r; height: r
     preferredRendererType: Shape.CurveRenderer
 
