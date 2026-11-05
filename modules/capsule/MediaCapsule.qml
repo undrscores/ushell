@@ -10,7 +10,7 @@ import "../../components"
 // pointer reaches the bottom-left corner, and for a few seconds whenever the track changes. The cover spins
 // while music plays. (Setting: Settings → Panels)
 Variants {
-    model: Prefs.mediaCapsule ? Quickshell.screens : []
+    model: Prefs.mediaCapsule && !Prefs.focusMode ? Quickshell.screens : []
 
     PanelWindow {
         id: win

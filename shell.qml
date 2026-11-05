@@ -77,6 +77,16 @@ ShellRoot {
         function test(): void { Notifications.test() }
     }
 
+    // qs ipc call modes <focus true|false | toggleFocus | nightlight true|false | toggleNightlight | status>
+    IpcHandler {
+        target: "modes"
+        function focus(on: bool): void { Prefs.set("focusMode", on) }
+        function toggleFocus(): void { Prefs.set("focusMode", !Prefs.focusMode) }
+        function nightlight(on: bool): void { Prefs.set("nightLight", on) }
+        function toggleNightlight(): void { Prefs.set("nightLight", !Prefs.nightLight) }
+        function status(): string { return JSON.stringify({ focus: Prefs.focusMode, nightLight: Prefs.nightLight, available: NightLight.available, running: NightLight.on, failed: NightLight.failed, temp: Prefs.nightTemp }) }
+    }
+
     // qs ipc call timer <start | pause | toggle | reset | set MINUTES | status>   (set takes whole or fractional minutes)
     IpcHandler {
         target: "timer"

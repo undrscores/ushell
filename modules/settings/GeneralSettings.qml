@@ -9,6 +9,32 @@ ColumnLayout {
     spacing: 22
 
     SettingsGroup {
+        title: "Modes"
+        SettingRow {
+            icon: "\uf06e"; title: "Focus mode"; hint: "Silences notifications and hides the now-playing capsule and radial menu"
+            Switch { checked: Prefs.focusMode; onToggled: v => Prefs.set("focusMode", v) }
+        }
+        SettingRow {
+            icon: "\uf186"; title: "Night light"
+            hint: NightLight.available ? (NightLight.failed ? "wlsunset quit straight away; does your compositor support it?" : "A warm tint for the evening, done by wlsunset")
+                                       : "Install wlsunset to use this"
+            Switch { enabled: NightLight.available; checked: Prefs.nightLight; onToggled: v => Prefs.set("nightLight", v) }
+        }
+        SettingRow {
+            visible: NightLight.available
+            icon: "\uf2c9"; title: "Night light warmth"; hint: "Lower is warmer"
+            Row {
+                spacing: 4
+                Repeater {
+                    model: [3000, 4000, 5000]
+                    delegate: Pill { required property int modelData; label: modelData + "K"; active: Prefs.nightTemp === modelData
+                                     onClicked: Prefs.set("nightTemp", modelData) }
+                }
+            }
+        }
+    }
+
+    SettingsGroup {
         title: "Bar and dock"
         SettingRow {
             icon: ""; title: "Auto-hide the top bar"; hint: "Off keeps it visible and reserves its space"
