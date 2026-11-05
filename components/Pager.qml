@@ -27,7 +27,7 @@ Flickable {
     contentX: index * width
     Behavior on contentX {
         enabled: !root.dragging && !root.flicking
-        SpringAnimation { spring: 4.2; damping: 0.4; epsilon: 0.4 }
+        Spring { preset: "glide"; epsilon: 0.4 }
     }
     onFlickStarted: cancelFlick()
     onDragEnded: {

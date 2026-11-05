@@ -24,7 +24,7 @@ PanelWindow {
     property real panelWidth: 300       // desired size; animated into animW / animH
     property real panelHeight: 300
     property int hotSize: 4
-    property real panelRadius: Theme.radius + 4
+    property real panelRadius: Theme.radiusLarge
     default property alias content: panel.data
 
     readonly property bool vertical: edge !== "top"
@@ -38,18 +38,14 @@ PanelWindow {
     property bool ready: false
     Timer { interval: 600; running: true; onTriggered: win.ready = true }
     // size changes wobble a little before settling
-    Behavior on animW { enabled: win.ready; SpringAnimation { spring: 3.6; damping: 0.32; epsilon: 0.4 } }
-    Behavior on animH { enabled: win.ready; SpringAnimation { spring: 3.6; damping: 0.32; epsilon: 0.4 } }
+    Behavior on animW { enabled: win.ready; Spring { preset: "settle"; epsilon: 0.4 } }
+    Behavior on animH { enabled: win.ready; Spring { preset: "settle"; epsilon: 0.4 } }
 
     property bool shown: false
     property real slide: shown ? 1 : 0
     // Real spring physics: bouncy on the way in, quick and tight on the way out.
     Behavior on slide {
-        SpringAnimation {
-            spring: win.shown ? 3.0 : 5.0
-            damping: win.shown ? 0.22 : 0.75
-            epsilon: 0.003
-        }
+        Spring { preset: win.shown ? "popIn" : "popOut"; epsilon: 0.003 }
     }
 
     // Window = fixed canvas big enough for the largest the panel can get.

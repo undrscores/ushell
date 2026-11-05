@@ -21,7 +21,7 @@ Overlay {
         Behavior on width   { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on scale   { SpringAnimation { spring: root.open ? 3.4 : 6; damping: root.open ? 0.22 : 0.8; epsilon: 0.002 } }
+        Behavior on scale   { Spring { preset: root.open ? "popIn" : "popOut"; epsilon: 0.002 } }
 
         Row {
             id: row

@@ -23,7 +23,7 @@ Overlay {
         scale: root.open ? 1 : 0.9
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
         Behavior on y       { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on scale   { SpringAnimation { spring: root.open ? 3.4 : 6; damping: root.open ? 0.24 : 0.8; epsilon: 0.002 } }
+        Behavior on scale   { Spring { preset: root.open ? "popIn" : "popOut"; epsilon: 0.002 } }
 
         Item {
             anchors { fill: parent; margins: 16 }

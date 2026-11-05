@@ -20,9 +20,9 @@ Overlay {
         transformOrigin: Item.Left
 
         Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-        Behavior on x       { SpringAnimation { spring: card.parent && root.open ? 3.4 : 6; damping: root.open ? 0.24 : 0.8; epsilon: 0.2 } }
-        Behavior on scale   { SpringAnimation { spring: root.open ? 3.4 : 6; damping: root.open ? 0.24 : 0.8; epsilon: 0.002 } }
-        Behavior on height  { SpringAnimation { spring: 3.6; damping: 0.34; epsilon: 0.4 } }
+        Behavior on x       { Spring { preset: card.parent && root.open ? "popIn" : "popOut"; epsilon: 0.2 } }
+        Behavior on scale   { Spring { preset: root.open ? "popIn" : "popOut"; epsilon: 0.002 } }
+        Behavior on height  { Spring { preset: "settle"; epsilon: 0.4 } }
 
         ClipboardPage {
             id: page

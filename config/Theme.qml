@@ -56,6 +56,7 @@ Singleton {
     // Shape & spacing
     readonly property int radius:      16
     readonly property int radiusSmall: 10
+    readonly property int radiusLarge: radius + 4     // panels and cards
     readonly property int margin:      8
     readonly property int barHeight:   38
     readonly property int dockWidth:   68      // left dock; the clipboard flyout opens beside it
@@ -72,4 +73,12 @@ Singleton {
     readonly property int animSlow:   380
     readonly property int animFade:   450      // theme changes
     readonly property int easing:     Easing.OutCubic
+    // Spring presets for Spring.qml (spring = stiffness, damping = how fast the wobble dies)
+    readonly property var springs: ({
+        popIn:  { spring: 3.4, damping: 0.24 },
+        popOut: { spring: 6.0, damping: 0.80 },
+        settle: { spring: 3.6, damping: 0.34 },
+        glide:  { spring: 4.5, damping: 0.32 },
+        snap:   { spring: 6.0, damping: 0.30 }
+    })
 }
