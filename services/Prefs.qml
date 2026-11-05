@@ -12,6 +12,9 @@ Singleton {
     id: root
     property bool topAutoHide: true      // false = top pill always visible (reserves space)
     property bool leftAutoHide: true     // false = left dock always visible (reserves space)
+    property bool frame: true            // a frame around the screen edges that the bar, dock and menus grow out of
+    property bool mediaCapsule: true     // now-playing capsule at the bottom left
+    property bool radialMenu: true       // radial quick-action menu in the bottom right corner
     property bool weatherMetric: true
     property string weatherCity: ""      // empty = locate by IP address
     property string themeMode: "dark"    // dark | light
@@ -30,6 +33,9 @@ Singleton {
     readonly property var schema: ({
         topAutoHide:     v => typeof v === "boolean",
         leftAutoHide:    v => typeof v === "boolean",
+        frame:           v => typeof v === "boolean",
+        mediaCapsule:    v => typeof v === "boolean",
+        radialMenu:      v => typeof v === "boolean",
         weatherMetric:   v => typeof v === "boolean",
         weatherCity:     v => typeof v === "string",
         themeMode:       v => v === "dark" || v === "light",

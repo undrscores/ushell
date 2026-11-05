@@ -8,9 +8,9 @@ import "../../components"
 
 // Now-playing capsule on the bottom edge, growing out of the frame at the bottom left. It slides up when the
 // pointer reaches the bottom-left corner, and for a few seconds whenever the track changes. The cover spins
-// while music plays. (Config: mediaCapsule)
+// while music plays. (Setting: Settings → Panels)
 Variants {
-    model: Config.mediaCapsule ? Quickshell.screens : []
+    model: Prefs.mediaCapsule ? Quickshell.screens : []
 
     PanelWindow {
         id: win

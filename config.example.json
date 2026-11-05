@@ -7,8 +7,5 @@
   "glassOpacity": 1.0,
   "maxVolume": 1.0,
   "wallpaperDir": "~/wallpapers",
-  "frame": true,
-  "frameSize": 8,
-  "mediaCapsule": true,
-  "radialMenu": true
+  "frameSize": 8
 }
