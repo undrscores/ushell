@@ -11,7 +11,7 @@ PanelWindow {
     id: win
     screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput) ?? Quickshell.screens[0]
     anchors { top: true; right: true }
-    margins { top: Theme.margin; right: Theme.margin }
+    margins { top: Theme.inset; right: Theme.inset }
     implicitWidth: 360
     implicitHeight: Math.max(1, stack.implicitHeight)
     exclusionMode: ExclusionMode.Ignore

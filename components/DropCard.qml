@@ -14,7 +14,7 @@ Glass {
     width: Math.min(contentWidth + padding * 2, parent.width - Theme.margin * 2)
     height: Math.min(contentHeight + padding * 2, parent.height - y - Theme.margin)
     anchors.horizontalCenter: parent.horizontalCenter
-    y: Theme.margin + Theme.barHeight + 6 + (open ? 0 : -18)
+    y: Theme.inset + Theme.barHeight + 6 + (open ? 0 : -18)
     opacity: open ? 1 : 0
     scale: open ? 1 : 0.8
     transformOrigin: Item.Top

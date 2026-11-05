@@ -19,6 +19,7 @@ import "modules/osd"
 import "modules/network"
 import "modules/lock"
 import "modules/idle"
+import "modules/frame"
 import "services"
 import "config"
 
@@ -36,6 +37,7 @@ ShellRoot {
 
     ThemeExport {}
     Wallpaper {}
+    Frame {}
     LockScreen {}
     IdleHandler {}
 
