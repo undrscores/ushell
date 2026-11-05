@@ -9,10 +9,13 @@ import "../../services"
 //
 // If this process dies while locked the compositor keeps the session locked; restart `qs` to get the
 // prompt back (or log in on another TTY and run `pkill niri`).
+Scope {
+    // Not a binding: if the compositor refuses or ends the lock, `locked` is reset on the lock and Lock must follow.
+    Connections { target: Lock; function onLockedChanged() { if (lock.locked !== Lock.locked) lock.locked = Lock.locked } }
+
+// WlSessionLock's one child is the template for the per-screen surface, so nothing else may be put inside it.
 WlSessionLock {
     id: lock
-    // Not a binding: if the compositor refuses or ends the lock, `locked` is reset here and Lock must follow.
-    Connections { target: Lock; function onLockedChanged() { if (lock.locked !== Lock.locked) lock.locked = Lock.locked } }
     onLockedChanged: if (Lock.locked !== locked) Lock.locked = locked
 
     WlSessionLockSurface {
@@ -98,4 +101,5 @@ WlSessionLock {
             }
         }
     }
+}
 }
