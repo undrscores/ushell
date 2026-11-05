@@ -11,6 +11,15 @@ Singleton {
     property var workspaces: []
     property string focusedOutput: ""
     property var windows: []
+    property var layouts: []                // keyboard layout names, e.g. ["English (US)", "Deutsch"]
+    property int layoutIdx: 0
+    property bool layoutSeen: false         // the first layout report has arrived (switching shows an OSD, starting up does not)
+    readonly property string layoutName: layouts[layoutIdx] ?? ""
+    // "English (US)" -> "US", "Deutsch" -> "DE"
+    readonly property string layoutShort: {
+        const m = /\(([^)]+)\)/.exec(layoutName)
+        return (m ? m[1] : layoutName.slice(0, 2)).toUpperCase()
+    }
 
     // First open window belonging to a desktop entry (matched on app_id), or null.
     function appWindow(entry) {
@@ -42,6 +51,13 @@ Singleton {
         }
     }
     Process {
+        id: layoutProc
+        command: ["niri", "msg", "-j", "keyboard-layouts"]
+        stdout: StdioCollector {
+            onStreamFinished: { try { const k = JSON.parse(text); root.setLayouts(k.names, k.current_idx) } catch (e) {} }
+        }
+    }
+    Process {
         id: outProc
         command: ["niri", "msg", "-j", "focused-output"]
         stdout: StdioCollector {
@@ -49,7 +65,7 @@ Singleton {
         }
     }
     // Event names from `niri msg -j event-stream` (one JSON object per line, keyed by event name).
-    readonly property var ignoredEvents: ["WindowLayoutsChanged", "KeyboardLayoutsChanged", "KeyboardLayoutSwitched",
+    readonly property var ignoredEvents: ["WindowLayoutsChanged",
         "OverviewOpenedOrClosed", "ConfigLoaded", "ScreenshotCaptured", "WorkspaceUrgencyChanged", "WindowUrgencyChanged"]
     readonly property var windowEvents: ["WindowsChanged", "WindowOpenedOrChanged", "WindowClosed"]
     readonly property var workspaceEvents: ["WorkspacesChanged", "WorkspaceActivated", "WorkspaceActiveWindowChanged"]
@@ -75,9 +91,17 @@ Singleton {
         return true
     }
 
+    function setLayouts(names, idx) {
+        const switched = layoutSeen && layouts.length > 1 && idx !== layoutIdx
+        layouts = names; layoutIdx = idx; layoutSeen = true
+        if (switched) Osd.showText("layout", layoutName, true)
+    }
+
     function handleEvent(line) {
         let ev = null, name = ""
         try { ev = JSON.parse(line); name = Object.keys(ev)[0] } catch (e) {}      // unparsable: refresh everything
+        if (name === "KeyboardLayoutsChanged") { const k = ev[name].keyboard_layouts; setLayouts(k.names, k.current_idx); return }
+        if (name === "KeyboardLayoutSwitched") { setLayouts(layouts, ev[name].idx); return }
         if (ignoredEvents.includes(name)) return
         const body = ev && ev[name] ? ev[name] : {}
         if (name === "WindowOpenedOrChanged" && patchWindow(body.window)) return
@@ -106,5 +130,5 @@ Singleton {
             root.staleOutput = false
         }
     }
-    Component.onCompleted: refresh()
+    Component.onCompleted: { refresh(); layoutProc.running = true }
 }
