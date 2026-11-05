@@ -14,6 +14,12 @@ Shape {
     width: r; height: r
     preferredRendererType: Shape.CurveRenderer
 
+    // thin strips of the same colour just outside the two straight edges, covering anti-aliasing seams
+    // against the frame and the panel
+    readonly property real ov: 3
+    Rectangle { color: root.color; x: root.cx === 0 ? -root.ov : root.r; y: 0; width: root.ov; height: root.r }
+    Rectangle { color: root.color; y: root.cy === 0 ? -root.ov : root.r; x: 0; height: root.ov; width: root.r }
+
     ShapePath {
         fillColor: root.color
         strokeColor: "transparent"
