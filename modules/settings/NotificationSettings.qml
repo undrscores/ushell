@@ -4,9 +4,18 @@ import "../../config"
 import "../../services"
 import "../../components"
 
-// Notifications: quiet hours and muted apps.
+// Notifications: history, quiet hours and muted apps.
 ColumnLayout {
     spacing: 22
+
+    SettingsGroup {
+        title: "History"
+        SettingRow {
+            icon: "\uf1da"; title: "Remember notifications after a restart"
+            hint: "The list in the notification centre is saved in the shell's state folder (" + Notifications.count + " now). Off keeps it in memory only."
+            Switch { checked: Prefs.notificationLog; onToggled: v => Prefs.set("notificationLog", v) }
+        }
+    }
 
     SettingsGroup {
         title: "Quiet hours"

@@ -15,6 +15,8 @@ var RULES = {
     wallpaperDir: { ok: isText,                                        fix: v => v.trim(),                                    hint: "a folder path (~ is your home)" },
     glassOpacity: { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.max(0.5, Math.min(1, v)),               hint: "a number from 0.5 to 1" },
     frameSize:    { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.round(Math.max(4, Math.min(20, v))),    hint: "a number of pixels from 4 to 20" },
+    recordingDir: { ok: isText,                                        fix: v => v.trim(),                                    hint: "a folder path (~ is your home) for screen recordings" },
+    calendarPaths: { ok: isTextList,                                   fix: v => v.map(s => s.trim()),                        hint: "a list of .ics files or folders (~ is your home) to show in the calendar" },
     maxVolume:    { ok: v => typeof v === "number" && isFinite(v),     fix: v => Math.max(1, Math.min(1.5, v)),               hint: "a number from 1 to 1.5 (1 = 100%)" }
 }
 

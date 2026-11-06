@@ -20,7 +20,9 @@ Singleton {
         glassOpacity: 1.0,
         maxVolume: 1.0,
         wallpaperDir: "~/wallpapers",
-        frameSize: 8
+        frameSize: 8,
+        recordingDir: "~/Videos/Recordings",
+        calendarPaths: ["~/.local/share/ushell/calendar", "~/.local/share/calendars"]
     })
 
     // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
@@ -50,6 +52,13 @@ Singleton {
     // How thick the frame around the screen edges is, in pixels (it is switched on and off in Settings). Keep niri's
     // `gaps` at least this large so windows sit inside it.
     property int frameSize: defaults.frameSize
+
+    // Where screen recordings are saved (screenshots go where niri's `screenshot-path` says).
+    property string recordingDir: defaults.recordingDir
+
+    // .ics files and folders (searched recursively) the calendar shows events from. A vdirsyncer or khal
+    // calendar folder works; so does a single exported file.
+    property var calendarPaths: defaults.calendarPaths
 
     readonly property string path: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/ushell/config.json"
 

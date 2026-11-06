@@ -16,7 +16,7 @@ Variants {
         screen: modelData
 
         readonly property real inset: Theme.edgeGap
-        readonly property real orbit: 124            // distance of the actions from the centre button
+        readonly property real orbit: 138            // distance of the actions from the centre button
         readonly property real hub: 52               // centre button diameter
         // where the centre button sits when open
         readonly property real cx: width - inset - hub / 2 - 4
@@ -25,6 +25,7 @@ Variants {
         readonly property var actions: [
             { glyph: "", label: "Clipboard",  run: () => Shell.toggle("clipboard") },
             { glyph: "", label: "Wallpapers", run: () => Shell.toggle("wallpapers") },
+            { glyph: "\uf030", label: "Capture",    run: () => Shell.toggle("capture") },
             { glyph: "\uf013", label: "Settings",   run: () => Shell.toggle("settings") },
             { glyph: "\uf011", label: "Power",      run: () => Shell.toggle("power") }
         ]

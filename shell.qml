@@ -20,12 +20,15 @@ import "modules/idle"
 import "modules/frame"
 import "modules/capsule"
 import "modules/radial"
+import "modules/capture"
+import "modules/calendar"
+import "modules/switcher"
 import "services"
 import "config"
 
 ShellRoot {
     // singletons are created lazily; touch the clipboard and the notification daemon so they start with the shell
-    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen]
+    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen, Power.hasBattery, Capture.canRecord]
 
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
@@ -57,6 +60,9 @@ ShellRoot {
     NetworkMenu {}
     NotificationPopups {}
     NotificationsMenu {}
+    CaptureMenu {}
+    CalendarMenu {}
+    WindowSwitcher {}
     OsdWindow {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
@@ -120,6 +126,39 @@ ShellRoot {
         function layoutOsd(): void { Osd.showText("layout", Niri.layoutName || "English (US)", true) }
     }
 
+    // qs ipc call capture <region|screen|window|record|recordRegion|stop|toggle|cancel|status>   (screenshots are niri's; recording needs wf-recorder)
+    IpcHandler {
+        target: "capture"
+        function region(): void { Capture.screenshot("region") }
+        function screen(): void { Capture.screenshot("screen") }
+        function window(): void { Capture.screenshot("window") }
+        function record(): void { Capture.record(false) }
+        function recordRegion(): void { Capture.record(true) }
+        function stop(): void { Capture.stopRecording() }
+        function toggle(): void { Capture.toggleRecording() }
+        function cancel(): void { Capture.cancel() }
+        function status(): string { return JSON.stringify({ canRecord: Capture.canRecord, canPick: Capture.canPick, recording: Capture.recording, elapsed: Capture.elapsed, file: Capture.lastFile, delay: Prefs.captureDelay }) }
+    }
+
+    // qs ipc call switcher <next | prev | toggle>   Alt+Tab: bind next / prev; the modifier coming up picks the window
+    IpcHandler {
+        target: "switcher"
+        function next(): void { Switcher.press(1) }
+        function prev(): void { Switcher.press(-1) }
+        function toggle(): void { Switcher.toggle() }
+    }
+
+    // qs ipc call power <status | profile saver|balanced|performance | cycle>
+    IpcHandler {
+        target: "power"
+        function status(): string {
+            return JSON.stringify({ battery: Power.hasBattery, percent: Power.level, charging: Power.charging, full: Power.full, time: Power.timeText, health: Power.health,
+                                    profileAvailable: Power.profileAvailable, profile: Power.current.name, profiles: Power.offered.map(p => p.name), warnAt: Prefs.batteryWarnPct })
+        }
+        function profile(name: string): void { Power.setProfileByName(name) }
+        function cycle(): void { Power.cycle() }
+    }
+
     // qs ipc call lock lock     (bind to a key, or call from `loginctl lock-session` handlers)
     // qs ipc call idle <toggle | keepAwake true|false>   hold back idle lock / screen-off
     IpcHandler {
@@ -140,7 +179,7 @@ ShellRoot {
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth>   (settings is a window)
+    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth|capture|calendar|switcher>   (settings is a window)
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

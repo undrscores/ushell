@@ -7,5 +7,7 @@
   "glassOpacity": 1.0,
   "maxVolume": 1.0,
   "wallpaperDir": "~/wallpapers",
-  "frameSize": 8
+  "frameSize": 8,
+  "recordingDir": "~/Videos/Recordings",
+  "calendarPaths": ["~/.local/share/ushell/calendar", "~/.local/share/calendars"]
 }

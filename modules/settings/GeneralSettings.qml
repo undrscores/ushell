@@ -35,6 +35,29 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Screenshots and recording"
+        SettingRow {
+            icon: "\uf017"; title: "Delay before capturing"; hint: "Gives you time to open a menu or move the pointer"
+            Row {
+                spacing: 4
+                Repeater {
+                    model: [0, 3, 5, 10]
+                    delegate: Pill { required property int modelData; label: modelData === 0 ? "None" : modelData + "s"; active: Prefs.captureDelay === modelData
+                                     onClicked: Prefs.set("captureDelay", modelData) }
+                }
+            }
+        }
+        SettingRow {
+            icon: "\uf028"; title: "Record sound"; hint: Capture.canRecord ? "Screen recordings include what the speakers play" : "Install wf-recorder (and slurp for regions) to record the screen"
+            Switch { enabled: Capture.canRecord; checked: Prefs.recordAudio; onToggled: v => Prefs.set("recordAudio", v) }
+        }
+        SettingRow {
+            icon: "\uf07c"; title: "Recordings folder"; hint: Config.recordingDir + "  (change recordingDir in config.json)"
+            Pill { label: "Open"; onClicked: Capture.openFolder() }
+        }
+    }
+
+    SettingsGroup {
         title: "Bar and dock"
         SettingRow {
             icon: ""; title: "Auto-hide the top bar"; hint: "Off keeps it visible and reserves its space"
