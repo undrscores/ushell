@@ -31,7 +31,7 @@ Singleton {
     function toggle(d) {
         if (d.connected) d.disconnect()
         else if (d.paired) d.connect()
-        else { pending = d.address; d.trusted = true; d.pair() }   // new device: pair, then the menu connects it
+        else { pending = d.address; d.pair() }   // new device: pair, then the menu trusts and connects it
     }
     property string pending: ""            // address of the device being paired by a click
 }
