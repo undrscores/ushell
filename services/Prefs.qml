@@ -20,7 +20,7 @@ Singleton {
     property string themeMode: "dark"    // dark | light
     property string accent: "mauve"      // see config/palette.js (unknown names fall back to mauve there)
     property string wallpaper: ""        // picture path; empty = ushell draws no wallpaper
-    property bool wallpaperColors: false // accent colour taken from the wallpaper
+    property bool wallpaperColors: true  // the theme's colours follow the wallpaper (picking an accent in Appearance turns this off)
     property var wallpaperFavs: []       // pictures starred in the wallpaper picker (paths)
     property bool doNotDisturb: false    // no notification popups (urgent ones still show); history still fills
     property var mutedApps: []           // app names whose notifications never pop up (they still reach the history)

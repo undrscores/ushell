@@ -5,7 +5,7 @@ Called by services/ThemeExport.qml with one argument: a JSON object of "#rrggbb"
 (bg surface surfaceHi fg fgDim accent accent2 accentFg danger ok mode).
 Everything lands in $XDG_STATE_HOME/ushell/theme/ and ~/.config/gtk-{3.0,4.0}/gtk.css.
 """
-import json, os, sys
+import json, os, subprocess, sys
 
 c = json.loads(sys.argv[1])
 home = os.path.expanduser("~")
@@ -128,3 +128,122 @@ def ensure(path, text):
 
 ensure(conf + "/alacritty/alacritty.toml", f'[general]\nimport = ["{out}/alacritty.toml"]\n')
 ensure(conf + "/foot/foot.ini", f"include={out}/foot.ini\n")
+
+
+# ── a real GTK theme, so GTK 3 apps (Thunar, ...) follow the palette instead of staying Adwaita grey ──────────
+# Adwaita's GTK 3 theme computes most of its colours itself, so named colours alone change very little. The theme
+# written here is the stock Adwaita (dark or light) plus explicit rules for the common widgets. Two identical copies
+# (ushell-a / ushell-b) are written in turn and the active one is switched through gsettings: running apps reload
+# their theme when its name changes, so they follow the wallpaper without being restarted.
+base = mix(bg, surf, 0.5)
+dark = c.get("mode") != "light"
+gtk3 = (
+    '@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained%s.css");\n' % ("-dark" if dark else "")
+    + css
+    + f"""
+window, .background {{ background-color: {bg}; color: {fg}; }}
+.view, iconview, treeview.view, textview text, .content-view, .view text {{ background-color: {base}; color: {fg}; }}
+.view:selected, iconview:selected, treeview.view:selected, row:selected, selection, *:selected {{ background-color: {acc}; color: {c["accentFg"]}; }}
+headerbar, .titlebar, toolbar, .toolbar, menubar, .menubar, .primary-toolbar, .inline-toolbar, actionbar {{
+    background-image: none; background-color: {surf}; color: {fg}; border-color: {hi}; box-shadow: none; text-shadow: none; }}
+.sidebar, placessidebar, placessidebar list, .sidebar list {{ background-color: {base}; color: {fg}; border-color: {hi}; }}
+placessidebar row:hover, .sidebar row:hover {{ background-color: {mix(base, hi, 0.5)}; }}
+placessidebar row:selected, .sidebar row:selected {{ background-color: {acc}; color: {c["accentFg"]}; }}
+button, button.flat, .toolbar button {{ background-image: none; background-color: {surf}; color: {fg}; border-color: {hi}; box-shadow: none; text-shadow: none; }}
+button:hover {{ background-color: {hi}; }}
+button:checked, button:active, button.toggle:checked {{ background-color: {acc}; color: {c["accentFg"]}; }}
+button.suggested-action, button.suggested-action:hover {{ background-color: {acc}; color: {c["accentFg"]}; }}
+button.destructive-action, button.destructive-action:hover {{ background-color: {red}; color: {bg}; }}
+button:disabled {{ color: {dim}; }}
+entry, spinbutton, .entry, combobox entry {{ background-image: none; background-color: {base}; color: {fg}; border-color: {hi}; box-shadow: none; }}
+entry:focus, spinbutton:focus {{ border-color: {acc}; }}
+menu, .menu, popover, popover.background, .popup, .csd.popup {{ background-color: {surf}; color: {fg}; border-color: {hi}; }}
+menuitem:hover, modelbutton:hover, menu menuitem:hover {{ background-color: {acc}; color: {c["accentFg"]}; }}
+separator, .separator {{ background-color: {hi}; color: {hi}; }}
+scrollbar, scrollbar trough {{ background-color: transparent; }}
+scrollbar slider {{ background-color: {hi}; }}
+scrollbar slider:hover, scrollbar slider:active {{ background-color: {acc}; }}
+tooltip, .tooltip {{ background-color: {surf}; color: {fg}; border: 1px solid {hi}; }}
+notebook, notebook > header, notebook > header > tabs > tab {{ background-color: {surf}; color: {fg}; border-color: {hi}; }}
+notebook > header > tabs > tab:checked {{ background-color: {bg}; box-shadow: inset 0 -2px {acc}; }}
+statusbar, .statusbar {{ color: {dim}; }}
+.dim-label, label.dim-label, .subtitle {{ color: {dim}; }}
+progressbar progress, scale highlight, scale fill, switch:checked, check:checked, radio:checked {{ background-color: {acc}; border-color: {acc}; color: {c["accentFg"]}; }}
+scale trough, progressbar trough, switch {{ background-color: {hi}; border-color: {hi}; }}
+link, *:link {{ color: {acc}; }}
+placessidebar .sidebar-icon, .sidebar .sidebar-icon, placessidebar row image, .sidebar row image, menuitem image, button image, treeview image, row image {{ color: {fg}; -gtk-icon-effect: none; }}
+placessidebar row:selected .sidebar-icon, placessidebar row:selected image, .sidebar row:selected image {{ color: {c["accentFg"]}; }}
+"""
+)
+themes = home + "/.local/share/themes"
+cur = None
+try:
+    cur = subprocess.run(["gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"],
+                         capture_output=True, text=True, timeout=5).stdout.strip().strip("'")
+except (OSError, subprocess.SubprocessError):
+    pass
+nxt = "ushell-b" if cur == "ushell-a" else "ushell-a"
+for name in ("ushell-a", "ushell-b"):
+    write(f"{themes}/{name}/gtk-3.0/gtk.css", gtk3)
+    write(f"{themes}/{name}/gtk-4.0/gtk.css", css)
+    write(f"{themes}/{name}/index.theme", f"[Desktop Entry]\nType=X-GNOME-Metatheme\nName={name}\nComment=Generated by ushell\n\n[X-GNOME-Metatheme]\nGtkTheme={name}\n")
+
+# prefer-dark for apps that read settings.ini rather than gsettings; other keys in the file are left alone
+for d in ("gtk-3.0", "gtk-4.0"):
+    path = f"{conf}/{d}/settings.ini"
+    try:
+        with open(path) as f:
+            lines = f.read().splitlines()
+    except OSError:
+        lines = ["[Settings]"]
+    want = {"gtk-application-prefer-dark-theme": "1" if dark else "0", "gtk-theme-name": nxt}
+    out_lines, seen = [], set()
+    for ln in lines:
+        k = ln.split("=", 1)[0].strip()
+        if k in want and "=" in ln:
+            ln = f"{k}={want[k]}"
+            seen.add(k)
+        out_lines.append(ln)
+    if "[Settings]" not in out_lines:
+        out_lines.insert(0, "[Settings]")
+    i = out_lines.index("[Settings]") + 1
+    for k, v in want.items():
+        if k not in seen:
+            out_lines.insert(i, f"{k}={v}")
+    write(path, "\n".join(out_lines) + "\n")
+
+
+def gset(key, value):
+    try:
+        subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", key, value], capture_output=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+
+gset("color-scheme", "prefer-dark" if dark else "default")
+gset("gtk-theme", nxt)          # a different name each time, so running GTK apps reload
+
+# ── terminals that are already open: set their colours through the standard escape sequences ──────────────
+# (new terminals read the files above; a running foot / kitty / alacritty only changes when told to)
+seq = "".join(f"\033]4;{i};{v}\033\\" for i, v in enumerate(ansi_normal + ansi_bright))
+seq += f"\033]10;{fg}\033\\\033]11;{bg}\033\\\033]12;{acc}\033\\\033]17;{hi}\033\\\033]19;{fg}\033\\"
+data = seq.encode()
+me = os.getuid()
+try:
+    pts = os.listdir("/dev/pts")
+except OSError:
+    pts = []
+for name in pts:
+    if not name.isdigit():
+        continue
+    path = "/dev/pts/" + name
+    try:
+        if os.stat(path).st_uid != me:
+            continue
+        fd = os.open(path, os.O_WRONLY | os.O_NOCTTY | os.O_NONBLOCK)
+        try:
+            os.write(fd, data)
+        finally:
+            os.close(fd)
+    except OSError:
+        pass

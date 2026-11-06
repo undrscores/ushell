@@ -148,12 +148,14 @@ ShellRoot {
         // qs ipc call shell settings <general|appearance|notifications|power|weather|about>   open the settings window on a section
         function settings(page: string): void { Shell.openSettings(page) }
         function close(): void              { Shell.close() }
-        // qs ipc call shell tab <0..3>   open the control centre (widgets panel) on a tab: 0 control, 1 system, 2 weather, 3 focus
+        // qs ipc call shell tab <0..3>   show the control centre (widgets panel) on a tab for a few seconds: 0 control, 1 system, 2 weather, 3 focus
         // qs ipc call shell brightness <+N|-N>   change brightness of all monitors by N percent
         function brightness(delta: int): void { Brightness.step(delta) }
-        function tab(index: int): void      { Shell.widgetsTab = index; Shell.widgetsPinned = true }
+        function tab(index: int): void      { Shell.peekWidgets(index) }
         // qs ipc call shell wallpaper <next|prev|random|off|/path/to/picture>
         function wallpaper(arg: string): void { Wallpapers.command(arg) }
+        // qs ipc call shell colors <true|false>   the theme's colours follow the wallpaper (or stay on the chosen accent)
+        function colors(on: bool): void { Prefs.set("wallpaperColors", on) }
         // qs ipc call shell theme <dark|light|toggle>   (e.g. from a day/night timer)
         function theme(mode: string): void {
             if (mode === "toggle") Prefs.set("themeMode", Prefs.themeMode === "dark" ? "light" : "dark")

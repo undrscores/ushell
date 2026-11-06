@@ -11,7 +11,8 @@ Item {
     implicitHeight: col.implicitHeight
     Component.onCompleted: Brightness.ensure()
 
-    // one toggle tile. `menu` set: the icon switches, the rest of the tile opens that menu.
+    // one toggle tile: the icon on top, the name and its state underneath.
+    // `menu` set: the icon switches it, the rest of the tile opens that menu (a chevron says so).
     component Tile: Rectangle {
         id: tile
         property string icon: ""
@@ -23,7 +24,7 @@ Item {
 
         Layout.fillWidth: true
         Layout.preferredWidth: 1                 // two equal columns
-        implicitHeight: 62
+        implicitHeight: 96
         radius: Theme.radius
         color: on ? Theme.accentSoft : (bodyMa.containsMouse && enabled ? Theme.hover : Theme.tint)
         border { width: 1; color: on ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.35) : "transparent" }
@@ -39,8 +40,8 @@ Item {
         }
         Rectangle {
             id: dot
-            x: 12; anchors.verticalCenter: parent.verticalCenter
-            width: 38; height: 38; radius: 19
+            x: 14; y: 14
+            width: 36; height: 36; radius: 18
             color: tile.on ? Theme.accent : Theme.hover
             Behavior on color { ColorAnimation { duration: Theme.animFast } }
             scale: dotMa.pressed ? 0.9 : (dotMa.containsMouse ? 1.08 : 1)
@@ -54,9 +55,15 @@ Item {
                 onClicked: if (tile.enabled) tile.toggled()
             }
         }
+        Icon {          // this tile has a menu behind it
+            visible: tile.menu !== ""
+            anchors { right: parent.right; rightMargin: 14; verticalCenter: dot.verticalCenter }
+            text: "\uf054"; size: 11
+            color: Theme.fgDim
+        }
         Column {
-            anchors { left: dot.right; leftMargin: 10; right: parent.right; rightMargin: 10; verticalCenter: parent.verticalCenter }
-            spacing: 1
+            anchors { left: parent.left; leftMargin: 14; right: parent.right; rightMargin: 12; bottom: parent.bottom; bottomMargin: 13 }
+            spacing: 2
             Text {
                 width: parent.width; elide: Text.ElideRight
                 text: tile.title
@@ -85,25 +92,25 @@ Item {
         signal iconClicked()
 
         Layout.fillWidth: true
-        implicitHeight: 64
+        implicitHeight: 76
         radius: Theme.radius
         color: Theme.tint
 
         Text {
-            x: 16; y: 9
+            x: 16; y: 13
             text: sr.title
             color: Theme.fgDim
             font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
         }
         Text {
             anchors { right: parent.right; rightMargin: 16 }
-            y: 9
+            y: 13
             text: sr.valueText
             color: Theme.fgDim
             font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
         }
         RowLayout {
-            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 10; rightMargin: 16; bottomMargin: 8 }
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: 10; rightMargin: 20; bottomMargin: 12 }
             spacing: 8
             IconButton { icon: sr.icon; size: 30; tone: sr.iconTone; onClicked: sr.iconClicked() }
             Slider { Layout.fillWidth: true; value: sr.value; tone: sr.tone; onMoved: v => sr.moved(v) }
@@ -113,26 +120,26 @@ Item {
     ColumnLayout {
         id: col
         width: parent.width
-        spacing: 10
+        spacing: 12
 
         GridLayout {
             Layout.fillWidth: true
             columns: 2
-            columnSpacing: 10; rowSpacing: 10
+            columnSpacing: 12; rowSpacing: 12
 
             Tile {
-                visible: Network.available && Network.wifiPresent
+                enabled: Network.available
                 icon: Network.glyph; title: "Wi-Fi"
-                on: Network.wifiOn
-                sub: !Network.wifiOn ? "Off" : (Network.kind === "wifi" && Network.name !== "" ? Network.name : "Not connected")
+                on: Network.available && Network.wifiOn
+                sub: !Network.available ? "Unavailable" : (!Network.wifiOn ? "Off" : (Network.kind === "wifi" && Network.name !== "" ? Network.name : "Not connected"))
                 menu: "network"
                 onToggled: Network.setWifi(!Network.wifiOn)
             }
             Tile {
-                visible: Bt.available
+                enabled: Bt.available
                 icon: Bt.glyph; title: "Bluetooth"
                 on: Bt.on
-                sub: !Bt.on ? "Off" : (Bt.connectedCount > 0 ? Bt.connectedCount + " connected" : "On")
+                sub: !Bt.available ? "Unavailable" : (!Bt.on ? "Off" : (Bt.connectedCount > 0 ? Bt.connectedCount + " connected" : "On"))
                 menu: "bluetooth"
                 onToggled: Bt.setOn(!Bt.on)
             }
