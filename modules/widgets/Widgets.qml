@@ -18,7 +18,7 @@ Variants {
         alignTop: true
         pinned: Shell.widgetsPinned
         takesFocus: Shell.widgetsTab === 3        // the Focus tab has a text box
-        panelWidth: 340
+        panelWidth: 400
         // Remember the last real height: the content only exists while shown, and a
         // collapsed (0) height would leave the hover strip with no area.
         property real lastHeight: 380

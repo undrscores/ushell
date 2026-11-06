@@ -13,6 +13,17 @@ Singleton {
     readonly property var settingsPages: ["general", "appearance", "notifications", "power", "weather", "about"]
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
     property int  widgetsTab: 0          // 0 control, 1 system, 2 weather, 3 focus
+    // Open the panel on a tab for a few seconds, then let it hide again (IPC `shell tab N`). A panel that was
+    // already pinned open (Mod+A) stays pinned.
+    property bool widgetsPeek: false
+    function peekWidgets(tab) {
+        widgetsTab = tab
+        if (widgetsPinned && !widgetsPeek) return
+        widgetsPeek = true
+        widgetsPinned = true
+        peekTimer.restart()
+    }
+    Timer { id: peekTimer; interval: 4000; onTriggered: { root.widgetsPeek = false; root.widgetsPinned = false } }   // hovering keeps it open anyway
     // Each screen has its own widgets panel; it reports here whether it is on screen.
     property var shownOn: ({})           // screen name -> bool
     readonly property bool widgetsShown: Object.values(shownOn).some(v => v === true)
@@ -41,7 +52,7 @@ Singleton {
         settingsOpen = true
     }
     function open(name) {
-        if (name === "widgets") widgetsPinned = true
+        if (name === "widgets") { widgetsPeek = false; peekTimer.stop(); widgetsPinned = true }
         else if (name === "media") mediaPinned = true
         else if (name === "settings") openSettings()
         else if (name === "appearance") openSettings("appearance")
@@ -49,7 +60,7 @@ Singleton {
     }
     function close()      { overlay = "" }
     function toggle(name) {
-        if (name === "widgets") widgetsPinned = !widgetsPinned
+        if (name === "widgets") { widgetsPeek = false; peekTimer.stop(); widgetsPinned = !widgetsPinned }
         else if (name === "media") mediaPinned = !mediaPinned
         else if (name === "settings") { if (settingsOpen) settingsOpen = false; else openSettings() }
         else if (name === "appearance") { if (settingsOpen && settingsPage === "appearance") settingsOpen = false; else openSettings("appearance") }
