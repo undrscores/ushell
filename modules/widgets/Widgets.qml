@@ -4,7 +4,7 @@ import "../../config"
 import "../../services"
 import "../../components"
 
-// Right auto-hiding widgets panel: System / Weather tabs you can click,
+// Auto-hiding widgets panel in the top right corner, like a control centre: System / Weather / Focus tabs you can click,
 // wheel over, or swipe between. The panel resizes to fit the current tab.
 // Mod+A pins it open.
 Variants {
@@ -15,8 +15,9 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "right"
+        alignTop: true
         pinned: Shell.widgetsPinned
-        takesFocus: Shell.widgetsTab === 2        // the Focus tab has a text box
+        takesFocus: Shell.widgetsTab === 3        // the Focus tab has a text box
         panelWidth: 340
         // Remember the last real height: the content only exists while shown, and a
         // collapsed (0) height would leave the hover strip with no area.
@@ -31,6 +32,7 @@ Variants {
         Component.onDestruction: Shell.setWidgetsShown(screenName, false)   // monitor unplugged while shown
 
         readonly property var tabs: [
+            { icon: "\uf1de", label: "Control" },
             { icon: "", label: "System" },
             { icon: "", label: "Weather" },
             { icon: "\uf017", label: "Focus" }
@@ -64,6 +66,7 @@ Variants {
                     count: win.tabs.length
                     onSwiped: i => Shell.widgetsTab = i
 
+                    ControlPage { width: view.width }
                     SystemPage  { width: view.width }
                     WeatherPage { width: view.width }
                     FocusPage   { width: view.width }
@@ -72,9 +75,9 @@ Variants {
                 // fetch weather the first time (and when stale) the tab is shown
                 Connections {
                     target: Shell
-                    function onWidgetsTabChanged() { if (Shell.widgetsTab === 1) Weather.ensure() }
+                    function onWidgetsTabChanged() { if (Shell.widgetsTab === 2) Weather.ensure() }
                 }
-                Component.onCompleted: if (Shell.widgetsTab === 1) Weather.ensure()
+                Component.onCompleted: if (Shell.widgetsTab === 2) Weather.ensure()
             }
         }
     }

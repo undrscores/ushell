@@ -10,7 +10,6 @@ import "modules/quicksettings"
 import "modules/clipboard"
 import "modules/settings"
 import "modules/bluetooth"
-import "modules/media"
 import "modules/power"
 import "modules/wallpaper"
 import "modules/notifications"
@@ -50,7 +49,6 @@ ShellRoot {
     RadialMenu {}
     Launcher { id: launcher }
     QuickSettings {}
-    MediaMenu {}
     ClipboardMenu {}
     SettingsWindow {}
     BluetoothMenu {}
@@ -150,7 +148,7 @@ ShellRoot {
         // qs ipc call shell settings <general|appearance|notifications|power|weather|about>   open the settings window on a section
         function settings(page: string): void { Shell.openSettings(page) }
         function close(): void              { Shell.close() }
-        // qs ipc call shell tab <0|1>   open the widgets panel on a tab
+        // qs ipc call shell tab <0..3>   open the control centre (widgets panel) on a tab: 0 control, 1 system, 2 weather, 3 focus
         // qs ipc call shell brightness <+N|-N>   change brightness of all monitors by N percent
         function brightness(delta: int): void { Brightness.step(delta) }
         function tab(index: int): void      { Shell.widgetsTab = index; Shell.widgetsPinned = true }

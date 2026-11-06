@@ -6,7 +6,7 @@ import "../../services"
 import "../../components"
 
 // The settings window: a window of its own (not a popup) with a sidebar of sections.
-// Open it from the gear in the bar, the launcher, or `qs ipc call shell toggle settings`
+// Open it from the radial menu, the launcher, or `qs ipc call shell toggle settings`
 // (`... toggle appearance` jumps to the Appearance section).
 FloatingWindow {
     id: win

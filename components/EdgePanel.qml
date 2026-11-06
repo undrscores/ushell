@@ -16,6 +16,7 @@ PanelWindow {
     property bool pinned: false         // temporarily held open (e.g. a menu is using it)
     property bool autoHide: true        // false = always shown, and it reserves its space
     property bool takesFocus: false     // allow keyboard focus on click (for text fields)
+    property bool alignTop: false       // left/right panels: sit in the top corner instead of the middle of the edge
     // Hover label drawn just outside the panel (e.g. an app name next to a dock icon).
     // tipY / tipX are positions along the panel's long / short axis, in window coordinates.
     property string tipText: ""
@@ -30,6 +31,9 @@ PanelWindow {
     readonly property bool vertical: edge !== "top"
     readonly property bool attached: Theme.frame > 0     // flush with the screen frame, with concave fillets where they meet
     readonly property real gap: Theme.edgeGap
+    readonly property bool flushTop:   attached && (edge === "top" || (vertical && alignTop))     // touches the top frame band
+    readonly property bool flushLeft:  attached && edge === "left"
+    readonly property bool flushRight: attached && edge === "right"
     readonly property real fillet: 14
     readonly property real bleed: 3                     // how far an attached panel reaches under the frame
     readonly property real screenW: screen ? screen.width : 1920
@@ -115,11 +119,11 @@ PanelWindow {
             opacity: Math.max(0, Math.min(1, win.slide * 1.6))
             // grows out of the screen edge
             scale: 0.86 + 0.14 * Math.max(0, Math.min(1.15, win.slide))
-            transformOrigin: win.edge === "top" ? Item.Top : (win.edge === "left" ? Item.Left : Item.Right)
+            transformOrigin: win.edge === "top" ? Item.Top : (win.edge === "left" ? Item.Left : (win.alignTop ? Item.TopRight : Item.Right))
             x: win.edge === "top"  ? (win.width - width) / 2
              : win.edge === "left" ? -width + (width + win.gap) * win.slide
              :                       win.width - win.gap - width + (width + win.gap) * (1 - win.slide)
-            y: win.edge === "top"  ? -height + (height + win.gap) * win.slide : (win.height - height) / 2
+            y: win.edge === "top"  ? -height + (height + win.gap) * win.slide : (win.alignTop ? win.gap : (win.height - height) / 2)
 
             Glass {
                 id: panel
@@ -127,28 +131,28 @@ PanelWindow {
                 // and anti-aliasing don't show as a line where the panel meets the frame
                 anchors {
                     fill: parent
-                    topMargin:   win.attached && win.edge === "top"   ? -win.bleed : 0
-                    leftMargin:  win.attached && win.edge === "left"  ? -win.bleed : 0
-                    rightMargin: win.attached && win.edge === "right" ? -win.bleed : 0
+                    topMargin:   win.flushTop   ? -win.bleed : 0
+                    leftMargin:  win.flushLeft  ? -win.bleed : 0
+                    rightMargin: win.flushRight ? -win.bleed : 0
                 }
                 radius: win.panelRadius
                 flat: win.attached
                 color: win.attached ? Theme.frameColor : Theme.glass
                 border.width: win.attached ? 0 : 1
                 // the side against the frame is square
-                topLeftRadius:     win.attached && (win.edge === "top" || win.edge === "left")  ? 0 : win.panelRadius
-                topRightRadius:    win.attached && (win.edge === "top" || win.edge === "right") ? 0 : win.panelRadius
-                bottomLeftRadius:  win.attached && win.edge === "left"  ? 0 : win.panelRadius
-                bottomRightRadius: win.attached && win.edge === "right" ? 0 : win.panelRadius
+                topLeftRadius:     win.flushTop || win.flushLeft  ? 0 : win.panelRadius
+                topRightRadius:    win.flushTop || win.flushRight ? 0 : win.panelRadius
+                bottomLeftRadius:  win.flushLeft  ? 0 : win.panelRadius
+                bottomRightRadius: win.flushRight ? 0 : win.panelRadius
 
                 // the panel's content keeps the size and position it would have without the bleed
                 Item {
                     id: body
                     anchors {
                         fill: parent
-                        topMargin:   win.attached && win.edge === "top"   ? win.bleed : 0
-                        leftMargin:  win.attached && win.edge === "left"  ? win.bleed : 0
-                        rightMargin: win.attached && win.edge === "right" ? win.bleed : 0
+                        topMargin:   win.flushTop   ? win.bleed : 0
+                        leftMargin:  win.flushLeft  ? win.bleed : 0
+                        rightMargin: win.flushRight ? win.bleed : 0
                     }
                 }
             }
@@ -158,7 +162,8 @@ PanelWindow {
             Fillet { visible: win.attached && win.edge === "top";   r: win.fillet; x: pivot.width; y: 0;       cx: 0; cy: 0 }
             Fillet { visible: win.attached && win.edge === "left";  r: win.fillet; x: 0;          y: -r;      cx: 0; cy: r }
             Fillet { visible: win.attached && win.edge === "left";  r: win.fillet; x: 0;          y: pivot.height; cx: 0; cy: 0 }
-            Fillet { visible: win.attached && win.edge === "right"; r: win.fillet; x: pivot.width - r; y: -r; cx: r; cy: r }
+            Fillet { visible: win.attached && win.edge === "right" && !win.alignTop; r: win.fillet; x: pivot.width - r; y: -r; cx: r; cy: r }
+            Fillet { visible: win.attached && win.edge === "right" && win.alignTop;  r: win.fillet; x: -r; y: 0; cx: r; cy: 0 }     // top corner: the panel's left side meets the top frame
             Fillet { visible: win.attached && win.edge === "right"; r: win.fillet; x: pivot.width - r; y: pivot.height; cx: r; cy: 0 }
         }
     }
@@ -172,8 +177,8 @@ PanelWindow {
     Item {
         id: hitbox
         width:  win.vertical ? (win.shown ? win.animW + win.gap + 2 : win.hotSize) : win.alongW
-        height: win.vertical ? win.alongH : (win.shown ? win.animH + win.gap + 2 : win.hotSize)
+        height: win.vertical ? win.alongH + (win.alignTop ? win.gap + 2 : 0) : (win.shown ? win.animH + win.gap + 2 : win.hotSize)
         x: win.vertical ? (win.edge === "right" ? win.width - width : 0) : (win.width - width) / 2
-        y: win.vertical ? (win.height - height) / 2 : 0
+        y: win.vertical && !win.alignTop ? (win.height - height) / 2 : 0
     }
 }

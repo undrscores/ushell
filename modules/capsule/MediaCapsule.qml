@@ -6,9 +6,10 @@ import "../../config"
 import "../../services"
 import "../../components"
 
-// Now-playing capsule on the bottom edge, growing out of the frame at the bottom left. It slides up when the
-// pointer reaches the bottom-left corner, and for a few seconds whenever the track changes. The cover spins
-// while music plays. (Setting: Settings → Panels)
+// Now-playing widget on the bottom edge, growing out of the frame at the bottom left. It slides up when the
+// pointer reaches the bottom-left corner, and for a few seconds whenever the track changes, as a compact
+// capsule with the cover spinning while music plays. Click it (or use the launcher / `qs ipc call shell toggle media`)
+// and it grows into the full player: art, spectrum, progress and controls. (Setting: Settings → Panels)
 Variants {
     model: Prefs.mediaCapsule && !Prefs.focusMode ? Quickshell.screens : []
 
@@ -24,7 +25,7 @@ Variants {
         anchors { bottom: true; left: true }
         margins { left: Theme.frame + 28 }
         implicitWidth: 520
-        implicitHeight: 150
+        implicitHeight: 380
         exclusionMode: ExclusionMode.Ignore
         color: "transparent"
         visible: Media.available
@@ -38,7 +39,20 @@ Variants {
         property real slide: shown ? 1 : 0
         Behavior on slide { Spring { preset: win.shown ? "popIn" : "popOut"; epsilon: 0.003 } }
 
-        readonly property bool want: hover.hovered || flash.running
+        // the full player: opened by a click (until the widget hides again), or held open from the launcher / IPC
+        property bool local: false
+        readonly property bool expanded: Media.available && (local || (Shell.mediaPinned && onFocusedOutput))
+        readonly property bool full: expanded && shown
+        readonly property string screenName: modelData.name          // cached: the screen object may already be gone on destruction
+        onFullChanged: Shell.setMediaFull(screenName, full)
+        Component.onDestruction: Shell.setMediaFull(screenName, false)
+        onSlideChanged: if (slide < 0.002) local = false              // collapse once it has slid away, not while it is leaving
+        Connections {
+            target: Media
+            function onAvailableChanged() { if (!Media.available) { win.local = false; Shell.mediaPinned = false } }
+        }
+
+        readonly property bool want: hover.hovered || flash.running || (Shell.mediaPinned && onFocusedOutput)
         onWantChanged: { if (want) { hideTimer.stop(); showTimer.restart() } else { showTimer.stop(); hideTimer.restart() } }
         Timer { id: showTimer; interval: 120; onTriggered: win.shown = true }
         Timer { id: hideTimer; interval: 500; onTriggered: win.shown = false }
@@ -58,8 +72,11 @@ Variants {
             Item {
                 id: pivot
                 visible: win.slide > 0.002
-                width: row.implicitWidth + 40
-                height: 72
+                width: win.expanded ? 360 : row.implicitWidth + 40
+                height: win.expanded ? fullHeight : 72
+                readonly property real fullHeight: (playerLoader.item ? playerLoader.item.implicitHeight : 318) + 16
+                Behavior on width  { Spring { preset: "settle"; epsilon: 0.4 } }
+                Behavior on height { Spring { preset: "settle"; epsilon: 0.4 } }
                 x: win.fillet
                 y: win.height - (win.inset + height) * Math.min(1.1, win.slide)
                 opacity: Math.max(0, Math.min(1, win.slide * 1.6))
@@ -75,11 +92,23 @@ Variants {
                     bottomLeftRadius: win.attached ? 0 : Theme.radiusLarge
                     bottomRightRadius: win.attached ? 0 : Theme.radiusLarge
                 }
-                // clicking the capsule opens the full player
+                // clicking the capsule grows it into the full player
                 MouseArea {
                     anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Shell.toggle("media")
+                    cursorShape: win.expanded ? Qt.ArrowCursor : Qt.PointingHandCursor
+                    onClicked: win.local = true
+                }
+
+                // the full player (only exists while it is, or is just becoming, the thing on screen)
+                Loader {
+                    id: playerLoader
+                    x: 8; y: 8
+                    width: parent.width - 16
+                    active: win.expanded || pivot.height > 90
+                    opacity: win.expanded ? 1 : 0
+                    visible: opacity > 0.01
+                    Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
+                    sourceComponent: MediaPlayer { animate: win.full }
                 }
                 // concave corners where the capsule meets the frame
                 Fillet { visible: win.attached; r: win.fillet; x: -r;          y: pivot.height - r; cx: r; cy: r }
@@ -89,6 +118,9 @@ Variants {
                     id: row
                     anchors.centerIn: parent
                     spacing: 14
+                    opacity: win.expanded ? 0 : 1
+                    visible: opacity > 0.01
+                    Behavior on opacity { NumberAnimation { duration: Theme.animFast } }
 
                     // cover: a disc that turns while the music plays
                     Item {

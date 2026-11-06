@@ -235,6 +235,12 @@ Overlay {
                         node: modelData
                     }
                 }
+                Text {
+                    visible: Audio.streams.length > 6
+                    text: "+" + (Audio.streams.length - 6) + " more"
+                    color: Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
+                }
             }
         }
     }

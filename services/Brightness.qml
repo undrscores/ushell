@@ -19,7 +19,7 @@ Singleton {
     property var queue: []            // buses still to read during detection
 
     function ensure() { if (!ready && !detecting) detect() }
-    function detect() { detecting = true; missing = false; displays = []; detectProc.running = true }
+    function detect() { detecting = true; missing = false; displays = []; detectProc.started = false; detectProc.running = true }
 
     function set(bus, value) {
         value = Math.round(Math.max(0, Math.min(100, value)))
@@ -48,7 +48,11 @@ Singleton {
 
     Process {
         id: detectProc
+        property bool started: false
         command: ["ddcutil", "detect", "--brief"]
+        onStarted: started = true
+        // a program that is not installed never starts and never exits: it just stops "running"
+        onRunningChanged: if (!running && !started && root.detecting) { root.detecting = false; root.missing = true }
         stdout: StdioCollector {
             onStreamFinished: {
                 const found = []

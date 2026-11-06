@@ -28,6 +28,20 @@ Singleton {
         return i > 0 ? n.slice(0, i) : n
     }
 
+    // ── favourites and folders (for the picker) ─────────────────────────────
+    readonly property var favs: Prefs.wallpaperFavs
+    function isFav(path) { return favs.includes(path) }
+    function toggleFav(path) {
+        if (path) Prefs.set("wallpaperFavs", isFav(path) ? favs.filter(p => p !== path) : favs.concat([path]))
+    }
+    // the sub-folder of the library a picture is in ("" for loose files)
+    function folderOf(path) {
+        const rel = path.slice(dir.replace(/\/+$/, "").length + 1)
+        const i = rel.indexOf("/")
+        return i < 0 ? "" : rel.slice(0, i)
+    }
+    readonly property var folders: Array.from(new Set(files.map(folderOf).filter(f => f !== ""))).sort((a, b) => a.localeCompare(b))
+
     // ── choosing ────────────────────────────────────────────────────────────
     function set(path) { failed = ""; Prefs.set("wallpaper", path) }
     function off() { Prefs.set("wallpaper", "") }
