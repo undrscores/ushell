@@ -12,7 +12,7 @@ Overlay {
     id: root
     name: "switcher"
     scrim: 0.35
-    onOpenChanged: if (open) Qt.callLater(() => input.forceActiveFocus())
+    onOpenChanged: if (open) { Switcher.query = ""; input.text = ""; Qt.callLater(() => input.forceActiveFocus()) }       // typing broke the text binding: clear it by hand
 
     readonly property int cols: Math.max(1, Math.min(5, Switcher.entries.length))
     readonly property int cellW: 150
@@ -52,7 +52,6 @@ Overlay {
                 selectedTextColor: Theme.accentFg
                 font { family: Theme.font; pixelSize: Theme.fontSize + 1 }
                 clip: true
-                text: Switcher.query
                 onTextChanged: { if (text !== Switcher.query) Switcher.cycle = false; Switcher.query = text }
                 Text {
                     visible: input.text === ""

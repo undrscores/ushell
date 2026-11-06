@@ -115,19 +115,29 @@ Singleton {
 
     Process {
         id: rec
+        property string err: ""
         onRunningChanged: {
             if (running) {
+                err = ""
                 root.startedAt = Date.now(); root.elapsed = 0; root.recording = true
-                Osd.showText("note", "Recording started", true, "")
-            } else if (root.recording) {
-                root.recording = false
-                const name = root.lastFile.slice(root.lastFile.lastIndexOf("/") + 1)
-                Osd.showText("note", "Saved " + name, true, "")
+                Osd.showText("note", "Recording started", true, "\uf03d")
             }
         }
-        stderr: StdioCollector {
-            onStreamFinished: if (text.trim() !== "" && !root.recording) console.warn("ushell capture: " + text.trim())
+        // wf-recorder exits 0 after Ctrl+C (SIGINT); anything else means no usable file (bad region, no compositor support ...)
+        onExited: code => {
+            const was = root.recording
+            root.recording = false
+            if (!was) return
+            if (code === 0) {
+                const name = root.lastFile.slice(root.lastFile.lastIndexOf("/") + 1)
+                Osd.showText("note", "Saved " + name, true, "\uf03d")
+            } else {
+                const why = err.trim().split("\n").pop()
+                console.warn("ushell capture: wf-recorder exited with " + code + (why ? ": " + why : ""))
+                Osd.showText("note", "Recording failed" + (why ? ": " + why : ""), true, "\uf071")
+            }
         }
+        stderr: StdioCollector { onStreamFinished: rec.err = text }
     }
     Timer {
         interval: 1000; repeat: true; running: root.recording

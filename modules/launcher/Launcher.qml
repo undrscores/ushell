@@ -95,14 +95,14 @@ PanelWindow {
         }
         out.sort((a, b) => b.score - a.score)
         const list = out.slice(0, 60)
-        if (!emojiFont) list.unshift({ kind: "hint", title: "No colour emoji font found (google-noto-coloremoji-fonts)", glyph: "\uf071", data: "" })
+        if (!emojiFont) list.push({ kind: "hint", title: "No colour emoji font found (google-noto-coloremoji-fonts)", glyph: "\uf071", data: "" })
         return list
     }
     function clipResults(q) {
         const ql = q.toLowerCase()
         const out = []
         for (const it of Clipboard.items) {
-            const text = it.type === "image" ? "image" : (it.text || "")
+            const text = it.text || (it.type === "image" ? "image" : "")
             if (ql !== "" && !text.toLowerCase().includes(ql)) continue
             const line = text.split("\n").find(l => l.trim() !== "") ?? ""
             out.push({ kind: "clip", title: line.trim().slice(0, 120) || "(empty)", tag: it.type === "image" ? "image" : (it.pinned ? "pinned" : ""),

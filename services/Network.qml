@@ -41,6 +41,7 @@ Singleton {
     readonly property bool dim: kind === "none" || connectivity === "limited" || connectivity === "portal"
 
     function setVpn(name, on) {
+        if (act.running) return                 // another change is still in progress: the switch snaps back on the next refresh
         busyVpn = name
         error = ""
         run(["nmcli", "connection", on ? "up" : "down", "id", name])

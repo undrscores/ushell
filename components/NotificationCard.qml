@@ -16,14 +16,14 @@ Glass {
 
     readonly property bool critical: notification.urgency === NotificationUrgency.Critical
     readonly property bool hovered: hover.hovered
-    property bool shown: !popup                // drives the slide / fade in and out (history cards are simply there)
+    property bool shown: false                 // drives the slide / fade in and out (history cards are simply there)
 
     width: 360
     implicitHeight: content.implicitHeight + 24
     height: implicitHeight
     opacity: shown ? 1 : 0
-    Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
-    transform: Translate { x: card.shown ? 0 : 48; Behavior on x { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } } }
+    Behavior on opacity { enabled: card.popup; NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
+    transform: Translate { x: card.shown || !card.popup ? 0 : 48; Behavior on x { enabled: card.popup; NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } } }
     Component.onCompleted: shown = true
 
     // Popups fade out first, then leave the stack. Everything else is removed on the spot.
