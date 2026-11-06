@@ -13,15 +13,17 @@ import "../config"
 Singleton {
     id: root
 
-    property string kind: "volume"       // volume | mic | brightness | caps | num | layout | timer   (the last four show `text`)
+    property string kind: "volume"       // volume | mic | brightness | caps | num | layout | timer | note   (all but the first three show `text`)
     property string text: ""             // for the text pills
-    readonly property bool isText: kind === "caps" || kind === "num" || kind === "layout" || kind === "timer"
+    property string customGlyph: ""      // icon for a text pill that brings its own (capture, battery ...)
+    readonly property bool isText: kind === "caps" || kind === "num" || kind === "layout" || kind === "timer" || kind === "note"
     property real value: 0               // 1 = 100 %; volume can go above 1 up to Config.maxVolume
     property bool muted: false
     property bool shown: false
 
     readonly property real limit: kind === "volume" ? Math.max(1, Config.maxVolume) : 1   // value at which the bar is full
     readonly property string glyph: {
+        if (isText && customGlyph !== "") return customGlyph
         if (kind === "timer") return "\uf017"
         if (kind === "brightness") return ""
         if (kind === "mic") return muted ? "" : ""
@@ -34,9 +36,10 @@ Singleton {
     Timer { id: hideTimer; interval: 1600; onTriggered: root.shown = false }
 
     // a pill with words instead of a bar: Caps Lock on, the keyboard layout that was switched to
-    function showText(k, t, on) {
+    function showText(k, t, on, g) {
         kind = k
         text = t
+        customGlyph = g || ""
         muted = false
         value = on ? 1 : 0
         shown = true
@@ -45,6 +48,7 @@ Singleton {
 
     function show(k, v, m) {
         kind = k
+        customGlyph = ""
         value = v
         muted = m
         shown = true

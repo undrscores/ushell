@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "notifications", "network", "bluetooth"].includes(Shell.overlay)
+        pinned: ["quicksettings", "notifications", "network", "bluetooth", "calendar", "capture"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -32,11 +32,11 @@ Variants {
             Workspaces { id: wsRow; anchors.verticalCenter: parent.verticalCenter }
             Rectangle { visible: wsRow.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
 
-            // Clock
-            Row {
-                spacing: 7
-                leftPadding: 9; rightPadding: 9
+            // Clock → calendar
+            BarItem {
                 anchors.verticalCenter: parent.verticalCenter
+                active: Shell.overlay === "calendar"
+                onClicked: Shell.toggle("calendar")
                 Text {
                     text: Qt.formatDateTime(clock.date, "HH:mm")
                     color: Theme.fg
@@ -65,6 +65,25 @@ Variants {
                 Text {
                     text: Countdown.fmt(Countdown.remaining)
                     color: Countdown.running ? Theme.fg : Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            // Recording the screen (only while it runs): click to stop
+            Rectangle { visible: recItem.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+            BarItem {
+                id: recItem
+                visible: Capture.recording || Capture.picking || Capture.countdown > 0
+                onClicked: mouse => { if (Capture.recording) Capture.stopRecording(); else if (mouse.button === Qt.RightButton) Capture.cancel(); else Shell.toggle("capture") }
+                Rectangle {
+                    width: 9; height: 9; radius: 4.5; color: Theme.danger; anchors.verticalCenter: parent.verticalCenter
+                    SequentialAnimation on opacity { running: Capture.recording; loops: Animation.Infinite
+                        NumberAnimation { to: 0.25; duration: 700 } NumberAnimation { to: 1; duration: 700 } }
+                }
+                Text {
+                    text: Capture.recording ? Capture.fmt(Capture.elapsed) : (Capture.countdown > 0 ? Capture.countdown + "s" : "…")
+                    color: Theme.fg
                     font { family: Theme.font; pixelSize: Theme.fontSize }
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -140,6 +159,20 @@ Variants {
                 active: Shell.overlay === "bluetooth"
                 onClicked: Shell.toggle("bluetooth")
                 Icon { text: Bt.glyph; color: Bt.connectedCount > 0 ? Theme.accent : (Bt.on ? Theme.fgDim : Theme.line); anchors.verticalCenter: parent.verticalCenter }
+            }
+
+            // Battery (laptops only) → quick settings
+            BarItem {
+                visible: Power.hasBattery
+                active: Shell.overlay === "quicksettings"
+                onClicked: Shell.toggle("quicksettings")
+                Icon { text: Power.glyph; color: Power.low ? Theme.danger : (Power.charging ? Theme.accent : Theme.fgDim); anchors.verticalCenter: parent.verticalCenter }
+                Text {
+                    text: Power.level
+                    color: Power.low ? Theme.danger : Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
             // Notifications → history (right click: Do Not Disturb)

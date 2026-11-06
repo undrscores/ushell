@@ -23,3 +23,7 @@ singleton Countdown 1.0 Countdown.qml
 singleton Notes 1.0 Notes.qml
 singleton NightLight 1.0 NightLight.qml
 singleton Bt 1.0 Bt.qml
+singleton Calendar 1.0 Calendar.qml
+singleton Capture 1.0 Capture.qml
+singleton Switcher 1.0 Switcher.qml
+singleton Power 1.0 Power.qml

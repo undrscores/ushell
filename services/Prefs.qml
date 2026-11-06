@@ -32,6 +32,11 @@ Singleton {
     property int nightTemp: 4000         // its colour temperature in kelvin; lower is warmer
     property int idleLockMin: 0          // lock after this many idle minutes; 0 = never
     property int idleOffMin: 0           // turn the screens off after this many idle minutes; 0 = never
+    property bool recordAudio: false     // screen recordings include the default audio output
+    property int captureDelay: 0         // seconds to wait before a screenshot or recording starts (0, 3, 5, 10)
+    property bool notificationLog: true  // keep the notification history on disk across restarts
+    property int batteryWarnPct: 15      // warn when the battery drops to this percentage; 0 = never
+    property bool autoPowerSaver: false  // switch to the power-saver profile when the battery is low and discharging
 
     // setting name -> "is this a valid value?"
     readonly property var schema: ({
@@ -56,7 +61,12 @@ Singleton {
         nightLight:      v => typeof v === "boolean",
         nightTemp:       v => Number.isInteger(v) && v >= 2500 && v <= 6000,
         idleLockMin:     v => Number.isInteger(v) && v >= 0 && v <= 240,
-        idleOffMin:      v => Number.isInteger(v) && v >= 0 && v <= 240
+        idleOffMin:      v => Number.isInteger(v) && v >= 0 && v <= 240,
+        recordAudio:     v => typeof v === "boolean",
+        captureDelay:    v => Number.isInteger(v) && v >= 0 && v <= 30,
+        notificationLog: v => typeof v === "boolean",
+        batteryWarnPct:  v => Number.isInteger(v) && v >= 0 && v <= 50,
+        autoPowerSaver:  v => typeof v === "boolean"
     })
 
     // True once prefs.json has been read (or turned out not to exist). Until then a change is held back,

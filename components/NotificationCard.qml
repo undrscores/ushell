@@ -16,7 +16,7 @@ Glass {
 
     readonly property bool critical: notification.urgency === NotificationUrgency.Critical
     readonly property bool hovered: hover.hovered
-    property bool shown: false                 // drives the slide / fade in and out
+    property bool shown: !popup                // drives the slide / fade in and out (history cards are simply there)
 
     width: 360
     implicitHeight: content.implicitHeight + 24

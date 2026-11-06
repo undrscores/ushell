@@ -175,6 +175,59 @@ Overlay {
                 Switch { enabled: NightLight.available; checked: Prefs.nightLight; onToggled: v => Prefs.set("nightLight", v) }
             }
 
+            // Battery (laptops)
+            RowLayout {
+                visible: Power.hasBattery
+                Layout.fillWidth: true
+                spacing: 12
+                Icon { text: Power.glyph; size: 17; color: Power.low ? Theme.danger : (Power.charging ? Theme.accent : Theme.fg)
+                       Layout.preferredWidth: 34; horizontalAlignment: Text.AlignHCenter }
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 5
+                    Rectangle {
+                        Layout.fillWidth: true; height: 6; radius: 3; color: Theme.hover
+                        Rectangle {
+                            width: Math.max(parent.height, parent.width * Power.pct / 100); height: parent.height; radius: 3
+                            color: Power.low ? Theme.danger : (Power.charging ? Theme.accent2 : Theme.accent)
+                            Behavior on width { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: Power.timeText
+                        visible: text !== ""
+                        elide: Text.ElideRight
+                        color: Theme.fgDim
+                        font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
+                    }
+                }
+                Text {
+                    Layout.preferredWidth: 34
+                    horizontalAlignment: Text.AlignRight
+                    text: Power.level + "%"
+                    color: Power.low ? Theme.danger : Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+            }
+
+            // Power profile
+            RowLayout {
+                visible: Power.profileAvailable
+                Layout.fillWidth: true
+                spacing: 12
+                Icon { text: Power.current.glyph; size: 17; color: Theme.fg; Layout.preferredWidth: 34; horizontalAlignment: Text.AlignHCenter }
+                Row {
+                    Layout.fillWidth: true
+                    spacing: 4
+                    Repeater {
+                        model: Power.offered
+                        delegate: Pill { required property var modelData; label: modelData.title; active: Power.current.id === modelData.id
+                                         onClicked: Power.setProfile(modelData.id) }
+                    }
+                }
+            }
+
             Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
 
             // Output devices
