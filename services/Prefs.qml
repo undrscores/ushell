@@ -21,6 +21,7 @@ Singleton {
     property string accent: "mauve"      // see config/palette.js (unknown names fall back to mauve there)
     property string wallpaper: ""        // picture path; empty = ushell draws no wallpaper
     property bool wallpaperColors: false // accent colour taken from the wallpaper
+    property var wallpaperFavs: []       // pictures starred in the wallpaper picker (paths)
     property bool doNotDisturb: false    // no notification popups (urgent ones still show); history still fills
     property var mutedApps: []           // app names whose notifications never pop up (they still reach the history)
     property bool dndSchedule: false     // Do Not Disturb every day between dndFrom and dndTo
@@ -45,6 +46,7 @@ Singleton {
         accent:          v => typeof v === "string",
         wallpaper:       v => typeof v === "string",
         wallpaperColors: v => typeof v === "boolean",
+        wallpaperFavs:   v => Array.isArray(v) && v.every(x => typeof x === "string" && x !== ""),
         doNotDisturb:    v => typeof v === "boolean",
         mutedApps:       v => Array.isArray(v) && v.every(x => typeof x === "string" && x !== ""),
         dndSchedule:     v => typeof v === "boolean",

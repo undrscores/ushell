@@ -29,6 +29,7 @@ PanelWindow {
     property var results: []
     property string mode: "app"        // app | pkg | song | file | web | help
     property bool busy: false
+    property bool gaveUp: false        // an async search never answered (tool missing, or too slow)
     property string asyncQuery: ""
     readonly property string home: Quickshell.env("HOME")
 
@@ -39,6 +40,7 @@ PanelWindow {
         id: usageFile
         path: StateDir.ready ? win.usagePath : ""
         watchChanges: false
+        printErrors: false      // no file yet on a fresh install
         onLoaded: { try { win.usage = JSON.parse(usageFile.text()) } catch (e) {} }
     }
     function bonus(id) { return Math.min(25, Math.log2((usage[id] || 0) + 1) * 7) }
@@ -95,12 +97,19 @@ PanelWindow {
         return out.slice(0, 60)
     }
 
+    // what the empty-query list is built from; lets a window event that changed nothing visible be ignored
+    property string winSig: ""
+    function windowSig() { return Niri.windows.map(w => w.id + "\t" + (w.title || w.app_id || "")).join("\n") }
+
     function search(text) {
+        winSig = windowSig()
         const p = Search.parse(text)
         mode = p.mode
         Actions.disarm()
         asyncTimer.stop()
+        giveUp.stop()
         busy = false
+        gaveUp = false
 
         if (p.mode === "help") setResults(helpRows)
         else if (p.mode === "web")
@@ -121,11 +130,14 @@ PanelWindow {
         onTriggered: {
             const p = Search.parse(input.text)
             win.asyncQuery = p.q
+            giveUp.restart()
             if (p.mode === "pkg")  { pkgProc.running = false;  pkgProc.running = true }
             if (p.mode === "song") { songProc.running = false; songProc.running = true }
             if (p.mode === "file") { fileProc.running = false; fileProc.running = true }
         }
     }
+    // A program that is not installed never reports back; stop showing "…" and say so.
+    Timer { id: giveUp; interval: 6000; onTriggered: if (win.busy) { win.busy = false; win.gaveUp = true } }
     function stale(expect) { const p = Search.parse(input.text); return mode !== expect || p.q !== asyncQuery }
 
     Process {
@@ -165,7 +177,7 @@ PanelWindow {
     }
     Process {
         id: fileProc
-        command: ["timeout", "3", "fd", "--type", "f", "--max-results", "40", "--max-depth", "8", "--ignore-case", "--", win.asyncQuery, win.home]
+        command: ["timeout", "3", "fd", "--type", "f", "--max-results", "40", "--max-depth", "8", "--ignore-case", "--fixed-strings", "--", win.asyncQuery, win.home]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (win.stale("file")) return
@@ -221,11 +233,12 @@ PanelWindow {
     onOpenChanged: if (open) { fresh = true; freshTimer.restart(); Niri.refresh(); input.text = ""; search(""); input.forceActiveFocus() }
     Connections {
         target: Niri
-        function onWindowsChanged() { if (win.open && input.text === "") win.search("") }
+        function onWindowsChanged() { if (win.open && input.text === "" && win.windowSig() !== win.winSig) win.search("") }
     }
 
     readonly property string emptyText: {
         if (results.length > 0 || busy) return ""
+        if (gaveUp) return "Search failed or timed out"
         const q = Search.parse(input.text).q
         if (mode === "pkg"  && q.length >= 2) return "No packages found"
         if (mode === "song" && q.length >= 1) return "No songs found"

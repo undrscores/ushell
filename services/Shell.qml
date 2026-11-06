@@ -12,10 +12,21 @@ Singleton {
     property string settingsPage: "general"
     readonly property var settingsPages: ["general", "appearance", "notifications", "power", "weather", "about"]
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
-    property int  widgetsTab: 0          // 0 system, 1 weather, 2 focus
+    property int  widgetsTab: 0          // 0 control, 1 system, 2 weather, 3 focus
     // Each screen has its own widgets panel; it reports here whether it is on screen.
     property var shownOn: ({})           // screen name -> bool
     readonly property bool widgetsShown: Object.values(shownOn).some(v => v === true)
+    // The full player grows out of the now-playing capsule (bottom left). `mediaPinned` holds it open
+    // (launcher, `qs ipc call shell toggle media`); each screen's capsule reports whether it is showing the full player.
+    property bool mediaPinned: false
+    property var fullOn: ({})
+    readonly property bool mediaFull: Object.values(fullOn).some(v => v === true)
+    function setMediaFull(screenName, on) {
+        if ((fullOn[screenName] === true) === on) return
+        const m = Object.assign({}, fullOn)
+        m[screenName] = on
+        fullOn = m
+    }
     function setWidgetsShown(screenName, shown) {
         if ((shownOn[screenName] === true) === shown) return
         const m = Object.assign({}, shownOn)
@@ -31,6 +42,7 @@ Singleton {
     }
     function open(name) {
         if (name === "widgets") widgetsPinned = true
+        else if (name === "media") mediaPinned = true
         else if (name === "settings") openSettings()
         else if (name === "appearance") openSettings("appearance")
         else overlay = name
@@ -38,6 +50,7 @@ Singleton {
     function close()      { overlay = "" }
     function toggle(name) {
         if (name === "widgets") widgetsPinned = !widgetsPinned
+        else if (name === "media") mediaPinned = !mediaPinned
         else if (name === "settings") { if (settingsOpen) settingsOpen = false; else openSettings() }
         else if (name === "appearance") { if (settingsOpen && settingsPage === "appearance") settingsOpen = false; else openSettings("appearance") }
         else overlay = (overlay === name) ? "" : name

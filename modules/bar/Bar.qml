@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "media", "notifications", "network", "bluetooth"].includes(Shell.overlay)
+        pinned: ["quicksettings", "notifications", "network", "bluetooth"].includes(Shell.overlay)
                 && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -60,7 +60,7 @@ Variants {
             BarItem {
                 id: timerItem
                 visible: Countdown.active
-                onClicked: { Shell.widgetsTab = 2; Shell.widgetsPinned = true }
+                onClicked: { Shell.widgetsTab = 3; Shell.widgetsPinned = true }
                 Icon { text: "\uf017"; color: Countdown.running ? Theme.accent : Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
                 Text {
                     text: Countdown.fmt(Countdown.remaining)
@@ -158,13 +158,6 @@ Variants {
                     font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
                     anchors.verticalCenter: parent.verticalCenter
                 }
-            }
-
-            // Settings
-            BarItem {
-                active: Shell.settingsOpen
-                onClicked: Shell.toggle("settings")
-                Icon { text: "\uf013"; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
             }
         }
     }
