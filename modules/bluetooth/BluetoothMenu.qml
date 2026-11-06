@@ -12,7 +12,7 @@ Overlay {
     id: root
     name: "bluetooth"
 
-    onOpenChanged: Bt.scan(open)
+    onOpenChanged: { Bt.scan(open); if (!open) Bt.pending = "" }
 
     DropCard {
         id: card
@@ -80,6 +80,7 @@ Overlay {
                                 function onPairedChanged() {
                                     if (row.modelData.paired && !row.modelData.connected && Bt.pending === row.modelData.address) {
                                         Bt.pending = ""
+                                        row.modelData.trusted = true      // only once pairing worked, so a failed attempt leaves nothing behind
                                         row.modelData.connect()
                                     }
                                 }

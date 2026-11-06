@@ -16,6 +16,7 @@ Singleton {
     }
 
     Timer { id: saveTimer; interval: 600; onTriggered: file.setText(root.text) }
+    Component.onDestruction: if (saveTimer.running) file.setText(root.text)     // a reload within 600 ms of typing must not lose it
 
     FileView {
         id: file
