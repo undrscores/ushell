@@ -46,6 +46,34 @@ Singleton {
     function set(path) { failed = ""; Prefs.set("wallpaper", path) }
     function off() { Prefs.set("wallpaper", "") }
 
+    // ── one picture per screen ───────────────────────────────────────────────
+    // A screen listed in Prefs.monitorWallpapers shows its own picture; every other screen shows the main one
+    // (which also colours the theme).
+    function pathFor(screenName) { return Prefs.monitorWallpapers[screenName] || Prefs.wallpaper }
+    readonly property bool anyOverride: Object.keys(Prefs.monitorWallpapers).length > 0
+    function setFor(screenName, path) {
+        if (!screenName || !path) return
+        failed = ""
+        const m = Object.assign({}, Prefs.monitorWallpapers)
+        m[screenName] = path
+        Prefs.set("monitorWallpapers", m)
+    }
+    function resetFor(screenName) {
+        const m = Object.assign({}, Prefs.monitorWallpapers)
+        delete m[screenName]
+        Prefs.set("monitorWallpapers", m)
+    }
+    function moveFor(screenName, d) {
+        const n = files.length
+        if (n === 0) return
+        const i = files.indexOf(pathFor(screenName))
+        setFor(screenName, files[i < 0 ? (d > 0 ? 0 : n - 1) : (i + d + n) % n])
+    }
+    function randomFor(screenName) {
+        const n = files.length
+        if (n > 0) setFor(screenName, files[Math.floor(Math.random() * n)])
+    }
+
     // next / previous / random re-scan the folder first, so new pictures are picked up
     property var afterScan: null
     function refresh() { scanProc.running = false; scanProc.running = true }
@@ -66,7 +94,16 @@ Singleton {
         set(files[j])
     }
     // qs ipc call shell wallpaper <next|prev|random|off|/path/to/picture>
+    // qs ipc call shell wallpaper OUTPUT=<next|prev|random|off|/path>   one screen only ("off" gives it back the main wallpaper)
     function command(arg) {
+        const m = /^([^=\/]+)=(.*)$/.exec(arg)
+        if (m) {
+            const out = m[1], a = m[2]
+            if (a === "off") resetFor(out)
+            else if (a.startsWith("/")) setFor(out, a)
+            else { afterScan = () => (a === "next" ? moveFor(out, 1) : a === "prev" ? moveFor(out, -1) : a === "random" ? randomFor(out) : null); refresh() }
+            return
+        }
         if (arg === "next") next()
         else if (arg === "prev") prev()
         else if (arg === "random") random()

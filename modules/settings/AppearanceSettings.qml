@@ -1,3 +1,4 @@
+import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import "../../config"
@@ -183,6 +184,59 @@ ColumnLayout {
             color: Theme.fgDim
             font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
             text: "No pictures in " + Wallpapers.dir.replace(Wallpapers.home, "~") + ". Put some there, or set \"wallpaperDir\" in config.json."
+        }
+    }
+
+    SettingsGroup {
+        title: "Day and night"
+        SettingRow {
+            icon: "\uf186"; title: "Switch theme by the time of day"
+            hint: "Light from the first time, dark from the second. A change you make by hand stands until the next switch."
+            Switch { checked: Prefs.themeSchedule; onToggled: v => Prefs.set("themeSchedule", v) }
+        }
+        RowLayout {
+            visible: Prefs.themeSchedule
+            Layout.fillWidth: true
+            Layout.leftMargin: 40
+            spacing: 10
+            Text { text: "Light from"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize } }
+            TimeField { value: Prefs.themeLightFrom; onEdited: v => Prefs.set("themeLightFrom", v) }
+            Text { text: "dark from"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize } }
+            TimeField { value: Prefs.themeDarkFrom; onEdited: v => Prefs.set("themeDarkFrom", v) }
+            Item { Layout.fillWidth: true }
+        }
+        SettingRow {
+            visible: Prefs.themeSchedule
+            icon: "\uf2c9"; title: "Night light in the dark part"
+            hint: NightLight.available ? "Turns the warm tint on and off with the theme" : "Install wlsunset to use this"
+            Switch { enabled: NightLight.available; checked: Prefs.scheduleNightLight; onToggled: v => Prefs.set("scheduleNightLight", v) }
+        }
+    }
+
+    SettingsGroup {
+        visible: Quickshell.screens.length > 1
+        title: "Screens"
+        Text {
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            color: Theme.fgDim
+            font { family: Theme.font; pixelSize: Theme.fontSize - 1 }
+            text: "Each screen can have its own wallpaper; the theme's colours still follow the main one. In the wallpaper picker, Shift+Enter sets it for the screen you are on."
+        }
+        Repeater {
+            model: Quickshell.screens
+            delegate: SettingRow {
+                id: scr
+                required property var modelData
+                readonly property string own: Prefs.monitorWallpapers[modelData.name] ?? ""
+                icon: "\uf108"; title: modelData.name
+                hint: own !== "" ? Wallpapers.nameOf(own) : "Main wallpaper"
+                Row {
+                    spacing: 4
+                    Pill { label: "Use current"; enabled: Prefs.wallpaper !== ""; onClicked: Wallpapers.setFor(scr.modelData.name, Prefs.wallpaper) }
+                    Pill { visible: scr.own !== ""; label: "Reset"; onClicked: Wallpapers.resetFor(scr.modelData.name) }
+                }
+            }
         }
     }
 }

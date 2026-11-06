@@ -61,6 +61,34 @@ Overlay {
                 color: Theme.danger; font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
             }
 
+            // VPN and WireGuard profiles saved in NetworkManager
+            ColumnLayout {
+                Layout.fillWidth: true
+                visible: Network.vpns.length > 0
+                spacing: 8
+                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+                SectionLabel { text: "VPN" }
+                Repeater {
+                    model: Network.vpns.slice(0, 8)
+                    delegate: RowLayout {
+                        id: vpn
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 12
+                        Icon { text: "\uf132"; size: 15; color: vpn.modelData.active ? Theme.accent : Theme.fgDim; Layout.preferredWidth: 28 }
+                        Text {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            text: vpn.modelData.name + (Network.busyVpn === vpn.modelData.name ? "  …" : "")
+                            color: vpn.modelData.active ? Theme.fg : Theme.fgDim
+                            font { family: Theme.font; pixelSize: Theme.fontSize }
+                        }
+                        Text { text: vpn.modelData.type === "wireguard" ? "WireGuard" : "VPN"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize - 3 } }
+                        Switch { checked: vpn.modelData.active; onToggled: v => Network.setVpn(vpn.modelData.name, v) }
+                    }
+                }
+            }
+
             // Wi-Fi
             ColumnLayout {
                 Layout.fillWidth: true

@@ -7,6 +7,8 @@ import "../../services"
 import "../../components"
 import "calc.js" as Calc
 import "search.js" as Search
+import "units.js" as Units
+import "emoji.js" as EmojiData
 
 // Launcher. Plain text searches apps, open windows, system actions and does maths.
 // Prefixes switch mode:   z packages (zypper)   m music (MPD)   f files   g web   ? help
@@ -25,9 +27,9 @@ PanelWindow {
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     // Every result: { kind, title, tag?, icon?, glyph?, data, id?, installed?, danger?, score }
-    //   kind: app | win | calc | action | pkg | song | file | web | hint
+    //   kind: app | win | calc | action | pkg | song | file | web | emoji | clip | cmd | hint
     property var results: []
-    property string mode: "app"        // app | pkg | song | file | web | help
+    property string mode: "app"        // app | pkg | song | file | web | emoji | clip | cmd | help
     property bool busy: false
     property bool gaveUp: false        // an async search never answered (tool missing, or too slow)
     property string asyncQuery: ""
@@ -52,6 +54,11 @@ PanelWindow {
     }
 
     readonly property var helpRows: [
+        { kind: "hint", title: "yt gh w so maps   Search one site", glyph: "\uf002", data: "yt " },
+        { kind: "hint", title: "e   Emoji picker",                glyph: "\uf118", data: "e " },
+        { kind: "hint", title: "c   Search the clipboard history", glyph: "\uf0ea", data: "c " },
+        { kind: "hint", title: ">   Run a shell command",         glyph: "\uf120", data: "> " },
+        { kind: "hint", title: "5 km in mi   Convert units",      glyph: "\uf0ec", data: "" },
         { kind: "hint", title: "z   Install or remove packages", glyph: "", data: "z " },
         { kind: "hint", title: "m   Play music from MPD",         glyph: "", data: "m " },
         { kind: "hint", title: "f   Find files",                  glyph: "", data: "f " },
@@ -61,10 +68,56 @@ PanelWindow {
 
     function setResults(list) { results = list; listView.currentIndex = 0 }
 
+    // [{ ch, name }] from emoji.js, parsed on first use
+    property var emojiList: []
+    function emojis() {
+        if (emojiList.length === 0)
+            emojiList = EmojiData.RAW.split("\n").map(l => { const i = l.indexOf("|"); return { ch: l.slice(0, i), name: l.slice(i + 1) } })
+        return emojiList
+    }
+    property bool emojiFont: true           // a colour emoji font is installed (without one the picker still copies, but shows boxes)
+    Process {
+        id: emojiProbe
+        command: ["sh", "-c", "fc-list :color=true family | head -1"]
+        stdout: StdioCollector { onStreamFinished: { win.emojiFont = text.trim() !== ""; if (win.mode === "emoji") win.search(input.text) } }
+    }
+    function emojiResults(q) {
+        const words = q.toLowerCase().split(/\s+/).filter(w => w !== "")
+        const out = []
+        for (const e of emojis()) {
+            let s = 1
+            for (const w of words) {
+                const t = Search.textScore(e.name, w)
+                if (t <= 0) { s = 0; break }
+                s += t
+            }
+            if (s > 0) out.push({ kind: "emoji", title: e.ch + "   " + e.name.split(" ").slice(0, 4).join(" "), data: e.ch, id: "emoji:" + e.ch, tag: "copy", score: s - e.name.length * 0.05 + bonus("emoji:" + e.ch) * 4 })
+        }
+        out.sort((a, b) => b.score - a.score)
+        const list = out.slice(0, 60)
+        if (!emojiFont) list.unshift({ kind: "hint", title: "No colour emoji font found (google-noto-coloremoji-fonts)", glyph: "\uf071", data: "" })
+        return list
+    }
+    function clipResults(q) {
+        const ql = q.toLowerCase()
+        const out = []
+        for (const it of Clipboard.items) {
+            const text = it.type === "image" ? "image" : (it.text || "")
+            if (ql !== "" && !text.toLowerCase().includes(ql)) continue
+            const line = text.split("\n").find(l => l.trim() !== "") ?? ""
+            out.push({ kind: "clip", title: line.trim().slice(0, 120) || "(empty)", tag: it.type === "image" ? "image" : (it.pinned ? "pinned" : ""),
+                       glyph: it.type === "image" ? "\uf03e" : "\uf0ea", data: it })
+            if (out.length >= 60) break
+        }
+        return out
+    }
+
     function buildDefault(q) {
         const ql = q.toLowerCase()
         const out = []
 
+        const u = ql ? Units.tryConvert(q) : null
+        if (u !== null) out.push({ kind: "calc", title: u.text, tag: "copy", glyph: "\uf0ec", data: u.value, score: 1000 })
         const c = ql ? Calc.tryCalc(q) : null
         if (c !== null) out.push({ kind: "calc", title: "= " + c, tag: "copy", glyph: "", data: c, score: 1000 })
 
@@ -103,7 +156,7 @@ PanelWindow {
 
     function search(text) {
         winSig = windowSig()
-        const p = Search.parse(text)
+        const p = Search.parse(text, Config.searchShortcuts)
         mode = p.mode
         Actions.disarm()
         asyncTimer.stop()
@@ -113,7 +166,12 @@ PanelWindow {
 
         if (p.mode === "help") setResults(helpRows)
         else if (p.mode === "web")
-            setResults(p.q ? [{ kind: "web", title: "Search the web for “" + p.q + "”", tag: "web", glyph: "", data: p.q }] : [])
+            setResults(p.q ? [{ kind: "web", title: "Search the web for “" + p.q + "”", tag: p.url ? (p.url.split("/")[2] ?? "web").replace(/^(www|en)\./, "") : "web", glyph: "", data: p.q, url: p.url }] : [])
+        else if (p.mode === "emoji") { if (!emojiProbe.running && emojiList.length === 0) emojiProbe.running = true; setResults(emojiResults(p.q)) }
+        else if (p.mode === "clip") setResults(clipResults(p.q))
+        else if (p.mode === "cmd")
+            setResults(p.q ? [{ kind: "cmd", title: "Run  " + p.q, tag: "shift: in a terminal", glyph: "\uf120", data: p.q }]
+                           : [{ kind: "hint", title: "Type a command, Enter runs it (Shift+Enter: in a terminal)", glyph: "\uf120", data: "" }])
         else if (p.mode === "app") setResults(buildDefault(p.q))
         else {   // pkg | song | file: debounced, async
             const min = p.mode === "song" ? 1 : 2
@@ -128,7 +186,7 @@ PanelWindow {
         id: asyncTimer
         interval: 220
         onTriggered: {
-            const p = Search.parse(input.text)
+            const p = Search.parse(input.text, Config.searchShortcuts)
             win.asyncQuery = p.q
             giveUp.restart()
             if (p.mode === "pkg")  { pkgProc.running = false;  pkgProc.running = true }
@@ -138,7 +196,7 @@ PanelWindow {
     }
     // A program that is not installed never reports back; stop showing "…" and say so.
     Timer { id: giveUp; interval: 6000; onTriggered: if (win.busy) { win.busy = false; win.gaveUp = true } }
-    function stale(expect) { const p = Search.parse(input.text); return mode !== expect || p.q !== asyncQuery }
+    function stale(expect) { const p = Search.parse(input.text, Config.searchShortcuts); return mode !== expect || p.q !== asyncQuery }
 
     Process {
         id: pkgProc
@@ -199,6 +257,7 @@ PanelWindow {
 
     function activate(item, alt) {
         if (!item) return
+        if (item.kind === "hint" && item.data === "") return
         if (item.kind === "hint") {
             input.text = item.data
             input.cursorPosition = input.text.length
@@ -220,7 +279,17 @@ PanelWindow {
             const target = alt ? item.data.slice(0, item.data.lastIndexOf("/")) : item.data
             Quickshell.execDetached(["xdg-open", target]); break
         }
-        case "web":    Quickshell.execDetached(["xdg-open", Config.searchUrl + encodeURIComponent(item.data)]); break
+        case "web":    Quickshell.execDetached(["xdg-open", (item.url || Config.searchUrl) + encodeURIComponent(item.data)]); break
+        case "emoji":
+            bump(item.id)
+            Quickshell.execDetached(["wl-copy", item.data])
+            Osd.showText("note", "Copied " + item.data, true, "\uf0c5")
+            break
+        case "clip":   Clipboard.copy(item.data.id); Osd.showText("note", "Copied from history", true, "\uf0c5"); break
+        case "cmd":
+            if (alt) Quickshell.execDetached([Config.terminal, "-e", "sh", "-c", item.data + "; echo; read -n1 -s -r -p 'Press any key to close…'"])
+            else Quickshell.execDetached(["sh", "-c", item.data])
+            break
         }
         if (Shell.overlay === "launcher") Shell.close()   // actions may have opened something else
     }
@@ -239,7 +308,7 @@ PanelWindow {
     readonly property string emptyText: {
         if (results.length > 0 || busy) return ""
         if (gaveUp) return "Search failed or timed out"
-        const q = Search.parse(input.text).q
+        const q = Search.parse(input.text, Config.searchShortcuts).q
         if (mode === "pkg"  && q.length >= 2) return "No packages found"
         if (mode === "song" && q.length >= 1) return "No songs found"
         if (mode === "file" && q.length >= 2) return "No files found"
@@ -294,7 +363,7 @@ PanelWindow {
                 Text {
                     id: chipText
                     anchors.centerIn: parent
-                    text: win.busy ? "…" : ({ pkg: "zypper", song: "music", file: "files", web: "web", help: "modes" }[win.mode] ?? "")
+                    text: win.busy ? "…" : ({ pkg: "zypper", song: "music", file: "files", web: "web", emoji: "emoji", clip: "clipboard", cmd: "run", help: "modes" }[win.mode] ?? "")
                     color: Theme.accent
                     font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
                 }

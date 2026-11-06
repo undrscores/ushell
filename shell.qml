@@ -23,12 +23,13 @@ import "modules/radial"
 import "modules/capture"
 import "modules/calendar"
 import "modules/switcher"
+import "modules/polkit"
 import "services"
 import "config"
 
 ShellRoot {
     // singletons are created lazily; touch the clipboard and the notification daemon so they start with the shell
-    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen, Power.hasBattery, Capture.canRecord]
+    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen, Power.hasBattery, Capture.canRecord, Schedule.day, Auth.registered]
 
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
@@ -63,6 +64,7 @@ ShellRoot {
     CaptureMenu {}
     CalendarMenu {}
     WindowSwitcher {}
+    AuthPrompt {}
     OsdWindow {}
 
     // qs ipc call launcher query "m "   (open the launcher pre-filled, e.g. for a music-search keybind)
@@ -104,16 +106,18 @@ ShellRoot {
         function status(): string { return JSON.stringify({ running: Countdown.running, remaining: Math.round(Countdown.remaining), total: Countdown.total }) }
     }
 
-    // qs ipc call network <status | scan | wifi true|false>
+    // qs ipc call network <status | scan | wifi true|false | vpn NAME true|false>
     IpcHandler {
         target: "network"
         function status(): string {
             return JSON.stringify({ available: Network.available, kind: Network.kind, name: Network.name, online: Network.online,
                                     connectivity: Network.connectivity, wifiPresent: Network.wifiPresent, wifiOn: Network.wifiOn,
+                                    vpns: Network.vpns.map(v => v.name + (v.active ? " *" : "")),
                                     networks: Network.networks.map(n => n.ssid + " " + n.signal + (n.active ? " *" : "")) })
         }
         function scan(): void { Network.scan() }
         function wifi(on: bool): void { Network.setWifi(on) }
+        function vpn(name: string, on: bool): void { Network.setVpn(name, on) }       // a saved VPN / WireGuard profile, by name
     }
 
     // qs ipc call keys status     (Caps / Num Lock, keyboard layout, apps recording from a microphone)
@@ -171,6 +175,24 @@ ShellRoot {
         function toggle(): void { Idle.toggle() }
         function keepAwake(on: bool): void { Idle.keepAwake = on }
         function status(): string { return JSON.stringify({ keepAwake: Idle.keepAwake, lockMin: Prefs.idleLockMin, offMin: Prefs.idleOffMin }) }
+    }
+
+    // qs ipc call settings <save [PATH] | restore [PATH] | status>   save / restore Settings and config.json as one file (default ~/ushell-settings.json)
+    IpcHandler {
+        target: "settings"
+        function save(path: string): void { Backup.exportTo(path) }
+        function restore(path: string): void { Backup.importFrom(path) }
+        function status(): string { return JSON.stringify({ busy: Backup.busy, failed: Backup.failed, message: Backup.status }) }
+    }
+
+    // qs ipc call auth status   (the polkit password prompt: is ushell the session's agent, and is a request waiting)
+    IpcHandler {
+        target: "auth"
+        function status(): string {
+            return JSON.stringify({ enabled: Auth.enabled, registered: Auth.registered, active: Auth.active,
+                                    message: Auth.flow ? Auth.flow.message : "", action: Auth.flow ? Auth.flow.actionId : "" })
+        }
+        function cancel(): void { Auth.cancel() }
     }
 
     // qs ipc call osd test   (show the volume pill)

@@ -17,6 +17,9 @@ Singleton {
         nativeLock: true,
         lockCommand: ["swaylock", "-f"],
         searchUrl: "https://duckduckgo.com/?q=",
+        searchShortcuts: { yt: "https://www.youtube.com/results?search_query=", gh: "https://github.com/search?q=",
+                           w: "https://en.wikipedia.org/w/index.php?search=", so: "https://stackoverflow.com/search?q=",
+                           maps: "https://www.openstreetmap.org/search?query=" },
         glassOpacity: 1.0,
         maxVolume: 1.0,
         wallpaperDir: "~/wallpapers",
@@ -39,6 +42,10 @@ Singleton {
 
     // Web search for the launcher ("g " prefix); the query is appended URL-encoded.
     property string searchUrl: defaults.searchUrl
+
+    // Launcher web shortcuts: typing "yt cats" searches that URL (the query is appended URL-encoded).
+    // Setting this in config.json replaces the whole list.
+    property var searchShortcuts: defaults.searchShortcuts
 
     // How opaque panels are: 1 = solid, down to 0.5 = see-through.
     property real glassOpacity: defaults.glassOpacity

@@ -27,6 +27,7 @@ Singleton {
         const ids = [entry.id, entry.startupClass, entry.name].filter(x => x).map(x => x.toLowerCase())
         return windows.find(w => w.app_id && ids.includes(w.app_id.toLowerCase())) ?? null
     }
+    function switchLayout(dir) { Quickshell.execDetached(["niri", "msg", "action", "switch-layout", dir === "prev" ? "prev" : "next"]) }
     function focusWindow(id) { Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(id)]) }
 
     function refreshWorkspaces() { wsProc.running = true; outProc.running = true }

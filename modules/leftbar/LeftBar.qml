@@ -7,6 +7,8 @@ import "../../components"
 // Left dock, macOS-style: compact, icons grow toward the pointer, running apps get a dot.
 // Pinned apps (config/Config.qml) first, then any other open app. Auto-hides; the pin
 // button keeps it always visible (and reserves its space).
+// Settings → General → "Dock shows: Windows" turns it into a taskbar: pinned apps that are not running, then
+// one icon per open window (grouped by workspace); the focused window's dot is long.
 Variants {
     model: Quickshell.screens
 
@@ -30,11 +32,28 @@ Variants {
         function rebuildItems() {
             const out = []
             const pinnedIds = []
+            const perWindow = Prefs.dockMode === "windows"
             for (const name of Config.pinnedApps) {
                 const e = DesktopEntries.heuristicLookup(name)
                 if (!e) continue
                 pinnedIds.push([e.id, e.startupClass, e.name].filter(x => x).map(x => x.toLowerCase()))
+                if (perWindow && Niri.appWindow(e)) continue            // a taskbar shows its windows instead
                 out.push({ key: "p:" + e.id, entry: e, name: e.name, icon: e.icon, pinned: true })
+            }
+            if (perWindow) {
+                const wsIndex = id => (Niri.workspaces.find(x => x.id === id) ?? { idx: 99 }).idx
+                const wins = Niri.windows.slice().sort((a, b) => wsIndex(a.workspace_id) - wsIndex(b.workspace_id)
+                    || ((a.layout && a.layout.pos_in_scrolling_layout ? a.layout.pos_in_scrolling_layout[0] : 0) - (b.layout && b.layout.pos_in_scrolling_layout ? b.layout.pos_in_scrolling_layout[0] : 0))
+                    || a.id - b.id)
+                for (const w of wins) {
+                    const e = w.app_id ? DesktopEntries.heuristicLookup(w.app_id) : null
+                    out.push({ key: "win:" + w.id, windowId: w.id, entry: e, name: w.title || w.app_id || "Window", icon: e ? e.icon : "", pinned: false })
+                }
+                const sigW = out.map(o => o.key + "|" + o.icon).join(";")      // titles change all the time: not part of the signature
+                if (sigW === itemsSig) return
+                itemsSig = sigW
+                items = out
+                return
             }
             const seen = {}
             for (const w of Niri.windows) {
@@ -57,6 +76,10 @@ Variants {
         Connections {
             target: Config
             function onPinnedAppsChanged() { win.rebuildItems() }     // config.json edited
+        }
+        Connections {
+            target: Prefs
+            function onDockModeChanged() { win.itemsSig = ""; win.rebuildItems() }
         }
         Connections {
             target: DesktopEntries.applications
@@ -84,8 +107,10 @@ Variants {
                     delegate: Item {
                         id: slot
                         required property var modelData
-                        readonly property var win_: modelData.entry ? Niri.appWindow(modelData.entry)
+                        readonly property var win_: modelData.windowId !== undefined ? (Niri.windows.find(w => w.id === modelData.windowId) ?? null)
+                                                  : modelData.entry ? Niri.appWindow(modelData.entry)
                                                   : Niri.windows.find(w => (w.app_id || "").toLowerCase() === modelData.key.slice(2)) ?? null
+                        readonly property string label: modelData.windowId !== undefined && win_ ? (win_.title || modelData.name) : modelData.name
                         readonly property bool running: win_ !== null && win_ !== undefined
                         readonly property string iconSrc: modelData.icon ? Quickshell.iconPath(modelData.icon, true) : ""
                         property real appear: 0
@@ -131,7 +156,7 @@ Variants {
                         Rectangle {   // running dot, on the screen-edge side like a dock indicator
                             anchors { left: parent.left; leftMargin: 1; verticalCenter: parent.verticalCenter }
                             width: 4; radius: 2
-                            height: slot.running ? 4 : 0
+                            height: slot.running ? (slot.win_ && slot.win_.is_focused ? 14 : 4) : 0
                             color: Theme.accent
                             Behavior on height { Spring { preset: "snap"; epsilon: 0.2 } }
                         }
@@ -143,15 +168,16 @@ Variants {
                             acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                             onContainsMouseChanged: {
                                 if (containsMouse) {
-                                    win.tipText = slot.modelData.name
+                                    win.tipText = slot.label
                                     win.tipPos = slot.mapToItem(null, 0, slot.height / 2).y
                                     win.tipShown = true
-                                } else if (win.tipText === slot.modelData.name) win.tipShown = false
+                                } else if (win.tipText === slot.label) win.tipShown = false
                             }
                             onClicked: mouse => {
                                 bounce.restart()
                                 // left: jump to the running window, or start the app; middle: always a new window
-                                if (slot.running && mouse.button !== Qt.MiddleButton) Niri.focusWindow(slot.win_.id)
+                                if (slot.modelData.windowId !== undefined && mouse.button === Qt.MiddleButton) Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", String(slot.modelData.windowId)])
+                                else if (slot.running && mouse.button !== Qt.MiddleButton) Niri.focusWindow(slot.win_.id)
                                 else if (slot.modelData.entry) slot.modelData.entry.execute()
                             }
                         }

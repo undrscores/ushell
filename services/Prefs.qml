@@ -32,6 +32,13 @@ Singleton {
     property int nightTemp: 4000         // its colour temperature in kelvin; lower is warmer
     property int idleLockMin: 0          // lock after this many idle minutes; 0 = never
     property int idleOffMin: 0           // turn the screens off after this many idle minutes; 0 = never
+    property var monitorWallpapers: ({}) // screen name -> picture path, for screens that do not show the main wallpaper
+    property bool themeSchedule: false   // switch between light and dark by the time of day
+    property string themeLightFrom: "07:00"   // light theme from here ...
+    property string themeDarkFrom: "19:00"    // ... until here, dark the rest of the day
+    property bool scheduleNightLight: true    // the night light follows the dark part of the schedule
+    property string dockMode: "apps"     // left dock: "apps" (one icon per app) or "windows" (one icon per open window)
+    property bool polkitAgent: true      // ushell shows the password prompt for privileged actions (needs the other polkit agents stopped)
     property bool recordAudio: false     // screen recordings include the default audio output
     property int captureDelay: 0         // seconds to wait before a screenshot or recording starts (0, 3, 5, 10)
     property bool notificationLog: true  // keep the notification history on disk across restarts
@@ -62,6 +69,13 @@ Singleton {
         nightTemp:       v => Number.isInteger(v) && v >= 2500 && v <= 6000,
         idleLockMin:     v => Number.isInteger(v) && v >= 0 && v <= 240,
         idleOffMin:      v => Number.isInteger(v) && v >= 0 && v <= 240,
+        monitorWallpapers: v => v !== null && typeof v === "object" && !Array.isArray(v) && Object.keys(v).every(k => k !== "" && typeof v[k] === "string" && v[k] !== ""),
+        themeSchedule:   v => typeof v === "boolean",
+        themeLightFrom:  v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+        themeDarkFrom:   v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+        scheduleNightLight: v => typeof v === "boolean",
+        dockMode:        v => v === "apps" || v === "windows",
+        polkitAgent:     v => typeof v === "boolean",
         recordAudio:     v => typeof v === "boolean",
         captureDelay:    v => Number.isInteger(v) && v >= 0 && v <= 30,
         notificationLog: v => typeof v === "boolean",
@@ -82,11 +96,14 @@ Singleton {
         save()
     }
 
-    function save() {
+    function snapshot() {
         const out = {}
         for (const k of Object.keys(schema)) out[k] = root[k]
-        file.setText(JSON.stringify(out))
+        return out
     }
+    function has(key) { return Object.prototype.hasOwnProperty.call(schema, key) }
+    function valid(key, value) { return has(key) && schema[key](value) }
+    function save() { file.setText(JSON.stringify(snapshot())) }
 
     function finishLoad() {
         loaded = true
