@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installs greetd + the ushell greeter. Run as root:  sudo ./greeter/install.sh [wallpaper.jpg]
+# Installs greetd + the ushell greeter. Run as root:  sudo ./greeter/install.sh [fixed-wallpaper.jpg]
 set -e
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
 USER_NAME="${SUDO_USER:-jremover}"
@@ -11,7 +11,11 @@ sed "s/@USER@/$USER_NAME/" "$SRC/shell.qml" > "$D/shell.qml"
 # theme + wallpaper of the user's current ushell setup
 STATE="$(getent passwd "$USER_NAME" | cut -d: -f6)/.local/state/ushell"
 [ -f "$STATE/theme/greeter.json" ] && cp "$STATE/theme/greeter.json" "$D/theme.json"
-WP="${1:-$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$STATE/prefs.json" 2>/dev/null)}"
+# The greeter's wallpaper is fixed: pass one to set/replace it, otherwise the installed one is kept.
+# Only the very first install falls back to whatever ushell currently shows.
+if [ -n "$1" ]; then WP="$1"
+elif [ -f "$D/wallpaper.jpg" ]; then WP=""
+else WP="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$STATE/prefs.json" 2>/dev/null)"; fi
 [ -n "$WP" ] && [ -f "$WP" ] && cp "$WP" "$D/wallpaper.jpg"
 cp "$SRC/niri.kdl" /etc/greetd/niri-greeter.kdl
 cp "$SRC/pam-greetd" /etc/pam.d/greetd
