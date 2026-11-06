@@ -95,6 +95,8 @@ for i, v in enumerate(ansi_bright):
 write(out + "/foot.ini", f)
 
 # ── niri borders ────────────────────────────────────────────────────────────
+# the login screen (greeter/install.sh copies this next to the greeter, which can't read ~/.local)
+write(out + "/greeter.json", json.dumps(c))
 write(out + "/niri-colors.kdl",
       f'layout {{\n    border {{\n        active-color "{acc}"\n        inactive-color "{surf}"\n'
       f'        urgent-color "{red}"\n    }}\n    focus-ring {{\n        active-color "{acc}"\n'
