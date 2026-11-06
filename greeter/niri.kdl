@@ -1,0 +1,4 @@
+// Minimal niri that only hosts the ushell greeter. Quits when the greeter exits (after login).
+input { keyboard { xkb { layout "us" } } }
+hotkey-overlay { skip-at-startup }
+spawn-sh-at-startup "qs -p /etc/greetd/ushell-greeter; niri msg action quit --skip-confirmation"

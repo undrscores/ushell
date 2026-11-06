@@ -1,0 +1,12 @@
+#%PAM-1.0
+# Login through greetd. Same stack as a tty login, plus gnome-keyring so the typed password
+# unlocks (or on first login creates) the "login" keyring.
+auth      requisite  pam_nologin.so
+auth      substack   common-auth
+auth      optional   pam_gnome_keyring.so
+account   substack   common-account
+password  substack   common-password
+session   required   pam_loginuid.so
+session   optional   pam_keyinit.so force revoke
+session   substack   common-session
+session   optional   pam_gnome_keyring.so auto_start
