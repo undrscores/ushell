@@ -6,7 +6,7 @@ import "../../services"
 import "../../components"
 
 // Radial quick-action menu in the bottom right corner. Pushing the pointer into the corner makes a round
-// button spring out of the screen edge, and three actions fan out around it. (Setting: Settings → Panels)
+// button spring out of the screen edge, and four actions fan out around it. (Setting: Settings → Panels)
 Variants {
     model: Prefs.radialMenu && !Prefs.focusMode ? Quickshell.screens : []
 
@@ -25,7 +25,8 @@ Variants {
         readonly property var actions: [
             { glyph: "", label: "Clipboard",  run: () => Shell.toggle("clipboard") },
             { glyph: "", label: "Wallpapers", run: () => Shell.toggle("wallpapers") },
-            { glyph: "\uf013", label: "Settings",   run: () => Shell.toggle("settings") }
+            { glyph: "\uf013", label: "Settings",   run: () => Shell.toggle("settings") },
+            { glyph: "\uf011", label: "Power",      run: () => Shell.toggle("power") }
         ]
 
         anchors { bottom: true; right: true }
