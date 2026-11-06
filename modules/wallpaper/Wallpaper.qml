@@ -4,13 +4,13 @@ import QtQuick
 import "../../config"
 import "../../services"
 
-// Draws the chosen wallpaper behind everything, one window per screen. Nothing is created until a
-// wallpaper has been chosen (or while the chosen one can't be loaded), so another wallpaper program
-// keeps working if you prefer it.
+// Draws the chosen wallpaper behind everything, one window per screen (a screen can have its own picture:
+// Prefs.monitorWallpapers). Nothing is created until a wallpaper has been chosen (or while the chosen one can't
+// be loaded), so another wallpaper program keeps working if you prefer it.
 Variants {
     id: root
-    readonly property bool active: Prefs.wallpaper !== "" && Wallpapers.failed !== Prefs.wallpaper
-    model: root.active ? Quickshell.screens : []
+    // a window per screen that has a picture to show (the main one, or its own)
+    model: Quickshell.screens.filter(s => { const p = Wallpapers.pathFor(s.name); return p !== "" && Wallpapers.failed !== p })
 
     PanelWindow {
         id: win
@@ -23,7 +23,8 @@ Variants {
         WlrLayershell.layer: WlrLayer.Background
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-        readonly property string wanted: Wallpapers.url(Prefs.wallpaper)
+        readonly property string wantedPath: Wallpapers.pathFor(screen ? screen.name : "")
+        readonly property string wanted: Wallpapers.url(wantedPath)
 
         // a change fades the old picture out, then the new one in once it has loaded
         Image {
@@ -40,8 +41,8 @@ Variants {
             onStatusChanged: {
                 if (status === Image.Ready) opacity = 1
                 else if (status === Image.Error && source.toString() === win.wanted) {
-                    console.warn("ushell wallpaper: can't load " + Prefs.wallpaper)
-                    Wallpapers.failed = Prefs.wallpaper      // the windows go away; the Appearance panel says why
+                    console.warn("ushell wallpaper: can't load " + win.wantedPath)
+                    Wallpapers.failed = win.wantedPath       // the windows go away; the Appearance panel says why
                 }
             }
         }

@@ -57,5 +57,13 @@ function parseSavedWifi(text) {
     return lines(text).map(splitTerse).filter(f => f[1] === "802-11-wireless").map(f => f[0])
 }
 
+// `nmcli -t -f NAME,TYPE,ACTIVE connection show` -> VPN and WireGuard profiles: [{ name, type, active }], active first
+function parseVpn(text) {
+    return lines(text).map(splitTerse)
+        .filter(f => f[1] === "vpn" || f[1] === "wireguard")
+        .map(f => ({ name: f[0], type: f[1], active: f[2] === "yes" }))
+        .sort((a, b) => (b.active - a.active) || a.name.localeCompare(b.name))
+}
+
 // 0..3 bars from a 0..100 signal strength
 function bars(signal) { return signal >= 75 ? 3 : signal >= 50 ? 2 : signal >= 25 ? 1 : 0 }

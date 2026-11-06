@@ -127,12 +127,25 @@ Variants {
             // Keyboard layout (only when there is more than one) and the mic privacy dot
             BarItem {
                 visible: Niri.layouts.length > 1
+                onClicked: mouse => Niri.switchLayout(mouse.button === Qt.RightButton ? "prev" : "next")      // click: next layout, right click: previous
+                onScrolled: d => Niri.switchLayout(d > 0 ? "prev" : "next")
                 Text {
                     text: Niri.layoutShort
                     color: Theme.fgDim
                     font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
                     anchors.verticalCenter: parent.verticalCenter
                 }
+            }
+            // Caps Lock on / Num Lock off: only shown while they are in the unusual state
+            BarItem {
+                visible: LockKeys.seen && LockKeys.caps
+                Text { text: "CAPS"; color: Theme.danger; anchors.verticalCenter: parent.verticalCenter
+                       font { family: Theme.font; pixelSize: Theme.fontSize - 1; bold: true } }
+            }
+            BarItem {
+                visible: LockKeys.seen && !LockKeys.num
+                Text { text: "NUM off"; color: Theme.fgDim; anchors.verticalCenter: parent.verticalCenter
+                       font { family: Theme.font; pixelSize: Theme.fontSize - 1 } }
             }
             BarItem {
                 visible: Audio.micInUse
@@ -151,6 +164,7 @@ Variants {
                 active: Shell.overlay === "network"
                 onClicked: Shell.toggle("network")
                 Icon { text: Network.glyph; color: Network.dim ? Theme.danger : Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
+                Icon { visible: Network.vpnOn; text: "\uf132"; size: 13; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter }
             }
 
             // Bluetooth → devices (hidden when there is no adapter)

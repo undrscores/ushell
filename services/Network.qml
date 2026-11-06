@@ -23,6 +23,10 @@ Singleton {
     property var saved: []
     property bool scanning: false
     property string busySsid: ""             // network being connected to
+    property var vpns: []                    // [{ name, type: "vpn" | "wireguard", active }]
+    property string busyVpn: ""              // VPN being switched
+    readonly property bool vpnOn: vpns.some(v => v.active)
+    readonly property string vpnName: (vpns.find(v => v.active) ?? { name: "" }).name
     property string error: ""
 
     readonly property bool online: kind !== "none" && connectivity !== "none"
@@ -36,7 +40,13 @@ Singleton {
     }
     readonly property bool dim: kind === "none" || connectivity === "limited" || connectivity === "portal"
 
+    function setVpn(name, on) {
+        busyVpn = name
+        error = ""
+        run(["nmcli", "connection", on ? "up" : "down", "id", name])
+    }
     function refresh() {
+        vpnProc.running = true
         statusProc.running = true
         radioProc.running = true
         connProc.running = true
@@ -75,6 +85,11 @@ Singleton {
             }
         }
         onExited: code => { if (code !== 0) root.available = false }
+    }
+    Process {
+        id: vpnProc
+        command: ["nmcli", "-t", "-f", "NAME,TYPE,ACTIVE", "connection", "show"]
+        stdout: StdioCollector { onStreamFinished: root.vpns = NM.parseVpn(text) }
     }
     Process {
         id: radioProc
@@ -125,6 +140,7 @@ Singleton {
         onExited: code => {
             root.error = code === 0 ? "" : (actErr.text.trim() || actOut.text.trim() || "Could not connect").split("\n").pop()
             root.busySsid = ""
+            root.busyVpn = ""
             root.refresh()
         }
     }

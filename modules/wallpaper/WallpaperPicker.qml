@@ -46,6 +46,7 @@ Overlay {
     }
     function step(d) { if (n > 0) cur = Math.max(0, Math.min(n - 1, cur + d)) }
     function apply() { if (list[cur]) Wallpapers.set(list[cur]) }
+    function applyHere() { if (list[cur]) Wallpapers.setFor(Niri.focusedOutput, list[cur]) }       // only the screen you are on
     function cycleFilter() {
         const i = filters.findIndex(f => f.id === filter)
         filter = filters[(i + 1) % filters.length].id
@@ -312,6 +313,7 @@ Overlay {
                 active: fav
                 onClicked: Wallpapers.toggleFav(root.list[root.cur])
             }
+            Pill { visible: Quickshell.screens.length > 1; anchors.verticalCenter: parent.verticalCenter; label: "This screen"; onClicked: root.applyHere() }
             Pill { anchors.verticalCenter: parent.verticalCenter; label: "Apply"; active: true; onClicked: root.apply() }
         }
 
@@ -367,7 +369,7 @@ Overlay {
                         Keys.onPressed: e => {
                             const ctrl = e.modifiers & Qt.ControlModifier
                             if (e.key === Qt.Key_Escape) { if (text !== "") text = ""; else Shell.close() }
-                            else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) root.apply()
+                            else if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) { if (e.modifiers & Qt.ShiftModifier) root.applyHere(); else root.apply() }
                             else if (e.key === Qt.Key_Left)  root.step(-1)
                             else if (e.key === Qt.Key_Right) root.step(1)
                             else if (e.key === Qt.Key_Home)  root.cur = 0

@@ -35,6 +35,17 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Security"
+        SettingRow {
+            icon: "\uf023"; title: "Password prompt for admin actions"
+            hint: !Prefs.polkitAgent ? "Off: start another polkit agent (e.g. polkit-gnome) or privileged actions will fail"
+                  : Auth.registered ? "ushell asks for your password when a program needs more rights (pkexec, VPN, network settings)"
+                  : "Could not register as the polkit agent. Stop any other agent (polkit-gnome, polkit-kde) and reload."
+            Switch { checked: Prefs.polkitAgent; onToggled: v => Prefs.set("polkitAgent", v) }
+        }
+    }
+
+    SettingsGroup {
         title: "Screenshots and recording"
         SettingRow {
             icon: "\uf017"; title: "Delay before capturing"; hint: "Gives you time to open a menu or move the pointer"
@@ -59,6 +70,14 @@ ColumnLayout {
 
     SettingsGroup {
         title: "Bar and dock"
+        SettingRow {
+            icon: "\uf2d0"; title: "Dock shows"; hint: "Apps: one icon per app. Windows: one icon per open window, like a taskbar (middle click closes one)"
+            Row {
+                spacing: 4
+                Pill { label: "Apps"; active: Prefs.dockMode === "apps"; onClicked: Prefs.set("dockMode", "apps") }
+                Pill { label: "Windows"; active: Prefs.dockMode === "windows"; onClicked: Prefs.set("dockMode", "windows") }
+            }
+        }
         SettingRow {
             icon: ""; title: "Auto-hide the top bar"; hint: "Off keeps it visible and reserves its space"
             Switch { checked: Prefs.topAutoHide; onToggled: v => Prefs.set("topAutoHide", v) }

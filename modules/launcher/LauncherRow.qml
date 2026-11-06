@@ -46,7 +46,14 @@ Item {
             radius: Theme.radiusSmall
             color: row.modelData.kind === "calc" ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.22)
                 : row.armedNow ? Theme.dangerSoft : Theme.hover
+            Text {   // emoji: the picture itself, in a normal font
+                visible: row.modelData.kind === "emoji"
+                anchors.centerIn: parent
+                text: row.modelData.kind === "emoji" ? row.modelData.data : ""
+                font.pixelSize: 16
+            }
             Icon {
+                visible: row.modelData.kind !== "emoji"
                 anchors.centerIn: parent
                 text: row.modelData.glyph ?? "\uf2d0"
                 size: 13
