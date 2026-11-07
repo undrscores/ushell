@@ -9,7 +9,7 @@ import "../../components"
 // while there is something to show, and only the cards take clicks; the rest lets them through.
 PanelWindow {
     id: win
-    screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput) ?? Quickshell.screens[0]
+    screen: Quickshell.screens.find(s => s.name === Wm.focusedOutput) ?? Quickshell.screens[0]
     anchors { top: true; right: true }
     margins { top: Theme.inset; right: Theme.inset }
     implicitWidth: 360

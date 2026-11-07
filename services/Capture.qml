@@ -6,9 +6,9 @@ import "../config"
 
 // Screenshots and screen recordings.
 //
-// Screenshots are niri's own (`niri msg action screenshot*`): the picture goes to the clipboard and to niri's
-// `screenshot-path`, and niri needs nothing installed for it. Recordings use `wf-recorder` (and `slurp` for a
-// region); without them `canRecord` is false and the panel says what to install.
+// Screenshots use `grim` (and `slurp` for a region): the picture goes to the clipboard (`wl-copy`) and to
+// Config.screenshotDir. Recordings use `wf-recorder` (and `slurp` for a region); without them `canRecord`
+// is false and the panel says what to install.
 //
 //   qs ipc call capture <region|screen|window|record|recordRegion|stop|toggle|status>
 Singleton {
@@ -67,11 +67,24 @@ Singleton {
     function cancel() { tick.stop(); settle.stop(); action = null; pending = ""; countdown = 0 }
 
     // ---- screenshots -----------------------------------------------------------------------------------
-    // region: niri's own selection screen. screen / window: the focused output / window straight away.
+    // region: drawn with slurp. screen / window: the focused output / window straight away.
     function screenshot(kind) {
         if (busy) return
-        const act = kind === "screen" ? "screenshot-screen" : (kind === "window" ? "screenshot-window" : "screenshot")
-        later("Screenshot", () => Quickshell.execDetached(["niri", "msg", "action", act]))
+        later("Screenshot", () => {
+            const dir = expand(Config.screenshotDir)
+            const file = dir + "/screenshot-" + stamp() + ".png"
+            let sel = ""                                       // what to pass to grim, as shell words
+            if (kind === "screen") sel = Wm.focusedOutput !== "" ? "-o '" + Wm.focusedOutput + "'" : ""
+            else if (kind === "window") {
+                const g = Wm.focusedWindowGeometry()
+                if (!g) return
+                sel = "-g '" + g + "'"
+            }
+            const cmd = kind === "region"
+                ? "mkdir -p \"$1\" && g=$(slurp -f '%x,%y %wx%h') && grim -g \"$g\" \"$2\" && wl-copy < \"$2\""
+                : "mkdir -p \"$1\" && grim " + sel + " \"$2\" && wl-copy < \"$2\""
+            Quickshell.execDetached(["sh", "-c", cmd, "sh", dir, file])
+        })
     }
 
     // ---- recording -------------------------------------------------------------------------------------
@@ -84,7 +97,7 @@ Singleton {
     function begin(geometry) {
         const dir = expand(Config.recordingDir)
         const file = dir + "/recording-" + stamp() + ".mp4"
-        const args = geometry !== "" ? ["-g", geometry] : (Niri.focusedOutput !== "" ? ["-o", Niri.focusedOutput] : [])
+        const args = geometry !== "" ? ["-g", geometry] : (Wm.focusedOutput !== "" ? ["-o", Wm.focusedOutput] : [])
         if (Prefs.recordAudio) args.push("--audio")
         lastFile = file
         rec.command = ["sh", "-c", "d=$1; f=$2; shift 2; mkdir -p \"$d\" && exec wf-recorder -f \"$f\" \"$@\"", "sh", dir, file].concat(args)

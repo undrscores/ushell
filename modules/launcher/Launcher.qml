@@ -16,7 +16,7 @@ PanelWindow {
     id: win
     readonly property bool open: Shell.overlay === "launcher"
 
-    screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput) ?? Quickshell.screens[0]
+    screen: Quickshell.screens.find(s => s.name === Wm.focusedOutput) ?? Quickshell.screens[0]
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
@@ -121,7 +121,7 @@ PanelWindow {
         const c = ql ? Calc.tryCalc(q) : null
         if (c !== null) out.push({ kind: "calc", title: "= " + c, tag: "copy", glyph: "", data: c, score: 1000 })
 
-        Niri.windows.forEach((w, i) => {
+        Wm.windows.forEach((w, i) => {
             const title = w.title || w.app_id || "Window"
             let s
             if (ql === "") s = 500 - i
@@ -152,7 +152,7 @@ PanelWindow {
 
     // what the empty-query list is built from; lets a window event that changed nothing visible be ignored
     property string winSig: ""
-    function windowSig() { return Niri.windows.map(w => w.id + "\t" + (w.title || w.app_id || "")).join("\n") }
+    function windowSig() { return Wm.windows.map(w => w.id + "\t" + (w.title || w.app_id || "")).join("\n") }
 
     function search(text) {
         winSig = windowSig()
@@ -266,11 +266,11 @@ PanelWindow {
         switch (item.kind) {
         case "app": {
             bump(item.id)
-            const w = Niri.appWindow(item.data)       // already running? jump to it instead of a second copy
-            if (w) Niri.focusWindow(w.id); else item.data.execute()
+            const w = Wm.appWindow(item.data)       // already running? jump to it instead of a second copy
+            if (w) Wm.focusWindow(w.id); else item.data.execute()
             break
         }
-        case "win":    Niri.focusWindow(item.data); break
+        case "win":    Wm.focusWindow(item.data); break
         case "calc":   Quickshell.execDetached(["wl-copy", item.data]); break
         case "action": if (!Actions.trigger(item.data)) return; bump(item.id); break
         case "pkg":    inTerminal(["zypper", item.installed ? "remove" : "install", item.data]); break
@@ -299,9 +299,9 @@ PanelWindow {
 
     property bool fresh: false
     Timer { id: freshTimer; interval: 450; onTriggered: win.fresh = false }
-    onOpenChanged: if (open) { fresh = true; freshTimer.restart(); Niri.refresh(); input.text = ""; search(""); input.forceActiveFocus() }
+    onOpenChanged: if (open) { fresh = true; freshTimer.restart(); Wm.refresh(); input.text = ""; search(""); input.forceActiveFocus() }
     Connections {
-        target: Niri
+        target: Wm
         function onWindowsChanged() { if (win.open && input.text === "" && win.windowSig() !== win.winSig) win.search("") }
     }
 

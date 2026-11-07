@@ -46,7 +46,7 @@ Overlay {
     }
     function step(d) { if (n > 0) cur = Math.max(0, Math.min(n - 1, cur + d)) }
     function apply() { if (list[cur]) Wallpapers.set(list[cur]) }
-    function applyHere() { if (list[cur]) Wallpapers.setFor(Niri.focusedOutput, list[cur]) }       // only the screen you are on
+    function applyHere() { if (list[cur]) Wallpapers.setFor(Wm.focusedOutput, list[cur]) }       // only the screen you are on
     function cycleFilter() {
         const i = filters.findIndex(f => f.id === filter)
         filter = filters[(i + 1) % filters.length].id

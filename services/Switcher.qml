@@ -18,14 +18,14 @@ Singleton {
     property int startDir: 1
 
     function stamp(w) { const t = w.focus_timestamp; return t ? t.secs * 1e9 + t.nanos : 0 }
-    function workspaceOf(w) { return Niri.workspaces.find(x => x.id === w.workspace_id) ?? null }
+    function workspaceOf(w) { return Wm.workspaces.find(x => x.id === w.workspace_id) ?? null }
 
     // { id, title, app, icon, where, focused, urgent }
     readonly property var entries: {
         const q = query.trim().toLowerCase()
-        const multi = new Set(Niri.workspaces.map(x => x.output)).size > 1
+        const multi = new Set(Wm.workspaces.map(x => x.output)).size > 1
         const out = []
-        for (const w of Niri.windows) {
+        for (const w of Wm.windows) {
             const title = w.title || w.app_id || "Window"
             const app = w.app_id || ""
             let score = stamp(w)
@@ -49,7 +49,7 @@ Singleton {
     onOpenChanged: {
         if (open) {
             query = ""
-            Niri.refresh()
+            Wm.refresh()
             index = cycle && entries.length > 1 ? (startDir > 0 ? 1 : entries.length - 1) : 0
         } else cycle = false
     }
@@ -70,10 +70,10 @@ Singleton {
     function pick(i) {
         const e = entries[i]
         Shell.close()
-        if (e) Niri.focusWindow(e.id)
+        if (e) Wm.focusWindow(e.id)
     }
     function closeWindow(i) {
         const e = entries[i]
-        if (e) Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", String(e.id)])
+        if (e) Wm.closeWindow(e.id)
     }
 }

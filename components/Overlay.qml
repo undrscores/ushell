@@ -13,7 +13,7 @@ PanelWindow {
     default property alias content: holder.data
     property real scrim: 0              // 0..1: how much the screen dims behind a modal panel (dropdowns leave it 0)
 
-    screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput) ?? Quickshell.screens[0]
+    screen: Quickshell.screens.find(s => s.name === Wm.focusedOutput) ?? Quickshell.screens[0]
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"

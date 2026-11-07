@@ -16,7 +16,7 @@ Variants {
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
         pinned: ["quicksettings", "notifications", "network", "bluetooth", "calendar", "capture"].includes(Shell.overlay)
-                && (Niri.focusedOutput === "" || (win.screen !== null && win.screen.name === Niri.focusedOutput))
+                && (Wm.focusedOutput === "" || (win.screen !== null && win.screen.name === Wm.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
         panelRadius: Theme.barHeight / 2
@@ -126,11 +126,11 @@ Variants {
 
             // Keyboard layout (only when there is more than one) and the mic privacy dot
             BarItem {
-                visible: Niri.layouts.length > 1
-                onClicked: mouse => Niri.switchLayout(mouse.button === Qt.RightButton ? "prev" : "next")      // click: next layout, right click: previous
-                onScrolled: d => Niri.switchLayout(d > 0 ? "prev" : "next")
+                visible: Wm.layouts.length > 1
+                onClicked: mouse => Wm.switchLayout(mouse.button === Qt.RightButton ? "prev" : "next")      // click: next layout, right click: previous
+                onScrolled: d => Wm.switchLayout(d > 0 ? "prev" : "next")
                 Text {
-                    text: Niri.layoutShort
+                    text: Wm.layoutShort
                     color: Theme.fgDim
                     font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
                     anchors.verticalCenter: parent.verticalCenter

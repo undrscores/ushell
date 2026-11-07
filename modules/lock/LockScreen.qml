@@ -8,7 +8,7 @@ import "../../services"
 // and only lets this program take input). The wallpaper, dimmed, a clock, and a password field.
 //
 // If this process dies while locked the compositor keeps the session locked; restart `qs` to get the
-// prompt back (or log in on another TTY and run `pkill niri`).
+// prompt back (or log in on another TTY and run `pkill uwm`).
 Scope {
     // Not a binding: if the compositor refuses or ends the lock, `locked` is reset on the lock and Lock must follow.
     Connections { target: Lock; function onLockedChanged() { if (lock.locked !== Lock.locked) lock.locked = Lock.locked } }

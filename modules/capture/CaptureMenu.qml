@@ -123,7 +123,7 @@ Overlay {
             }
             Text {
                 Layout.fillWidth: true
-                text: "Screenshots are copied to the clipboard and saved by niri. Recordings go to " + Config.recordingDir + "."
+                text: "Screenshots are copied to the clipboard and saved in " + Config.screenshotDir + ". Recordings go to " + Config.recordingDir + "."
                 wrapMode: Text.Wrap
                 color: Theme.fgDim
                 font { family: Theme.font; pixelSize: Theme.fontSize - 2 }

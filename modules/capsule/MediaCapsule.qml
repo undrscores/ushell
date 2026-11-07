@@ -58,7 +58,7 @@ Variants {
         Timer { id: hideTimer; interval: 500; onTriggered: win.shown = false }
 
         // peek for a moment when the track changes, on the monitor you are working on only
-        readonly property bool onFocusedOutput: Niri.focusedOutput === "" || (screen !== null && screen.name === Niri.focusedOutput)
+        readonly property bool onFocusedOutput: Wm.focusedOutput === "" || (screen !== null && screen.name === Wm.focusedOutput)
         Timer { id: flash; interval: 4500 }
         Connections {
             target: Media

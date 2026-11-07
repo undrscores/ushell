@@ -120,17 +120,25 @@ ShellRoot {
         function vpn(name: string, on: bool): void { Network.setVpn(name, on) }       // a saved VPN / WireGuard profile, by name
     }
 
+    // qs ipc call wm dump     (what the shell sees of uwm: focused output, workspaces, windows; for debugging)
+    IpcHandler {
+        target: "wm"
+        function dump(): string {
+            return JSON.stringify({ output: Wm.focusedOutput, workspaces: Wm.workspaces, windows: Wm.windows })
+        }
+    }
+
     // qs ipc call keys status     (Caps / Num Lock, keyboard layout, apps recording from a microphone)
     IpcHandler {
         target: "keys"
         function status(): string {
-            return JSON.stringify({ caps: LockKeys.caps, num: LockKeys.num, seen: LockKeys.seen, layouts: Niri.layouts, layout: Niri.layoutShort,
+            return JSON.stringify({ caps: LockKeys.caps, num: LockKeys.num, seen: LockKeys.seen, layouts: Wm.layouts, layout: Wm.layoutShort,
                                     micInUse: Audio.micInUse, recorders: Audio.recorderNames })
         }
-        function layoutOsd(): void { Osd.showText("layout", Niri.layoutName || "English (US)", true) }
+        function layoutOsd(): void { Osd.showText("layout", Wm.layoutName || "English (US)", true) }
     }
 
-    // qs ipc call capture <region|screen|window|record|recordRegion|stop|toggle|cancel|status>   (screenshots are niri's; recording needs wf-recorder)
+    // qs ipc call capture <region|screen|window|record|recordRegion|stop|toggle|cancel|status>   (screenshots need grim, recording wf-recorder)
     IpcHandler {
         target: "capture"
         function region(): void { Capture.screenshot("region") }

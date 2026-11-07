@@ -24,7 +24,7 @@ Variants {
 
         // ── what the dock shows ───────────────────────────────────────────
         // pinned apps in config order, then one icon per other open app
-        // Both models below are only replaced when what they show actually changed. Niri re-sends
+        // Both models below are only replaced when what they show actually changed. The window list is re-sent
         // fresh JSON on every event (window titles change all the time), and a Repeater over a
         // replaced JS array rebuilds every delegate and the icons would re-pop.
         property var items: []
@@ -37,12 +37,12 @@ Variants {
                 const e = DesktopEntries.heuristicLookup(name)
                 if (!e) continue
                 pinnedIds.push([e.id, e.startupClass, e.name].filter(x => x).map(x => x.toLowerCase()))
-                if (perWindow && Niri.appWindow(e)) continue            // a taskbar shows its windows instead
+                if (perWindow && Wm.appWindow(e)) continue            // a taskbar shows its windows instead
                 out.push({ key: "p:" + e.id, entry: e, name: e.name, icon: e.icon, pinned: true })
             }
             if (perWindow) {
-                const wsIndex = id => (Niri.workspaces.find(x => x.id === id) ?? { idx: 99 }).idx
-                const wins = Niri.windows.slice().sort((a, b) => wsIndex(a.workspace_id) - wsIndex(b.workspace_id)
+                const wsIndex = id => (Wm.workspaces.find(x => x.id === id) ?? { idx: 99 }).idx
+                const wins = Wm.windows.slice().sort((a, b) => wsIndex(a.workspace_id) - wsIndex(b.workspace_id)
                     || ((a.layout && a.layout.pos_in_scrolling_layout ? a.layout.pos_in_scrolling_layout[0] : 0) - (b.layout && b.layout.pos_in_scrolling_layout ? b.layout.pos_in_scrolling_layout[0] : 0))
                     || a.id - b.id)
                 for (const w of wins) {
@@ -56,7 +56,7 @@ Variants {
                 return
             }
             const seen = {}
-            for (const w of Niri.windows) {
+            for (const w of Wm.windows) {
                 const id = (w.app_id || "").toLowerCase()
                 if (!id || seen[id] || pinnedIds.some(ids => ids.includes(id))) continue
                 seen[id] = true
@@ -70,7 +70,7 @@ Variants {
         }
 
         Connections {
-            target: Niri
+            target: Wm
             function onWindowsChanged() { win.rebuildItems() }
         }
         Connections {
@@ -107,9 +107,9 @@ Variants {
                     delegate: Item {
                         id: slot
                         required property var modelData
-                        readonly property var win_: modelData.windowId !== undefined ? (Niri.windows.find(w => w.id === modelData.windowId) ?? null)
-                                                  : modelData.entry ? Niri.appWindow(modelData.entry)
-                                                  : Niri.windows.find(w => (w.app_id || "").toLowerCase() === modelData.key.slice(2)) ?? null
+                        readonly property var win_: modelData.windowId !== undefined ? (Wm.windows.find(w => w.id === modelData.windowId) ?? null)
+                                                  : modelData.entry ? Wm.appWindow(modelData.entry)
+                                                  : Wm.windows.find(w => (w.app_id || "").toLowerCase() === modelData.key.slice(2)) ?? null
                         readonly property string label: modelData.windowId !== undefined && win_ ? (win_.title || modelData.name) : modelData.name
                         readonly property bool running: win_ !== null && win_ !== undefined
                         readonly property string iconSrc: modelData.icon ? Quickshell.iconPath(modelData.icon, true) : ""
@@ -176,8 +176,8 @@ Variants {
                             onClicked: mouse => {
                                 bounce.restart()
                                 // left: jump to the running window, or start the app; middle: always a new window
-                                if (slot.modelData.windowId !== undefined && mouse.button === Qt.MiddleButton) Quickshell.execDetached(["niri", "msg", "action", "close-window", "--id", String(slot.modelData.windowId)])
-                                else if (slot.running && mouse.button !== Qt.MiddleButton) Niri.focusWindow(slot.win_.id)
+                                if (slot.modelData.windowId !== undefined && mouse.button === Qt.MiddleButton) Wm.closeWindow(slot.modelData.windowId)
+                                else if (slot.running && mouse.button !== Qt.MiddleButton) Wm.focusWindow(slot.win_.id)
                                 else if (slot.modelData.entry) slot.modelData.entry.execute()
                             }
                         }

@@ -10,5 +10,6 @@
   "frameSize": 8,
   "searchShortcuts": { "yt": "https://www.youtube.com/results?search_query=", "gh": "https://github.com/search?q=" },
   "recordingDir": "~/Videos/Recordings",
+  "screenshotDir": "~/Pictures/Screenshots",
   "calendarPaths": ["~/.local/share/ushell/calendar", "~/.local/share/calendars"]
 }

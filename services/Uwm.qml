@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// uwm's IPC socket ($UWM_SOCKET, set when the shell runs inside uwm; absent under niri).
+// uwm's IPC socket ($UWM_SOCKET, set when the shell runs inside uwm; absent elsewhere).
 // Display state (monitors, their modes and scale) and the commands to change it, with a
 // keep-or-revert timer so a bad mode cannot leave you with a blank screen.
 Singleton {

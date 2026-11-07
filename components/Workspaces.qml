@@ -11,10 +11,10 @@ Item {
     implicitWidth: row.implicitWidth + 16
     implicitHeight: 30
 
-    // rows are updated in place so the delegates (and their springs) survive Niri's frequent re-sends
+    // rows are updated in place so the delegates (and their springs) survive the frequent re-sends
     ListModel { id: wsModel }
     function sync() {
-        const list = Niri.workspaces
+        const list = Wm.workspaces
         while (wsModel.count > list.length) wsModel.remove(wsModel.count - 1)
         for (let i = 0; i < list.length; i++) {
             const w = list[i]
@@ -23,14 +23,14 @@ Item {
             else wsModel.append(r)
         }
     }
-    Connections { target: Niri; function onWorkspacesChanged() { root.sync() } }
+    Connections { target: Wm; function onWorkspacesChanged() { root.sync() } }
     Component.onCompleted: sync()
 
     WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: e => {
             if (cool.running || e.angleDelta.y === 0) return
-            Quickshell.execDetached(["niri", "msg", "action", e.angleDelta.y < 0 ? "focus-workspace-down" : "focus-workspace-up"])
+            Wm.stepWorkspace(e.angleDelta.y < 0 ? 1 : -1)
             cool.restart()
         }
     }
@@ -56,7 +56,7 @@ Item {
                     color: ws.focused ? Theme.accent : (ws.hasWindow ? Theme.fgDim : Theme.surfaceHi)
                     Behavior on color { ColorAnimation { duration: Theme.animNormal } }
                 }
-                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Niri.focusWorkspace(ws.wsIdx) }
+                MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: Wm.focusWorkspace(ws.wsIdx) }
             }
         }
     }

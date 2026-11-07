@@ -18,6 +18,6 @@ Scope {
         enabled: Prefs.idleOffMin > 0 && !Idle.keepAwake
         timeout: Math.max(1, Prefs.idleOffMin * 60)
         respectInhibitors: true
-        onIsIdleChanged: Quickshell.execDetached(["niri", "msg", "action", isIdle ? "power-off-monitors" : "power-on-monitors"])
+        onIsIdleChanged: Wm.screensOff(isIdle)
     }
 }

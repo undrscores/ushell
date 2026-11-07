@@ -9,7 +9,7 @@ import "../../components"
 // lets every click through, and only exists while it is visible.
 PanelWindow {
     id: win
-    screen: Quickshell.screens.find(s => s.name === Niri.focusedOutput) ?? Quickshell.screens[0]
+    screen: Quickshell.screens.find(s => s.name === Wm.focusedOutput) ?? Quickshell.screens[0]
     anchors { bottom: true }
     margins { bottom: 72 }
     implicitWidth: 280

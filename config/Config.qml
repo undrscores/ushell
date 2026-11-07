@@ -25,6 +25,7 @@ Singleton {
         wallpaperDir: "~/wallpapers",
         frameSize: 8,
         recordingDir: "~/Videos/Recordings",
+        screenshotDir: "~/Pictures/Screenshots",
         calendarPaths: ["~/.local/share/ushell/calendar", "~/.local/share/calendars"]
     })
 
@@ -60,8 +61,9 @@ Singleton {
     // `gaps` at least this large so windows sit inside it.
     property int frameSize: defaults.frameSize
 
-    // Where screen recordings are saved (screenshots go where niri's `screenshot-path` says).
+    // Where screen recordings are saved (screenshots go to screenshotDir).
     property string recordingDir: defaults.recordingDir
+    property string screenshotDir: defaults.screenshotDir
 
     // .ics files and folders (searched recursively) the calendar shows events from. A vdirsyncer or khal
     // calendar folder works; so does a single exported file.
