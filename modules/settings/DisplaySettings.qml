@@ -114,6 +114,39 @@ ColumnLayout {
         }
     }
 
+    SettingsGroup {
+        title: "Brightness"
+        visible: Brightness.displays.length > 0 || Brightness.detecting || Brightness.missing
+        Component.onCompleted: Brightness.ensure()
+        Repeater {
+            model: Brightness.displays
+            delegate: RowLayout {
+                id: br
+                required property var modelData
+                Layout.fillWidth: true
+                spacing: 12
+                Icon { text: "\uf185"; size: 17; color: Theme.fg; Layout.preferredWidth: 34; horizontalAlignment: Text.AlignHCenter }
+                Slider {
+                    Layout.fillWidth: true
+                    value: br.modelData.value / 100
+                    tone: Theme.accent2
+                    onMoved: v => Brightness.set(br.modelData.bus, v * 100)
+                }
+                Text {
+                    Layout.preferredWidth: 34; horizontalAlignment: Text.AlignRight
+                    text: Math.round(br.modelData.value); color: Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+            }
+        }
+        Text {
+            visible: Brightness.detecting || Brightness.missing
+            text: Brightness.detecting ? "Reading monitor brightness…" : "No DDC monitor found for brightness"
+            color: Theme.fgDim
+            font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
+        }
+    }
+
     // a change is waiting for confirmation
     Rectangle {
         visible: Uwm.pending !== null

@@ -89,10 +89,11 @@ Variants {
                 }
             }
 
-            // Volume: click mutes, scroll changes it
+            // Volume: click opens the Sound settings, right click mutes, scroll changes it
             Rectangle { width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
             BarItem {
-                onClicked: Audio.toggleMute()
+                active: Shell.settingsOpen && Shell.settingsPage === "sound"
+                onClicked: mouse => { if (mouse.button === Qt.RightButton) Audio.toggleMute(); else Shell.toggle("sound") }
                 onScrolled: d => Audio.setVolume(Audio.volume + (d > 0 ? 0.03 : -0.03))
                 Icon {
                     id: volIcon

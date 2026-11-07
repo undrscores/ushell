@@ -18,6 +18,14 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Do Not Disturb"
+        SettingRow {
+            icon: "\uf1f6"; title: "Do Not Disturb now"; hint: "Silences popups until you turn it off; right click the bell in the bar does the same"
+            Switch { checked: Notifications.dnd; onToggled: v => Notifications.setDnd(v) }
+        }
+    }
+
+    SettingsGroup {
         title: "Quiet hours"
         SettingRow {
             icon: ""; title: "Do Not Disturb on a schedule"; hint: "Popups stay quiet every day in this window; urgent ones still show"

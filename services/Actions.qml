@@ -88,6 +88,8 @@ Singleton {
           run: () => Prefs.set("themeMode", Prefs.themeMode === "dark" ? "light" : "dark") },
         { id: "settings", title: "Settings", glyph: "\uf013", words: "settings preferences config autohide weather",
           run: () => Shell.open("settings") },
+        { id: "sound",    title: "Sound settings",  glyph: "\uf028", words: "volume microphone output device audio sound mixer",
+          run: () => Shell.open("sound") },
         { id: "reload",   title: "Reload shell",    glyph: "", words: "restart quickshell reload",
           run: () => Quickshell.reload(false) }
     ]
