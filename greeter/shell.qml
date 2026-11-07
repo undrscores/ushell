@@ -11,7 +11,7 @@ import QtQuick
 ShellRoot {
     id: root
     readonly property string user: "@USER@"
-    readonly property var session: ["niri-session"]
+    readonly property var session: ["sh", "-c", "/usr/local/bin/uwm-session || exec niri-session"]
     readonly property string font: "JetBrains Mono"
     property var theme: ({})
     readonly property color bg: theme.bg || "#1e1e2e"
