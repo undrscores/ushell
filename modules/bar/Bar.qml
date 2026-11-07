@@ -15,7 +15,7 @@ Variants {
         edge: "top"
         autoHide: Prefs.topAutoHide
         // dropdowns open on the focused output only, so only that screen's pill stays up
-        pinned: ["quicksettings", "notifications", "network", "bluetooth", "calendar", "capture"].includes(Shell.overlay)
+        pinned: ["notifications", "network", "bluetooth", "calendar", "capture"].includes(Shell.overlay)
                 && (Wm.focusedOutput === "" || (win.screen !== null && win.screen.name === Wm.focusedOutput))
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -89,11 +89,10 @@ Variants {
                 }
             }
 
-            // Volume → quick settings
+            // Volume: click mutes, scroll changes it
             Rectangle { width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
             BarItem {
-                active: Shell.overlay === "quicksettings"
-                onClicked: Shell.toggle("quicksettings")
+                onClicked: Audio.toggleMute()
                 onScrolled: d => Audio.setVolume(Audio.volume + (d > 0 ? 0.03 : -0.03))
                 Icon {
                     id: volIcon
@@ -149,8 +148,7 @@ Variants {
             }
             BarItem {
                 visible: Audio.micInUse
-                active: Shell.overlay === "quicksettings"
-                onClicked: Shell.toggle("quicksettings")
+                onClicked: Audio.toggleMic()
                 Icon {
                     text: Audio.micMuted ? "\uf131" : "\uf130"
                     color: Audio.micMuted ? Theme.fgDim : Theme.danger
@@ -175,11 +173,9 @@ Variants {
                 Icon { text: Bt.glyph; color: Bt.connectedCount > 0 ? Theme.accent : (Bt.on ? Theme.fgDim : Theme.line); anchors.verticalCenter: parent.verticalCenter }
             }
 
-            // Battery (laptops only) → quick settings
+            // Battery (laptops only)
             BarItem {
                 visible: Power.hasBattery
-                active: Shell.overlay === "quicksettings"
-                onClicked: Shell.toggle("quicksettings")
                 Icon { text: Power.glyph; color: Power.low ? Theme.danger : (Power.charging ? Theme.accent : Theme.fgDim); anchors.verticalCenter: parent.verticalCenter }
                 Text {
                     text: Power.level

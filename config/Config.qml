@@ -12,7 +12,6 @@ Singleton {
     id: root
 
     readonly property var defaults: ({
-        pinnedApps: ["firefox", "alacritty", "keepassxc", "mpv"],
         terminal: "alacritty",
         nativeLock: true,
         lockCommand: ["swaylock", "-f"],
@@ -29,8 +28,6 @@ Singleton {
         calendarPaths: ["~/.local/share/ushell/calendar", "~/.local/share/calendars"]
     })
 
-    // Desktop-entry names shown in the left dock (matched loosely, missing ones are skipped).
-    property var pinnedApps: defaults.pinnedApps
 
     // Terminal for launcher jobs that need one (package install/remove): runs `<terminal> -e bash -c ...`.
     property string terminal: defaults.terminal

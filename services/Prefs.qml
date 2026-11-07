@@ -11,7 +11,6 @@ import QtQuick
 Singleton {
     id: root
     property bool topAutoHide: true      // false = top pill always visible (reserves space)
-    property bool leftAutoHide: true     // false = left dock always visible (reserves space)
     property bool frame: true            // a frame around the screen edges that the bar, dock and menus grow out of
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
@@ -37,7 +36,6 @@ Singleton {
     property string themeLightFrom: "07:00"   // light theme from here ...
     property string themeDarkFrom: "19:00"    // ... until here, dark the rest of the day
     property bool scheduleNightLight: true    // the night light follows the dark part of the schedule
-    property string dockMode: "apps"     // left dock: "apps" (one icon per app) or "windows" (one icon per open window)
     property bool polkitAgent: true      // ushell shows the password prompt for privileged actions (needs the other polkit agents stopped)
     property bool recordAudio: false     // screen recordings include the default audio output
     property int captureDelay: 0         // seconds to wait before a screenshot or recording starts (0, 3, 5, 10)
@@ -48,7 +46,6 @@ Singleton {
     // setting name -> "is this a valid value?"
     readonly property var schema: ({
         topAutoHide:     v => typeof v === "boolean",
-        leftAutoHide:    v => typeof v === "boolean",
         frame:           v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",
@@ -74,7 +71,6 @@ Singleton {
         themeLightFrom:  v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
         themeDarkFrom:   v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
         scheduleNightLight: v => typeof v === "boolean",
-        dockMode:        v => v === "apps" || v === "windows",
         polkitAgent:     v => typeof v === "boolean",
         recordAudio:     v => typeof v === "boolean",
         captureDelay:    v => Number.isInteger(v) && v >= 0 && v <= 30,

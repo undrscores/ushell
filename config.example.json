@@ -1,5 +1,4 @@
 {
-  "pinnedApps": ["firefox", "alacritty", "keepassxc", "mpv"],
   "terminal": "alacritty",
   "nativeLock": true,
   "lockCommand": ["swaylock", "-f"],

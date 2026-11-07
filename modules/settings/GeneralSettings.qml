@@ -69,29 +69,17 @@ ColumnLayout {
     }
 
     SettingsGroup {
-        title: "Bar and dock"
-        SettingRow {
-            icon: "\uf2d0"; title: "Dock shows"; hint: "Apps: one icon per app. Windows: one icon per open window, like a taskbar (middle click closes one)"
-            Row {
-                spacing: 4
-                Pill { label: "Apps"; active: Prefs.dockMode === "apps"; onClicked: Prefs.set("dockMode", "apps") }
-                Pill { label: "Windows"; active: Prefs.dockMode === "windows"; onClicked: Prefs.set("dockMode", "windows") }
-            }
-        }
+        title: "Bar"
         SettingRow {
             icon: ""; title: "Auto-hide the top bar"; hint: "Off keeps it visible and reserves its space"
             Switch { checked: Prefs.topAutoHide; onToggled: v => Prefs.set("topAutoHide", v) }
-        }
-        SettingRow {
-            icon: ""; title: "Auto-hide the left dock"; hint: "Off keeps it visible and reserves its space"
-            Switch { checked: Prefs.leftAutoHide; onToggled: v => Prefs.set("leftAutoHide", v) }
         }
     }
 
     SettingsGroup {
         title: "Screen"
         SettingRow {
-            icon: ""; title: "Screen frame"; hint: "A border around the screen that the bar, dock and menus grow out of. Keep niri's gaps at least " + Config.frameSize + " px."
+            icon: ""; title: "Screen frame"; hint: "A border around the screen that the bar and menus grow out of. Keep niri's gaps at least " + Config.frameSize + " px."
             Switch { checked: Prefs.frame; onToggled: v => Prefs.set("frame", v) }
         }
         SettingRow {

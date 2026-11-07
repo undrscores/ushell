@@ -3,10 +3,8 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import "modules/bar"
-import "modules/leftbar"
 import "modules/widgets"
 import "modules/launcher"
-import "modules/quicksettings"
 import "modules/clipboard"
 import "modules/settings"
 import "modules/bluetooth"
@@ -47,12 +45,10 @@ ShellRoot {
     IdleHandler {}
 
     Bar {}
-    LeftBar {}
     Widgets {}
     MediaCapsule {}
     RadialMenu {}
     Launcher { id: launcher }
-    QuickSettings {}
     ClipboardMenu {}
     SettingsWindow {}
     BluetoothMenu {}
@@ -209,7 +205,7 @@ ShellRoot {
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|quicksettings|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth|capture|calendar|switcher>   (settings is a window)
+    // qs ipc call shell toggle <launcher|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth|capture|calendar|switcher>   (settings is a window)
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }

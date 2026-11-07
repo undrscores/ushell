@@ -71,7 +71,7 @@ Singleton {
     }
 
     function sync() {
-        const quiet = !armed || Shell.overlay === "quicksettings"
+        const quiet = !armed
         observe("volume", Audio.sink ? Audio.sink.name : "", Audio.volume, Audio.muted, quiet, true)
         observe("mic", Audio.source ? Audio.source.name : "", Audio.micVolume, Audio.micMuted, quiet, false)
         if (Brightness.ready) observe("brightness", "monitors", Brightness.average / 100, false, quiet, true)

@@ -7,7 +7,6 @@ function isText(v) { return typeof v === "string" && v.trim() !== "" }
 function isTextList(v) { return Array.isArray(v) && v.every(isText) }
 
 var RULES = {
-    pinnedApps:   { ok: isTextList,                                    fix: v => v.map(s => s.trim()),                        hint: "a list of app names" },
     terminal:     { ok: isText,                                        fix: v => v.trim(),                                    hint: "a command name" },
     nativeLock:   { ok: v => typeof v === "boolean",                   fix: v => v,                                          hint: "true (ushell's own lock screen) or false (run lockCommand instead)" },
     lockCommand:  { ok: v => isTextList(v) && v.length > 0,            fix: v => v.map(s => s.trim()),                        hint: "a non-empty list: the command and its arguments" },
