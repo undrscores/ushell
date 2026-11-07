@@ -10,7 +10,7 @@ Singleton {
     // The settings window is a window of its own (not an overlay); `settingsPage` is the section it shows.
     property bool settingsOpen: false
     property string settingsPage: "general"
-    readonly property var settingsPages: ["general", "appearance", "notifications", "power", "weather", "about"]
+    readonly property var settingsPages: ["general", "appearance", "notifications", "display", "power", "weather", "about"]
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
     property int  widgetsTab: 0          // 0 control, 1 system, 2 weather, 3 focus
     // Open the panel on a tab for a few seconds, then let it hide again (IPC `shell tab N`). A panel that was
@@ -56,6 +56,7 @@ Singleton {
         else if (name === "media") mediaPinned = true
         else if (name === "settings") openSettings()
         else if (name === "appearance") openSettings("appearance")
+        else if (name === "display") openSettings("display")
         else overlay = name
     }
     function close()      { overlay = "" }
@@ -64,6 +65,7 @@ Singleton {
         else if (name === "media") mediaPinned = !mediaPinned
         else if (name === "settings") { if (settingsOpen) settingsOpen = false; else openSettings() }
         else if (name === "appearance") { if (settingsOpen && settingsPage === "appearance") settingsOpen = false; else openSettings("appearance") }
+        else if (name === "display") { if (settingsOpen && settingsPage === "display") settingsOpen = false; else openSettings("display") }
         else overlay = (overlay === name) ? "" : name
     }
 }

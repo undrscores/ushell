@@ -30,3 +30,4 @@ singleton Power 1.0 Power.qml
 singleton Backup 1.0 Backup.qml
 singleton Schedule 1.0 Schedule.qml
 singleton Auth 1.0 Auth.qml
+singleton Uwm 1.0 Uwm.qml
