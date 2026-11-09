@@ -21,6 +21,7 @@ import "modules/radial"
 import "modules/capture"
 import "modules/calendar"
 import "modules/switcher"
+import "modules/minimap"
 import "modules/polkit"
 import "services"
 import "config"
@@ -60,6 +61,7 @@ ShellRoot {
     CaptureMenu {}
     CalendarMenu {}
     WindowSwitcher {}
+    MinimapMenu {}
     AuthPrompt {}
     OsdWindow {}
 
@@ -205,7 +207,7 @@ ShellRoot {
         function test(): void { Osd.show("volume", Audio.volume, Audio.muted) }
     }
 
-    // qs ipc call shell toggle <launcher|sound|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth|capture|calendar|switcher>   (settings is a window)
+    // qs ipc call shell toggle <launcher|sound|media|clipboard|settings|power|widgets|wallpapers|appearance|notifications|network|bluetooth|capture|calendar|switcher|minimap>   (settings is a window)
     IpcHandler {
         target: "shell"
         function toggle(name: string): void { Shell.toggle(name) }
