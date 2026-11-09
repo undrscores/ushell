@@ -17,7 +17,7 @@ Singleton {
     property var files: []              // absolute paths, sorted by name
     property bool scanned: false
     // The picture that could not be loaded (moved, deleted, corrupt). While it is the chosen one ushell
-    // draws nothing, so whatever is behind (another wallpaper program, niri's background) shows through.
+    // draws nothing, so whatever is behind (another wallpaper program) shows through.
     property string failed: ""
 
     // file:// URL for a path (spaces, #, % and so on are escaped)

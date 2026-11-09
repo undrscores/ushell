@@ -142,18 +142,7 @@ Variants {
                 }
             }
 
-            // Keyboard layout (only when there is more than one) and the mic privacy dot
-            BarItem {
-                visible: Wm.layouts.length > 1
-                onClicked: mouse => Wm.switchLayout(mouse.button === Qt.RightButton ? "prev" : "next")      // click: next layout, right click: previous
-                onScrolled: d => Wm.switchLayout(d > 0 ? "prev" : "next")
-                Text {
-                    text: Wm.layoutShort
-                    color: Theme.fgDim
-                    font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
+            // The mic privacy dot
             // Caps Lock on / Num Lock off: only shown while they are in the unusual state
             BarItem {
                 visible: LockKeys.seen && LockKeys.caps

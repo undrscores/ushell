@@ -79,10 +79,6 @@ ColumnLayout {
     SettingsGroup {
         title: "Screen"
         SettingRow {
-            icon: ""; title: "Screen frame"; hint: "A border around the screen that the bar and menus grow out of. Keep niri's gaps at least " + Config.frameSize + " px."
-            Switch { checked: Prefs.frame; onToggled: v => Prefs.set("frame", v) }
-        }
-        SettingRow {
             icon: ""; title: "Now-playing capsule"; hint: "Slides up at the bottom left on hover and when the track changes"
             Switch { checked: Prefs.mediaCapsule; onToggled: v => Prefs.set("mediaCapsule", v) }
         }

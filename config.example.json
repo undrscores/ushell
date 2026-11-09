@@ -6,7 +6,6 @@
   "glassOpacity": 1.0,
   "maxVolume": 1.0,
   "wallpaperDir": "~/wallpapers",
-  "frameSize": 8,
   "searchShortcuts": { "yt": "https://www.youtube.com/results?search_query=", "gh": "https://github.com/search?q=" },
   "recordingDir": "~/Videos/Recordings",
   "screenshotDir": "~/Pictures/Screenshots",

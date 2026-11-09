@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import "../config"
 
 // One setting: an icon, a title with an optional hint underneath, and the control (a Switch, Pills ...) on the right.
-//   SettingRow { icon: ""; title: "Frame"; hint: "..."; Switch { ... } }
+//   SettingRow { icon: ""; title: "Name"; hint: "..."; Switch { ... } }
 RowLayout {
     id: root
     property string title

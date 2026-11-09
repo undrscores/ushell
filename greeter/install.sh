@@ -17,13 +17,14 @@ if [ -n "$1" ]; then WP="$1"
 elif [ -f "$D/wallpaper.jpg" ]; then WP=""
 else WP="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("wallpaper",""))' "$STATE/prefs.json" 2>/dev/null)"; fi
 [ -n "$WP" ] && [ -f "$WP" ] && cp "$WP" "$D/wallpaper.jpg"
-cp "$SRC/niri.kdl" /etc/greetd/niri-greeter.kdl
+cp "$SRC/uwm.kdl" /etc/greetd/uwm-greeter.kdl
+install -m 755 "$SRC/start.sh" /etc/greetd/uwm-greeter-start
 cp "$SRC/pam-greetd" /etc/pam.d/greetd
 cat > /etc/greetd/config.toml <<EOT
 [terminal]
 vt = 1
 [default_session]
-command = "niri -c /etc/greetd/niri-greeter.kdl"
+command = "uwm -c /etc/greetd/uwm-greeter.kdl -s /etc/greetd/uwm-greeter-start"
 user = "greeter"
 EOT
 id greeter >/dev/null 2>&1 || useradd -M -G video -s /usr/sbin/nologin greeter

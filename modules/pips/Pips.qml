@@ -23,7 +23,7 @@ Variants {
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
         readonly property var mon: Uwm.monitors.find(m => m.name === modelData.name) ?? null
-        readonly property real inset: Theme.frame + 22
+        readonly property real inset: 22
 
         // one entry per off-screen window: edge position, arrow angle, opacity
         readonly property var pips: {

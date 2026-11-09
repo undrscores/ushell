@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the shell's current colours out for other programs (terminals, GTK apps, niri borders).
+"""Write the shell's current colours out for other programs (terminals, GTK apps).
 
 Called by services/ThemeExport.qml with one argument: a JSON object of "#rrggbb" colours
 (bg surface surfaceHi fg fgDim accent accent2 accentFg danger ok mode).
@@ -16,7 +16,7 @@ os.makedirs(out, exist_ok=True)
 
 
 def write(path, text):
-    """Only touch the file when it changed (niri reloads on every write)."""
+    """Only touch the file when it changed."""
     try:
         with open(path) as f:
             if f.read() == text:
@@ -94,13 +94,9 @@ for i, v in enumerate(ansi_bright):
     f += f"bright{i}={nb(v)}\n"
 write(out + "/foot.ini", f)
 
-# ── niri borders ────────────────────────────────────────────────────────────
+# ── login screen ────────────────────────────────────────────────────────────
 # the login screen (greeter/install.sh copies this next to the greeter, which can't read ~/.local)
 write(out + "/greeter.json", json.dumps(c))
-write(out + "/niri-colors.kdl",
-      f'layout {{\n    border {{\n        active-color "{acc}"\n        inactive-color "{surf}"\n'
-      f'        urgent-color "{red}"\n    }}\n    focus-ring {{\n        active-color "{acc}"\n'
-      f'        inactive-color "{surf}"\n    }}\n}}\n')
 
 # ── GTK 3 / 4 (libadwaita named colours + the classic ones) ─────────────────
 defs = {

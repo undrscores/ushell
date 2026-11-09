@@ -9,9 +9,6 @@ Singleton {
     id: root
     readonly property var snap: Uwm.state
     readonly property string focusedOutput: snap.selmon ?? ""
-    readonly property var layouts: []              // uwm does not expose keyboard layouts yet
-    readonly property string layoutName: ""
-    readonly property string layoutShort: ""
 
     function firstTag(mask) {
         for (let i = 0; i < 9; i++) if (mask & (1 << i)) return i + 1
@@ -32,7 +29,7 @@ Singleton {
         return out
     }
 
-    // Windows in niri's shape (id, title, app_id, workspace_id, is_*) plus focus_timestamp, which is a
+    // Windows in a flat shape (id, title, app_id, workspace_id, is_*) plus focus_timestamp, which is a
     // counter of focus changes made here since the shell started (the switcher sorts on it).
     property var focusSeq: ({})
     property int seqNow: 0
@@ -77,7 +74,6 @@ Singleton {
         const next = list[cur + (dir > 0 ? 1 : -1)]
         if (next) focusWorkspace(next.idx)
     }
-    function switchLayout(dir) {}
     function refresh() {}                          // the snapshot is pushed on every change
     function logout() { Uwm.send("quit") }
     function screensOff(off) { Uwm.send("dpms " + (off ? "off" : "on")) }

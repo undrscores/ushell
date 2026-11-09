@@ -22,7 +22,6 @@ Singleton {
     property string hotCornerBR: ""
     property int hotCornerDwell: 350     // ms the pointer has to rest in the corner
     property bool frostedPanels: true    // ask the compositor to blur behind panels (ext-background-effect-v1)
-    property bool frame: true            // a frame around the screen edges that the bar, dock and menus grow out of
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
     property bool weatherMetric: true
@@ -68,7 +67,6 @@ Singleton {
         hotCornerBR:     v => typeof v === "string",
         hotCornerDwell:  v => typeof v === "number" && v >= 50 && v <= 3000,
         frostedPanels:   v => typeof v === "boolean",
-        frame:           v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",
         weatherMetric:   v => typeof v === "boolean",

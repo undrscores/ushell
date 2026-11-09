@@ -4,14 +4,14 @@ import Quickshell.Io
 import Quickshell.Services.Greetd
 import QtQuick
 
-// ushell login screen for greetd. Runs as the `greeter` user inside a throwaway niri (see niri.kdl), so it
+// ushell login screen for greetd. Runs as the `greeter` user inside a throwaway uwm (see uwm.kdl and start.sh), so it
 // can't read ~/.config: the colours come from theme.json and the wallpaper is a copy, both installed next
 // to this file by install.sh (the shell writes the theme out as ~/.local/state/ushell/theme/greeter.json). The password goes to greetd -> PAM (/etc/pam.d/greetd), which is what unlocks
 // the gnome-keyring "login" keyring, so apps like Proton VPN don't ask for it again.
 ShellRoot {
     id: root
     readonly property string user: "@USER@"
-    readonly property var session: ["sh", "-c", "/usr/local/bin/uwm-session || exec niri-session"]
+    readonly property var session: ["sh", "-c", "exec /usr/local/bin/uwm-session"]
     readonly property string font: "JetBrains Mono"
     property var theme: ({})
     readonly property color bg: theme.bg || "#1e1e2e"

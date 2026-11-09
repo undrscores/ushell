@@ -3,7 +3,7 @@ import Quickshell.Io
 import QtQuick
 import "../config"
 
-// Keeps the colours of other programs (terminals, GTK apps, niri's borders) in step with the shell's theme,
+// Keeps the colours of other programs (terminals, GTK apps) in step with the shell's theme,
 // and so with the wallpaper when "colours from wallpaper" is on. Waits until the theme has stopped fading,
 // then runs services/apply_theme.py. Put one of these in shell.qml.
 Item {

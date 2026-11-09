@@ -22,7 +22,6 @@ Singleton {
         glassOpacity: 1.0,
         maxVolume: 1.0,
         wallpaperDir: "~/wallpapers",
-        frameSize: 8,
         recordingDir: "~/Videos/Recordings",
         screenshotDir: "~/Pictures/Screenshots",
         calendarPaths: ["~/.local/share/ushell/calendar", "~/.local/share/calendars"]
@@ -53,10 +52,6 @@ Singleton {
 
     // Folder the wallpaper picker lists (pictures up to one folder deep).
     property string wallpaperDir: defaults.wallpaperDir
-
-    // How thick the frame around the screen edges is, in pixels (it is switched on and off in Settings). Keep niri's
-    // `gaps` at least this large so windows sit inside it.
-    property int frameSize: defaults.frameSize
 
     // Where screen recordings are saved (screenshots go to screenshotDir).
     property string recordingDir: defaults.recordingDir

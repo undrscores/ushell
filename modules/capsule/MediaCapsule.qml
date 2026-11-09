@@ -18,12 +18,11 @@ Variants {
         required property var modelData
         screen: modelData
 
-        readonly property bool attached: Theme.frame > 0
         readonly property real inset: Theme.edgeGap
-        readonly property real fillet: 14
+        readonly property real fillet: 14          // left offset of the capsule within its window
 
         anchors { bottom: true; left: true }
-        margins { left: Theme.frame + 28 }
+        margins { left: 28 }
         implicitWidth: 520
         implicitHeight: 380
         exclusionMode: ExclusionMode.Ignore
@@ -86,11 +85,10 @@ Variants {
                 Glass {
                     anchors.fill: parent
                     radius: Theme.radiusLarge
-                    flat: win.attached
-                    color: win.attached ? Theme.frameColor : Theme.glass
-                    border.width: win.attached ? 0 : 1
-                    bottomLeftRadius: win.attached ? 0 : Theme.radiusLarge
-                    bottomRightRadius: win.attached ? 0 : Theme.radiusLarge
+                    color: Theme.glass
+                    border.width: 1
+                    bottomLeftRadius: Theme.radiusLarge
+                    bottomRightRadius: Theme.radiusLarge
                 }
                 // clicking the capsule grows it into the full player
                 MouseArea {
@@ -110,9 +108,6 @@ Variants {
                     Behavior on opacity { NumberAnimation { duration: Theme.animNormal; easing.type: Theme.easing } }
                     sourceComponent: MediaPlayer { animate: win.full }
                 }
-                // concave corners where the capsule meets the frame
-                Fillet { visible: win.attached; r: win.fillet; x: -r;          y: pivot.height - r; cx: r; cy: r }
-                Fillet { visible: win.attached; r: win.fillet; x: pivot.width; y: pivot.height - r; cx: 0; cy: r }
 
                 Row {
                     id: row

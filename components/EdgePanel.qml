@@ -31,13 +31,7 @@ PanelWindow {
     default property alias content: body.data
 
     readonly property bool vertical: edge !== "top"
-    readonly property bool attached: Theme.frame > 0     // flush with the screen frame, with concave fillets where they meet
     readonly property real gap: Theme.edgeGap
-    readonly property bool flushTop:   attached && (edge === "top" || (vertical && alignTop))     // touches the top frame band
-    readonly property bool flushLeft:  attached && edge === "left"
-    readonly property bool flushRight: attached && edge === "right"
-    readonly property real fillet: 14
-    readonly property real bleed: 3                     // how far an attached panel reaches under the frame
     readonly property real screenW: screen ? screen.width : 1920
     readonly property real screenH: screen ? screen.height : 1080
 
@@ -112,7 +106,7 @@ PanelWindow {
             }
         }
 
-        // The panel plus its frame fillets, moved and scaled as one.
+        // The panel, moved and scaled as one.
         Item {
             id: pivot
             visible: win.slide > 0.002        // nothing renders or animates while hidden
@@ -129,44 +123,12 @@ PanelWindow {
 
             Glass {
                 id: panel
-                // reaches a little under the frame so niri's window border (which pokes into the frame band)
-                // and anti-aliasing don't show as a line where the panel meets the frame
-                anchors {
-                    fill: parent
-                    topMargin:   win.flushTop   ? -win.bleed : 0
-                    leftMargin:  win.flushLeft  ? -win.bleed : 0
-                    rightMargin: win.flushRight ? -win.bleed : 0
-                }
+                anchors.fill: parent
                 radius: win.panelRadius
-                flat: win.attached
-                color: win.attached ? Theme.frameColor : Theme.glass
-                border.width: win.attached ? 0 : 1
-                // the side against the frame is square
-                topLeftRadius:     win.flushTop || win.flushLeft  ? 0 : win.panelRadius
-                topRightRadius:    win.flushTop || win.flushRight ? 0 : win.panelRadius
-                bottomLeftRadius:  win.flushLeft  ? 0 : win.panelRadius
-                bottomRightRadius: win.flushRight ? 0 : win.panelRadius
 
-                // the panel's content keeps the size and position it would have without the bleed
-                Item {
-                    id: body
-                    anchors {
-                        fill: parent
-                        topMargin:   win.flushTop   ? win.bleed : 0
-                        leftMargin:  win.flushLeft  ? win.bleed : 0
-                        rightMargin: win.flushRight ? win.bleed : 0
-                    }
-                }
+                Item { id: body; anchors.fill: parent }
             }
 
-            // concave corners where the panel meets the frame
-            Fillet { visible: win.attached && win.edge === "top";   r: win.fillet; x: -r;         y: 0;       cx: r; cy: 0 }
-            Fillet { visible: win.attached && win.edge === "top";   r: win.fillet; x: pivot.width; y: 0;       cx: 0; cy: 0 }
-            Fillet { visible: win.attached && win.edge === "left";  r: win.fillet; x: 0;          y: -r;      cx: 0; cy: r }
-            Fillet { visible: win.attached && win.edge === "left";  r: win.fillet; x: 0;          y: pivot.height; cx: 0; cy: 0 }
-            Fillet { visible: win.attached && win.edge === "right" && !win.alignTop; r: win.fillet; x: pivot.width - r; y: -r; cx: r; cy: r }
-            Fillet { visible: win.attached && win.edge === "right" && win.alignTop;  r: win.fillet; x: -r; y: 0; cx: r; cy: 0 }     // top corner: the panel's left side meets the top frame
-            Fillet { visible: win.attached && win.edge === "right"; r: win.fillet; x: pivot.width - r; y: pivot.height; cx: r; cy: 0 }
         }
     }
 
