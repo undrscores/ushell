@@ -24,6 +24,7 @@ FloatingWindow {
         { id: "notifications", label: "Notifications",   icon: "" },
         { id: "sound",         label: "Sound",           icon: "\uf028" },
         { id: "display",       label: "Display",         icon: "\uf108" },
+        { id: "canvas",        label: "Canvas",          icon: "\uf0b2" },
         { id: "power",         label: "Power and idle",  icon: "" },
         { id: "weather",       label: "Weather",         icon: "" },
         { id: "about",         label: "About",           icon: "" }
@@ -118,7 +119,7 @@ FloatingWindow {
                         id: loader
                         width: parent.width
                         sourceComponent: ({ general: general, appearance: appearance, notifications: notifications,
-                                            sound: sound, display: display, power: power, weather: weather, about: about })[win.current.id]
+                                            sound: sound, display: display, canvas: canvas, power: power, weather: weather, about: about })[win.current.id]
                         // a short fade when switching sections
                         onLoaded: { opacity = 0; fade.restart(); scroller.contentY = 0 }
                         NumberAnimation { id: fade; target: loader; property: "opacity"; to: 1; duration: Theme.animNormal; easing.type: Theme.easing }
@@ -132,6 +133,7 @@ FloatingWindow {
         Component { id: notifications; NotificationSettings {} }
         Component { id: sound;         SoundSettings {} }
         Component { id: display;       DisplaySettings {} }
+        Component { id: canvas;        CanvasSettings {} }
         Component { id: power;         PowerSettings {} }
         Component { id: weather;       WeatherSettings {} }
         Component { id: about;         AboutSettings {} }

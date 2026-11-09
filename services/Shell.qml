@@ -10,7 +10,7 @@ Singleton {
     // The settings window is a window of its own (not an overlay); `settingsPage` is the section it shows.
     property bool settingsOpen: false
     property string settingsPage: "general"
-    readonly property var settingsPages: ["general", "appearance", "notifications", "sound", "display", "power", "weather", "about"]
+    readonly property var settingsPages: ["general", "appearance", "notifications", "sound", "display", "canvas", "power", "weather", "about"]
     property bool widgetsPinned: false   // right widgets panel pinned open (Mod+A)
     property int  widgetsTab: 0          // 0 control, 1 system, 2 weather, 3 focus
     // Open the panel on a tab for a few seconds, then let it hide again (IPC `shell tab N`). A panel that was
