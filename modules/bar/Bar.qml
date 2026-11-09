@@ -13,10 +13,13 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "top"
-        autoHide: Prefs.topAutoHide || (Prefs.zoomAutoHide && Uwm.zoom < Prefs.overviewZoom)
+        autoHide: Prefs.topAutoHide || (Prefs.zoomAutoHide && win.zoom < Prefs.overviewZoom)
         // dropdowns open on the focused output only, so only that screen's pill stays up
         pinned: ["notifications", "network", "bluetooth", "calendar", "capture", "minimap"].includes(Shell.overlay)
                 && (Wm.focusedOutput === "" || (win.screen !== null && win.screen.name === Wm.focusedOutput))
+        // each screen's pill follows that screen's own viewport (the focused monitor's is what the commands drive)
+        readonly property var mon: Uwm.monitors.find(m => win.screen && m.name === win.screen.name) ?? null
+        readonly property real zoom: mon ? mon.viewport.zoom : 1
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
         panelRadius: Theme.barHeight / 2
@@ -34,18 +37,18 @@ Variants {
 
             // Camera zoom → canvas map (scroll zooms; shows only when not at 100%)
             BarItem {
-                visible: Uwm.connected && Math.abs(Uwm.zoom - 1) > 0.005
+                visible: Uwm.connected && Math.abs(win.zoom - 1) > 0.005
                 active: Shell.overlay === "minimap"
                 onClicked: mouse => { if (mouse.button === Qt.RightButton) Uwm.zoomTo(1); else Shell.toggle("minimap") }
                 onScrolled: d => Uwm.zoomBy(d > 0 ? 1.1 : 1 / 1.1)
                 Text {
-                    text: Math.round(Uwm.zoom * 100) + "%"
+                    text: Math.round(win.zoom * 100) + "%"
                     color: Theme.accent
                     font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
-            Rectangle { visible: Uwm.connected && Math.abs(Uwm.zoom - 1) > 0.005; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+            Rectangle { visible: Uwm.connected && Math.abs(win.zoom - 1) > 0.005; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
 
             // Clock → calendar
             BarItem {
