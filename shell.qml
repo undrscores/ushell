@@ -24,6 +24,7 @@ import "modules/switcher"
 import "modules/minimap"
 import "modules/pips"
 import "modules/overview"
+import "modules/corners"
 import "modules/notice"
 import "modules/polkit"
 import "services"
@@ -47,6 +48,7 @@ ShellRoot {
     Frame {}
     Pips {}
     OverviewLabels {}
+    HotCorners {}
     ConfigError {}
     LockScreen {}
     IdleHandler {}

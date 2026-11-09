@@ -15,6 +15,12 @@ Singleton {
     property bool overviewLabels: true   // icon and title over windows when zoomed far out
     property real overviewZoom: 0.5      // labels start to fade in below this zoom
     property bool zoomAutoHide: true     // the top pill hides itself while zoomed out below overviewZoom
+    property bool hotCorners: true       // corner zones that glow and run an action when the pointer rests in them
+    property string hotCornerTL: "uwm:overview"
+    property string hotCornerTR: "shell:minimap"
+    property string hotCornerBL: ""
+    property string hotCornerBR: ""
+    property int hotCornerDwell: 350     // ms the pointer has to rest in the corner
     property bool frame: true            // a frame around the screen edges that the bar, dock and menus grow out of
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
@@ -54,6 +60,12 @@ Singleton {
         overviewLabels:  v => typeof v === "boolean",
         overviewZoom:    v => typeof v === "number" && v > 0.05 && v <= 1,
         zoomAutoHide:    v => typeof v === "boolean",
+        hotCorners:      v => typeof v === "boolean",
+        hotCornerTL:     v => typeof v === "string",
+        hotCornerTR:     v => typeof v === "string",
+        hotCornerBL:     v => typeof v === "string",
+        hotCornerBR:     v => typeof v === "string",
+        hotCornerDwell:  v => typeof v === "number" && v >= 50 && v <= 3000,
         frame:           v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",
