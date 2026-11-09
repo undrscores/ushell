@@ -22,6 +22,8 @@ import "modules/capture"
 import "modules/calendar"
 import "modules/switcher"
 import "modules/minimap"
+import "modules/pips"
+import "modules/notice"
 import "modules/polkit"
 import "services"
 import "config"
@@ -42,6 +44,8 @@ ShellRoot {
     ThemeExport {}
     Wallpaper {}
     Frame {}
+    Pips {}
+    ConfigError {}
     LockScreen {}
     IdleHandler {}
 

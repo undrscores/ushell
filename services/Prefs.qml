@@ -11,6 +11,7 @@ import QtQuick
 Singleton {
     id: root
     property bool topAutoHide: true      // false = top pill always visible (reserves space)
+    property bool offscreenPips: true    // edge markers pointing at windows outside the viewport
     property bool frame: true            // a frame around the screen edges that the bar, dock and menus grow out of
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
@@ -46,6 +47,7 @@ Singleton {
     // setting name -> "is this a valid value?"
     readonly property var schema: ({
         topAutoHide:     v => typeof v === "boolean",
+        offscreenPips:   v => typeof v === "boolean",
         frame:           v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",
