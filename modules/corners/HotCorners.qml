@@ -64,7 +64,7 @@ Variants {
                 // glow: a disc centred on the corner that grows while the pointer rests there
                 Rectangle {
                     id: glow
-                    readonly property real d: hover.hovered && win.armed ? win.size * 1.4 : 0
+                    property real d: hover.hovered && win.armed ? win.size * 1.4 : 0
                     width: d; height: d; radius: d / 2
                     x: (win.modelData.left ? 0 : win.width) - d / 2
                     y: (win.modelData.top ? 0 : win.height) - d / 2
