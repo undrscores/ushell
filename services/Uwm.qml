@@ -28,13 +28,20 @@ Singleton {
     readonly property var activeTag: focusedMon ? (focusedMon.tags.find(t => t.active) ?? null) : null
     readonly property var bookmarks: activeTag ? activeTag.bookmarks : []
 
-    // Windows of a monitor that are on one of its shown tags (what the canvas currently holds).
+    // Windows of a monitor that are on one of its shown tags (what the canvas currently holds; pinned ones excluded).
     function windowsOn(mon) {
         if (!mon) return []
         let mask = 0
         for (const t of mon.tags) if (t.active) mask |= 1 << (t.n - 1)
-        return (state.windows ?? []).filter(w => w.monitor === mon.name && (w.tags & mask) && !w.minimized)
+        return (state.windows ?? []).filter(w => w.monitor === mon.name && (w.tags & mask) && !w.minimized && !w.pinned)
     }
+    // Pinned windows of a monitor (the HUD): fixed on screen on every tag, so they have no place on the canvas.
+    function pinnedOn(mon) {
+        if (!mon) return []
+        return (state.windows ?? []).filter(w => w.monitor === mon.name && w.pinned && !w.minimized)
+    }
+    readonly property var focusedWindow: (state.windows ?? []).find(w => w.focused) ?? null
+    function togglePin(w) { if (w) send((w.pinned ? "unpin " : "pin ") + w.id) }
 
     // Move the camera so the canvas point (cx, cy) is at the middle of the screen.
     function centerOn(cx, cy) { send("panto " + Math.round(cx - viewW / 2) + " " + Math.round(cy - viewH / 2)) }

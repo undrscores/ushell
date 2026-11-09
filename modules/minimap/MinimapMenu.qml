@@ -9,6 +9,7 @@ import "../../components"
 Overlay {
     id: root
     name: "minimap"
+    readonly property var pinned: Uwm.pinnedOn(Uwm.focusedMon)
 
     DropCard {
         open: root.open
@@ -34,6 +35,24 @@ Overlay {
                 Pill { label: "Overview"; onClicked: Uwm.send("overview") }
                 Pill { label: "Home"; onClicked: Uwm.send("home") }
                 Pill { label: "100%"; onClicked: Uwm.zoomTo(1) }
+            }
+
+            // the HUD: windows pinned to the screen. Click to focus, x to unpin.
+            SectionLabel { Layout.fillWidth: true; text: "Pinned to screen"; visible: pinned.length > 0 }
+            Repeater {
+                model: root.pinned
+                delegate: RowLayout {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    spacing: 6
+                    Pill { Layout.fillWidth: true; label: modelData.title || modelData.app_id || "window"; onClicked: Wm.focusWindow(modelData.id) }
+                    Pill { label: "Unpin"; onClicked: Uwm.togglePin(modelData) }
+                }
+            }
+            Pill {
+                visible: Uwm.focusedWindow !== null
+                label: Uwm.focusedWindow && Uwm.focusedWindow.pinned ? "Unpin focused window" : "Pin focused window"
+                onClicked: Uwm.togglePin(Uwm.focusedWindow)
             }
 
             // saved viewpoints: click to go there, + saves the current one in the next free slot

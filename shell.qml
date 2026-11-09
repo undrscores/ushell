@@ -209,6 +209,13 @@ ShellRoot {
         function cancel(): void { Auth.cancel() }
     }
 
+    // qs ipc call hud <togglePin | list>   pin the focused window to the screen (or unpin it); list = the pinned windows
+    IpcHandler {
+        target: "hud"
+        function togglePin(): void { Uwm.togglePin(Uwm.focusedWindow) }
+        function list(): string { return JSON.stringify(Uwm.pinnedOn(Uwm.focusedMon).map(w => ({ id: w.id, title: w.title, app_id: w.app_id }))) }
+    }
+
     // qs ipc call osd test   (show the volume pill)
     IpcHandler {
         target: "osd"
