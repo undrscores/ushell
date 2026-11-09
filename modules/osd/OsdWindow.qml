@@ -18,6 +18,7 @@ PanelWindow {
     color: "transparent"
     visible: Osd.shown || card.opacity > 0.01
     mask: Region {}                      // empty: nothing in this window takes the pointer
+    BackgroundEffect.blurRegion: Region { item: Prefs.frostedPanels ? card : null; radius: Theme.radiusLarge }
 
     WlrLayershell.namespace: "qs-osd"
     WlrLayershell.layer: WlrLayer.Overlay

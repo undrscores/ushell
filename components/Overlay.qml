@@ -19,6 +19,14 @@ PanelWindow {
     color: "transparent"
     visible: open || linger.running
 
+    // frosted glass: the compositor blurs what is behind the first panel in this overlay (ext-background-effect-v1)
+    readonly property Item frostItem: {
+        const kids = holder.children
+        for (let i = 0; i < kids.length; i++) if (kids[i].isGlass === true) return kids[i]
+        return null
+    }
+    BackgroundEffect.blurRegion: Region { item: Prefs.frostedPanels ? win.frostItem : null; radius: Theme.radiusLarge }
+
     WlrLayershell.namespace: "qs-" + name
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None

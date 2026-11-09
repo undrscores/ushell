@@ -5,6 +5,7 @@ import "../config"
 // The one panel surface used everywhere: translucent, hairline border.
 Rectangle {
     radius: Theme.radiusLarge
+    readonly property bool isGlass: true      // lets an Overlay find its panel to frost
     color: Theme.glass
     border { color: Qt.rgba(Theme.ink.r, Theme.ink.g, Theme.ink.b, 0.12); width: 1 }
     clip: true

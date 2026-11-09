@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Wayland
 import QtQuick
 import "../config"
+import "../services"
 
 // An auto-hiding panel docked to a screen edge ("top" = centered along the top,
 // "left"/"right" = centered along that side).
@@ -25,6 +26,7 @@ PanelWindow {
     property real panelWidth: 300       // desired size; animated into animW / animH
     property real panelHeight: 300
     property int hotSize: 4
+    BackgroundEffect.blurRegion: Region { item: Prefs.frostedPanels ? panel : null; radius: win.panelRadius }
     property real panelRadius: Theme.radiusLarge
     default property alias content: body.data
 
