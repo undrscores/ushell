@@ -23,6 +23,7 @@ import "modules/calendar"
 import "modules/switcher"
 import "modules/minimap"
 import "modules/pips"
+import "modules/overview"
 import "modules/notice"
 import "modules/polkit"
 import "services"
@@ -45,6 +46,7 @@ ShellRoot {
     Wallpaper {}
     Frame {}
     Pips {}
+    OverviewLabels {}
     ConfigError {}
     LockScreen {}
     IdleHandler {}

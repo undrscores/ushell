@@ -12,6 +12,9 @@ Singleton {
     id: root
     property bool topAutoHide: true      // false = top pill always visible (reserves space)
     property bool offscreenPips: true    // edge markers pointing at windows outside the viewport
+    property bool overviewLabels: true   // icon and title over windows when zoomed far out
+    property real overviewZoom: 0.5      // labels start to fade in below this zoom
+    property bool zoomAutoHide: true     // the top pill hides itself while zoomed out below overviewZoom
     property bool frame: true            // a frame around the screen edges that the bar, dock and menus grow out of
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
@@ -48,6 +51,9 @@ Singleton {
     readonly property var schema: ({
         topAutoHide:     v => typeof v === "boolean",
         offscreenPips:   v => typeof v === "boolean",
+        overviewLabels:  v => typeof v === "boolean",
+        overviewZoom:    v => typeof v === "number" && v > 0.05 && v <= 1,
+        zoomAutoHide:    v => typeof v === "boolean",
         frame:           v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",

@@ -13,7 +13,7 @@ Variants {
         required property var modelData
         screen: modelData
         edge: "top"
-        autoHide: Prefs.topAutoHide
+        autoHide: Prefs.topAutoHide || (Prefs.zoomAutoHide && Uwm.zoom < Prefs.overviewZoom)
         // dropdowns open on the focused output only, so only that screen's pill stays up
         pinned: ["notifications", "network", "bluetooth", "calendar", "capture", "minimap"].includes(Shell.overlay)
                 && (Wm.focusedOutput === "" || (win.screen !== null && win.screen.name === Wm.focusedOutput))
