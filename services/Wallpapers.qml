@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import "../config"
+import "wall.js" as Wall
 
 // The wallpaper library (pictures in Config.wallpaperDir) and the colour taken from the current wallpaper.
 // ushell only draws a wallpaper once one has been chosen (Prefs.wallpaper); until then another
@@ -37,12 +38,8 @@ Singleton {
     property string failed: ""
 
     // file:// URL for a path (spaces, #, % and so on are escaped)
-    function url(path) { return path ? "file://" + path.split("/").map(encodeURIComponent).join("/") : "" }
-    function nameOf(path) {
-        const n = path.slice(path.lastIndexOf("/") + 1)
-        const i = n.lastIndexOf(".")
-        return i > 0 ? n.slice(0, i) : n
-    }
+    function url(path) { return Wall.url(path) }
+    function nameOf(path) { return Wall.nameOf(path) }
 
     // ── favourites and folders (for the picker) ─────────────────────────────
     readonly property var favs: Prefs.wallpaperFavs
@@ -51,11 +48,7 @@ Singleton {
         if (path) Prefs.set("wallpaperFavs", isFav(path) ? favs.filter(p => p !== path) : favs.concat([path]))
     }
     // the sub-folder of the library a picture is in ("" for loose files)
-    function folderOf(path) {
-        const rel = path.slice(dir.replace(/\/+$/, "").length + 1)
-        const i = rel.indexOf("/")
-        return i < 0 ? "" : rel.slice(0, i)
-    }
+    function folderOf(path) { return Wall.folderOf(dir, path) }
     readonly property var folders: Array.from(new Set(files.map(folderOf).filter(f => f !== ""))).sort((a, b) => a.localeCompare(b))
 
     // ── choosing ────────────────────────────────────────────────────────────
@@ -79,16 +72,8 @@ Singleton {
         delete m[screenName]
         Prefs.set("monitorWallpapers", m)
     }
-    function moveFor(screenName, d) {
-        const n = files.length
-        if (n === 0) return
-        const i = files.indexOf(pathFor(screenName))
-        setFor(screenName, files[i < 0 ? (d > 0 ? 0 : n - 1) : (i + d + n) % n])
-    }
-    function randomFor(screenName) {
-        const n = files.length
-        if (n > 0) setFor(screenName, files[Math.floor(Math.random() * n)])
-    }
+    function moveFor(screenName, d) { setFor(screenName, Wall.stepFrom(files, pathFor(screenName), d)) }
+    function randomFor(screenName) { setFor(screenName, Wall.randomFrom(files, "", Math.random())) }
 
     // next / previous / random re-scan the folder first, so new pictures are picked up
     property var afterScan: null
@@ -96,35 +81,22 @@ Singleton {
     function next() { afterScan = () => move(1); refresh() }
     function prev() { afterScan = () => move(-1); refresh() }
     function random() { afterScan = () => pickRandom(); refresh() }
-    function move(d) {
-        const n = files.length
-        if (n === 0) return
-        const i = files.indexOf(current)
-        set(files[i < 0 ? (d > 0 ? 0 : n - 1) : (i + d + n) % n])
-    }
-    function pickRandom() {
-        const n = files.length
-        if (n === 0) return
-        let j = Math.floor(Math.random() * n)
-        if (n > 1 && files[j] === current) j = (j + 1) % n
-        set(files[j])
-    }
+    function move(d) { const p = Wall.stepFrom(files, current, d); if (p !== "") set(p) }
+    function pickRandom() { const p = Wall.randomFrom(files, current, Math.random()); if (p !== "") set(p) }
     // qs ipc call shell wallpaper <next|prev|random|off|/path/to/picture>
     // qs ipc call shell wallpaper OUTPUT=<next|prev|random|off|/path>   one screen only ("off" gives it back the main wallpaper)
     function command(arg) {
-        const m = /^([^=\/]+)=(.*)$/.exec(arg)
-        if (m) {
-            const out = m[1], a = m[2]
-            if (a === "off") resetFor(out)
-            else if (a.startsWith("/")) setFor(out, a)
-            else { afterScan = () => (a === "next" ? moveFor(out, 1) : a === "prev" ? moveFor(out, -1) : a === "random" ? randomFor(out) : null); refresh() }
-            return
-        }
-        if (arg === "next") next()
-        else if (arg === "prev") prev()
-        else if (arg === "random") random()
-        else if (arg === "off") off()
-        else if (arg.startsWith("/")) set(arg)
+        const c = Wall.parseCommand(arg)
+        if (c === null) return
+        if (c.output === "") {
+            if (c.action === "next") next()
+            else if (c.action === "prev") prev()
+            else if (c.action === "random") random()
+            else if (c.action === "off") off()
+            else set(c.path)
+        } else if (c.action === "off") resetFor(c.output)
+        else if (c.action === "set") setFor(c.output, c.path)
+        else { afterScan = () => (c.action === "next" ? moveFor(c.output, 1) : c.action === "prev" ? moveFor(c.output, -1) : randomFor(c.output)); refresh() }
     }
 
     Process {

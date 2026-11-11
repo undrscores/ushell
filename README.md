@@ -80,12 +80,12 @@ scripts/         tests
 
 ```sh
 sh scripts/test.sh              # qmldir consistency, Python helpers, headless QML tests (Prefs, Stats, JS libraries)
-sh scripts/smoke-overlays.sh    # opens and closes every overlay in a headless uwc (needs a uwc with --headless)
+sh scripts/smoke-overlays.sh    # opens every overlay and Settings page in a headless uwc and fails on QML errors (needs a uwc with --headless)
 sh scripts/smoke-greeter.sh     # starts the login screen in a headless uwc
 ```
 
 The first needs only `quickshell` and `python3`; it uses a temporary state folder and never touches your settings.
-GitHub Actions runs it on every push (`.github/workflows/test.yml`).
+GitHub Actions runs it on every push, plus `shellcheck` and (building uwc from source) the smoke tests (`.github/workflows/test.yml`).
 
 ## Login screen
 

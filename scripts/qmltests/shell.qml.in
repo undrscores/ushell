@@ -1,6 +1,7 @@
 import Quickshell
 import QtQuick
 import "@ROOT@/services"   // @ROOT@ is replaced by scripts/test-qml.sh with the absolute path
+import "@ROOT@/config"
 import "@ROOT@/services/nm.js" as NM
 import "@ROOT@/services/dnd.js" as Dnd
 import "@ROOT@/config/config.js" as Rules
@@ -8,6 +9,9 @@ import "@ROOT@/modules/launcher/search.js" as Search
 import "@ROOT@/modules/launcher/calc.js" as Calc
 import "@ROOT@/modules/launcher/units.js" as Units
 import "@ROOT@/modules/launcher/pkg.js" as Pkg
+import "@ROOT@/services/wall.js" as Wall
+import "@ROOT@/services/notif.js" as Notif
+import "@ROOT@/modules/dock/dock.js" as DockOrder
 
 // Headless unit tests: the Prefs and Stats singletons, plus the pure JS libraries (nm, dnd, config rules, launcher search / calc / units). Run with scripts/test-qml.sh (it points XDG_STATE_HOME
 // at a temp dir holding a deliberately corrupt prefs.json, so nothing of yours is read or written).
@@ -123,6 +127,55 @@ ShellRoot {
         ok("units: not a conversion", Units.tryConvert("hello world") === null)
     }
 
+
+    function testWall() {
+        ok("wall: url escapes spaces, # and %", Wall.url("/a b/c#d%e.png") === "file:///a%20b/c%23d%25e.png" && Wall.url("") === "")
+        ok("wall: nameOf drops folder and extension", Wall.nameOf("/x/y/sun.set.png") === "sun.set" && Wall.nameOf("/x/.hidden") === ".hidden")
+        ok("wall: folderOf", Wall.folderOf("/w", "/w/dark/a.png") === "dark" && Wall.folderOf("/w/", "/w/a.png") === "" && Wall.folderOf("/w", "/w/x/y/a.png") === "x")
+        const f = ["/w/a.png", "/w/b.png", "/w/c.png"]
+        ok("wall: stepping wraps in both directions", Wall.stepFrom(f, "/w/c.png", 1) === "/w/a.png" && Wall.stepFrom(f, "/w/a.png", -1) === "/w/c.png" && Wall.stepFrom(f, "/w/a.png", 1) === "/w/b.png")
+        ok("wall: an unknown current starts at an end", Wall.stepFrom(f, "/gone.png", 1) === "/w/a.png" && Wall.stepFrom(f, "/gone.png", -1) === "/w/c.png" && Wall.stepFrom([], "", 1) === "")
+        ok("wall: random avoids the current picture", Wall.randomFrom(f, "/w/a.png", 0) === "/w/b.png" && Wall.randomFrom(f, "/w/a.png", 0.5) === "/w/b.png" && Wall.randomFrom(["/w/a.png"], "/w/a.png", 0) === "/w/a.png" && Wall.randomFrom([], "", 0) === "")
+        ok("wall: commands", same(Wall.parseCommand("next"), { output: "", action: "next", path: "" }) && same(Wall.parseCommand("/p/q.png"), { output: "", action: "set", path: "/p/q.png" })
+            && same(Wall.parseCommand("DP-1=random"), { output: "DP-1", action: "random", path: "" }) && same(Wall.parseCommand("DP-1=/a=b.png"), { output: "DP-1", action: "set", path: "/a=b.png" })
+            && Wall.parseCommand("sideways") === null && Wall.parseCommand("DP-1=sideways") === null)
+        const all = ["/w/Sunset.png", "/w/dark/Moon.jpg", "/w/dark/sun.png", "/w/light/Dawn.png"]
+        ok("wall: filter by search text", same(Wall.filterList(all, " SUN ", "all", [], "/w"), ["/w/Sunset.png", "/w/dark/sun.png"]))
+        ok("wall: filter by folder and favourites", same(Wall.filterList(all, "", "folder:dark", [], "/w"), ["/w/dark/Moon.jpg", "/w/dark/sun.png"])
+            && same(Wall.filterList(all, "", "favs", ["/w/light/Dawn.png"], "/w"), ["/w/light/Dawn.png"]))
+    }
+
+    function testNotif() {
+        ok("notif: critical messages stay until dealt with", Notif.timeoutMs(2, 5) === 0 && Notif.timeoutMs(2, -1) === 0)
+        ok("notif: a sender's timeout is honoured, capped at 30 s", Notif.timeoutMs(1, 5) === 5000 && Notif.timeoutMs(1, 99) === 30000)
+        ok("notif: defaults for 'never' and 'don't care'", Notif.timeoutMs(1, 0) === 15000 && Notif.timeoutMs(1, -1) === 7000 && Notif.timeoutMs(0, -1) === 4000)
+        ok("notif: age labels", Notif.ago(1000, 1000 + 30000) === "now" && Notif.ago(1000, 1000 + 180000) === "3m" && Notif.ago(1000, 1000 + 2 * 3600000) === "2h"
+            && Notif.ago(1000, 1000 + 5 * 86400000) === "5d" && Notif.ago(0, 5) === "" && Notif.ago(5000, 1000) === "now")
+        const good = { key: "k1", id: 7, app: "app", summary: "s", body: "b", icon: "i", image: "", entry: "e", urgency: 2, time: 5 }
+        const rec = Notif.parseSaved(JSON.stringify([good, { key: "k2" }, null, 5, { key: "k3", app: "a", summary: "s", body: "b", time: 9, id: "x", urgency: "high", icon: 3 }]))
+        ok("notif: malformed saved records are dropped", rec.length === 2 && same(rec[0], good))
+        ok("notif: odd optional fields get defaults", rec[1].id === -1 && rec[1].urgency === 1 && rec[1].icon === "" && rec[1].entry === "")
+        ok("notif: junk and non-lists give no records", Notif.parseSaved("{oops").length === 0 && Notif.parseSaved('{"a":1}').length === 0 && Notif.parseSaved("[]").length === 0)
+    }
+
+
+    function testExampleConfig() {
+        const xhr = new XMLHttpRequest()
+        xhr.open("GET", "@ROOT@/config.example.json", false)
+        xhr.send()
+        const r = Rules.parse(xhr.responseText, Config.defaults)
+        ok("config.example.json: readable", xhr.responseText.length > 10)
+        ok("config.example.json: every key is known and valid (" + r.warnings.join("; ") + ")", r.warnings.length === 0)
+    }
+
+
+    function testDock() {
+        const a = ["a", "b", "c", "d"]
+        ok("dock: dragging down and up", same(DockOrder.reorder(a, "a", "c"), ["b", "c", "a", "d"]) && same(DockOrder.reorder(a, "d", "b"), ["a", "d", "b", "c"]))
+        ok("dock: no-ops return the same list", DockOrder.reorder(a, "b", "b") === a && DockOrder.reorder(a, "x", "b") === a && DockOrder.reorder(a, "b", "x") === a)
+        ok("dock: the input is not changed", same(a, ["a", "b", "c", "d"]))
+    }
+
     function testPrefsSchema() {
         ok("prefs: themeMode accepts dark/light only", Prefs.valid("themeMode", "light") && !Prefs.valid("themeMode", "blue"))
         ok("prefs: unknown keys are rejected", !Prefs.valid("noSuchSetting", true) && !Prefs.has("noSuchSetting"))
@@ -140,7 +193,7 @@ ShellRoot {
         ok("prefs: an invalid change is ignored", (Prefs.set("themeMode", "blue"), Prefs.themeMode === "dark"))
     }
 
-    Component.onCompleted: { testStats(); testNm(); testDnd(); testConfigRules(); testLauncherLibs(); testPrefsSchema() }
+    Component.onCompleted: { testStats(); testNm(); testDnd(); testConfigRules(); testLauncherLibs(); testWall(); testNotif(); testExampleConfig(); testDock(); testPrefsSchema() }
     Timer {   // the corrupt prefs.json is read and copied asynchronously
         interval: 2500; running: true
         onTriggered: {

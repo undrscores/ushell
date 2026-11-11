@@ -162,5 +162,55 @@ class ClipboardStore(unittest.TestCase):
         self.assertEqual(clip.human(3 * 1024 * 1024), "3.0 MB")
 
 
+class Backup(unittest.TestCase):
+    def run_backup(self, home, *args):
+        env = dict(os.environ, HOME=home, XDG_CONFIG_HOME=os.path.join(home, ".config"))
+        res = subprocess.run([sys.executable, "-I", os.path.join(SERVICES, "backup.py")] + list(args), capture_output=True, text=True, env=env)
+        return res.returncode, json.loads(res.stdout.strip().split("\n")[-1])
+
+    def test_export_then_read_round_trip(self):
+        with tempfile.TemporaryDirectory() as home:
+            cfgdir = os.path.join(home, ".config", "ushell")
+            os.makedirs(cfgdir)
+            with open(os.path.join(cfgdir, "config.json"), "w") as f:
+                json.dump({"terminal": "foot"}, f)
+            out = os.path.join(home, "settings.json")
+            code, r = self.run_backup(home, "export", out, json.dumps({"themeMode": "light"}))
+            self.assertEqual((code, r["ok"]), (0, True))
+            self.assertEqual(os.stat(out).st_mode & 0o777, 0o600)
+            code, r = self.run_backup(home, "read", out)
+            self.assertEqual((code, r["ok"], r["prefs"], r["config"]), (0, True, {"themeMode": "light"}, {"terminal": "foot"}))
+
+    def test_read_rejects_foreign_and_broken_files(self):
+        with tempfile.TemporaryDirectory() as home:
+            for name, body in (("a.json", '{"app": "other", "prefs": {}}'), ("b.json", '{"app": "ushell", "version": 2, "prefs": {}}'), ("c.json", "[1, 2]")):
+                path = os.path.join(home, name)
+                with open(path, "w") as f:
+                    f.write(body)
+                code, r = self.run_backup(home, "read", path)
+                self.assertEqual((code, r["ok"]), (1, False), name)
+            code, r = self.run_backup(home, "read", os.path.join(home, "missing.json"))
+            self.assertFalse(r["ok"])
+
+    def test_export_refuses_non_object_prefs(self):
+        with tempfile.TemporaryDirectory() as home:
+            code, r = self.run_backup(home, "export", os.path.join(home, "x.json"), "[1]")
+            self.assertFalse(r["ok"])
+
+    def test_writeconfig_keeps_the_old_file(self):
+        with tempfile.TemporaryDirectory() as home:
+            cfg = os.path.join(home, ".config", "ushell", "config.json")
+            os.makedirs(os.path.dirname(cfg))
+            with open(cfg, "w") as f:
+                f.write('{"terminal": "old"}')
+            code, r = self.run_backup(home, "writeconfig", '{"terminal": "new"}')
+            self.assertTrue(r["ok"])
+            with open(cfg) as f:
+                self.assertEqual(json.load(f), {"terminal": "new"})
+            with open(cfg + ".bak") as f:
+                self.assertEqual(json.load(f), {"terminal": "old"})
+            self.assertFalse(self.run_backup(home, "writeconfig", "[]")[1]["ok"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

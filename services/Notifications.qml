@@ -5,6 +5,7 @@ import Quickshell.Services.Notifications
 import QtQuick
 import "../config"
 import "dnd.js" as Dnd
+import "notif.js" as Notif
 
 // The notification daemon: ushell owns org.freedesktop.Notifications, so stop mako / dunst / swaync
 // (only one program can own that name). Messages that arrive are kept in a history (the bell in the top
@@ -46,24 +47,13 @@ Singleton {
     // ---- timing -------------------------------------------------------------------------------------------
     // How long a popup stays, in ms; 0 = until the user deals with it. Urgent ones stay. A sender's own timeout
     // is honoured (up to 30 s); "never expires" (0) and "don't care" (-1) get a default, the history keeps them.
-    function timeoutMs(n) {
-        if (n.urgency === NotificationUrgency.Critical) return 0
-        if (n.expireTimeout > 0) return Math.min(n.expireTimeout, 30) * 1000
-        if (n.expireTimeout === 0) return 15000
-        return n.urgency === NotificationUrgency.Low ? 4000 : 7000
-    }
+    function timeoutMs(n) { return Notif.timeoutMs(n.urgency, n.expireTimeout) }
 
     property var arrivals: ({})                // id -> Date.now(), for "3m"
     property int tick: 0                       // bumped every 30 s so those labels refresh
     function ago(n) {
         tick
-        const t = n.stub === true ? n.time : arrivals[n.id]
-        if (!t) return ""
-        const s = Math.max(0, (Date.now() - t) / 1000)
-        if (s < 60) return "now"
-        if (s < 3600) return Math.floor(s / 60) + "m"
-        if (s < 86400) return Math.floor(s / 3600) + "h"
-        return Math.floor(s / 86400) + "d"
+        return Notif.ago(n.stub === true ? n.time : arrivals[n.id], Date.now())
     }
     Timer { interval: 30000; repeat: true; running: root.popups.length > 0 || Shell.overlay === "notifications"; onTriggered: root.tick++ }
 
@@ -160,16 +150,8 @@ Singleton {
     Connections { target: Prefs; function onNotificationLogChanged() { root.saveSoon() } }
 
     function restore(text) {
-        let saved = []
-        try {
-            const j = JSON.parse(text)
-            if (Array.isArray(j)) saved = j.filter(r => r && typeof r.key === "string" && typeof r.app === "string" && typeof r.summary === "string"
-                                                       && typeof r.body === "string" && typeof r.time === "number")
-        } catch (e) {}
         const have = new Set(log.map(r => r.key))
-        const old = saved.filter(r => !have.has(r.key)).map(r => ({ key: r.key, id: Number.isInteger(r.id) ? r.id : -1, app: r.app, summary: r.summary,
-                    body: r.body, icon: typeof r.icon === "string" ? r.icon : "", image: typeof r.image === "string" ? r.image : "",
-                    entry: typeof r.entry === "string" ? r.entry : "", urgency: Number.isInteger(r.urgency) ? r.urgency : 1, time: r.time }))
+        const old = Notif.parseSaved(text).filter(r => !have.has(r.key))
         const merged = log.concat(old).sort((a, b) => b.time - a.time).slice(0, maxLog)
         // live notifications kept over a reload find their old record again; strangers get one of their own
         const taken = new Set(Object.values(liveKeys))
@@ -212,7 +194,7 @@ Singleton {
     }
     // A sender updating a message in place (a track change, a download counter) shows it again.
     function updated(n) {
-        if (n.tracked) updateRecord(n)
+        if (n.tracked) { arrivals[n.id] = Date.now(); updateRecord(n) }
         if (n.tracked && !silenced(n)) show(n)
     }
 

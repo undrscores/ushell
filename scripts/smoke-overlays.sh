@@ -1,6 +1,6 @@
 #!/bin/sh
 # Smoke test: start a throwaway headless uwc, run ushell in it, open and close every overlay, and fail if
-# the shell dies. (This is how "closing a panel kills quickshell" was found: uwc answered the commit that
+# the shell dies or logs a QML error (ReferenceError, TypeError ...). (This is how "closing a panel kills quickshell" was found: uwc answered the commit that
 # follows a layer surface's destroy with a protocol error.) Does not touch your running session.
 #
 #   scripts/smoke-overlays.sh                 uses `uwc` from PATH
@@ -9,7 +9,8 @@
 # Needs uwc (a build that has --headless) and quickshell. Exit status 0 = everything survived.
 dir=$(cd "$(dirname "$0")/.." && pwd)
 uwc=${UWC:-uwc}
-overlays=${OVERLAYS:-"launcher clipboard power wallpapers notifications network bluetooth capture calendar minimap"}
+overlays=${OVERLAYS:-"launcher clipboard power wallpapers notifications network bluetooth capture calendar minimap widgets"}
+pages=${PAGES:-"general appearance notifications sound display canvas power weather about"}   # Settings sections
 tmp=$(mktemp -d) || exit 2
 upid=; qpid=
 cleanup() { [ -n "$qpid" ] && kill "$qpid" 2>/dev/null; [ -n "$upid" ] && kill "$upid" 2>/dev/null; rm -rf "$tmp"; }
@@ -31,7 +32,9 @@ for _ in $(seq 1 50); do
 done
 [ -n "$display" ] || { echo "FAIL: uwc never announced its socket"; exit 1; }
 
-mkdir -p "$tmp/state"
+# the optional panels are off by default: turn them on so their code is exercised too
+mkdir -p "$tmp/state/ushell"
+echo '{"dockEnabled":true,"widgetsPanel":true}' > "$tmp/state/ushell/prefs.json"
 WAYLAND_DISPLAY=$display UWC_SOCKET=$sock UWM_SOCKET=$sock XDG_STATE_HOME=$tmp/state \
     qs -p "$dir" > "$tmp/qs.log" 2>&1 &
 qpid=$!
@@ -50,5 +53,15 @@ for name in $overlays; do
     qs ipc --pid "$qpid" call shell close >/dev/null 2>&1;          sleep 1.2
     if kill -0 "$qpid" 2>/dev/null; then echo "ok    $name"; else echo "FAIL  $name: quickshell died"; fail=1; break; fi
 done
-[ "$fail" = 0 ] && echo "all overlays opened and closed" || { echo "--- quickshell log tail"; tail -5 "$tmp/qs.log"; }
+if [ "$fail" = 0 ]; then
+    for page in $pages; do
+        qs ipc --pid "$qpid" call shell settings "$page" >/dev/null 2>&1; sleep 1
+        if kill -0 "$qpid" 2>/dev/null; then echo "ok    settings: $page"; else echo "FAIL  settings: $page: quickshell died"; fail=1; break; fi
+    done
+    qs ipc --pid "$qpid" call shell close >/dev/null 2>&1
+fi
+# QML errors do not kill the shell; they leave a part of it quietly broken, so look for them in the log
+errors=$(sed 's/\x1b\[[0-9;]*m//g' "$tmp/qs.log" | grep -E 'ReferenceError|TypeError|is not a type|Cannot (read|assign|call)|Unable to assign|Binding loop' | head -10)
+if [ -n "$errors" ]; then echo "FAIL  QML errors in the log:"; echo "$errors"; fail=1; fi
+[ "$fail" = 0 ] && echo "all overlays and settings pages opened and closed, no QML errors" || { echo "--- quickshell log tail"; tail -5 "$tmp/qs.log"; }
 exit $fail

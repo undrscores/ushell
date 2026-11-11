@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import "../../config"
 import "../../services"
+import "dock.js" as DockOrder
 import "../../components"
 
 // macOS-style dock on the left edge of each screen. Auto-hidden: only a thin strip at the
@@ -61,6 +62,17 @@ Variants {
         function togglePin(e) {
             const rest = Prefs.dockApps.filter(x => x !== e.id)
             Prefs.set("dockApps", isPinned(e) ? rest : rest.concat([e.id]))
+        }
+        // an icon dropped at height y (column coordinates) onto another pinned one takes its place
+        function dropPin(e, y) {
+            if (!isPinned(e)) return
+            for (let i = 0; i < pinRep.count; i++) {
+                const item = pinRep.itemAt(i)
+                if (item && y >= item.y && y < item.y + item.height) {
+                    Prefs.set("dockApps", DockOrder.reorder(Prefs.dockApps, e.id, pinned[i].id))
+                    return
+                }
+            }
         }
         function activate(e) {
             const wins = windowsFor(e)
@@ -136,10 +148,17 @@ Variants {
                 }
 
                 MouseArea {
+                    id: iconArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton     // right click pins / unpins (the default is left only)
                     cursorShape: Qt.PointingHandCursor
+                    property real pressY: 0
+                    property bool dragged: false                         // a pinned icon pulled along the dock: reorder, not click
+                    onPressed: mouse => { pressY = mouse.y; dragged = false }
+                    onReleased: mouse => { if (dragged && mouse.button === Qt.LeftButton) win.dropPin(dlg.entry, dlg.y + mouse.y) }
                     onPositionChanged: mouse => {
+                        if (pressed && Math.abs(mouse.y - pressY) > 12) dragged = true
                         win.mouseY = dlg.y + mouse.y
                         win.tipText = dlg.entry.name + (win.winCount(dlg.entry) > 1 ? "  (" + win.winCount(dlg.entry) + " windows)" : "")
                         win.tipPos = (win.height - win.animH) / 2 + col.y + dlg.y + dlg.height / 2
@@ -147,6 +166,7 @@ Variants {
                     }
                     onExited: win.tipShown = false
                     onClicked: mouse => {
+                        if (dragged) return
                         if (mouse.button === Qt.RightButton) win.togglePin(dlg.entry)
                         else win.activate(dlg.entry)
                     }
@@ -159,7 +179,7 @@ Variants {
             anchors.centerIn: parent
             spacing: 4
 
-            Repeater { model: win.pinned; delegate: iconDelegate }
+            Repeater { id: pinRep; model: win.pinned; delegate: iconDelegate }
 
             Rectangle {   // separator between pinned and active apps
                 visible: win.running.length > 0
@@ -183,12 +203,13 @@ Variants {
                 height: 42 + 26 * mag
                 Behavior on height { Spring { preset: "snap"; epsilon: 0.05 } }
                 Rectangle {
+                    id: appsIcon
                     anchors.centerIn: parent
                     readonly property real s: appsBtn.height - 8
                     width: s; height: s
                     radius: Theme.radiusSmall + 2
                     color: Theme.hover
-                    Icon { anchors.centerIn: parent; text: "\uf009"; size: s * 0.5; color: Theme.fg }
+                    Icon { anchors.centerIn: parent; text: "\uf009"; size: appsIcon.s * 0.5; color: Theme.fg }
                 }
                 MouseArea {
                     anchors.fill: parent

@@ -1,12 +1,45 @@
 name: tests
 on: [push, pull_request]
+
 jobs:
   test:
     runs-on: ubuntu-latest
     container: archlinux:latest        # quickshell is in Arch's repositories
     steps:
       - name: Install dependencies
-        run: pacman -Syu --noconfirm quickshell python git
+        run: pacman -Syu --noconfirm quickshell python git shellcheck
       - uses: actions/checkout@v4
+      - name: Shell scripts
+        run: shellcheck --severity=warning scripts/*.sh greeter/install.sh greeter/start.sh services/doctor.sh
       - name: Run the tests
         run: sh scripts/test.sh
+
+  # Opens every overlay and Settings page in a headless uwc and fails on QML errors. uwc is built from source,
+  # which takes a few minutes (cached after the first run).
+  smoke:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    continue-on-error: true            # until it has run green here a few times
+    env:
+      XDG_RUNTIME_DIR: /tmp/xdg-runtime
+    steps:
+      - name: Install dependencies
+        run: pacman -Syu --noconfirm quickshell python git rust base-devel pkgconf wayland libxkbcommon libinput libdrm mesa seatd ttf-dejavu
+      - uses: actions/checkout@v4
+      - name: Fetch uwc
+        run: git clone --depth 1 https://github.com/undrscores/uwc /opt/uwc
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            /opt/uwc/target
+          key: uwc-${{ runner.os }}-${{ hashFiles('/opt/uwc/Cargo.lock') }}
+          restore-keys: uwc-${{ runner.os }}-
+      - name: Build uwc
+        run: cd /opt/uwc && cargo build --release
+      - name: Runtime directory
+        run: mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+      - name: Overlay smoke test
+        run: UWC=/opt/uwc/target/release/uwc sh scripts/smoke-overlays.sh
+      - name: Greeter smoke test
+        run: UWC=/opt/uwc/target/release/uwc sh scripts/smoke-greeter.sh

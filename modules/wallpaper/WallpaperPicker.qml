@@ -6,6 +6,7 @@ import "../../config"
 import "../../services"
 import "../../components"
 import "../../config/palette.js" as Palette
+import "../../services/wall.js" as Wall
 
 // Wallpaper picker (launcher: "Wallpapers", or `qs ipc call shell toggle wallpapers`): a row of slanted slices,
 // the focused one wide and the rest tapering away. Type to search, Tab to switch between all / favourites / a folder,
@@ -18,15 +19,7 @@ Overlay {
     // ── what is shown ──────────────────────────────────────────────────────
     property string query: ""
     property string filter: "all"                 // all | favs | folder:<name>
-    readonly property var list: {
-        const q = query.trim().toLowerCase()
-        const favs = Prefs.wallpaperFavs
-        return Wallpapers.files.filter(p => {
-            if (filter === "favs" && !favs.includes(p)) return false
-            if (filter.startsWith("folder:") && Wallpapers.folderOf(p) !== filter.slice(7)) return false
-            return q === "" || Wallpapers.nameOf(p).toLowerCase().includes(q)
-        })
-    }
+    readonly property var list: Wall.filterList(Wallpapers.files, query, filter, Prefs.wallpaperFavs, Wallpapers.dir)
     readonly property int n: list.length
     readonly property var filters: [{ id: "all", label: "All" }, { id: "favs", label: "★ Favourites" }]
         .concat(Wallpapers.folders.map(f => ({ id: "folder:" + f, label: f })))

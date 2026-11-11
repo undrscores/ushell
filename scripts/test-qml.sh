@@ -14,7 +14,7 @@ mkdir -p "$tmp/state/ushell"
 printf '{"themeMode": "light", oops' > "$tmp/state/ushell/prefs.json"
 mkdir -p "$tmp/cfg"
 sed "s#@ROOT@#file://$dir#" "$dir/scripts/qmltests/shell.qml.in" > "$tmp/cfg/shell.qml"
-XDG_STATE_HOME="$tmp/state" QT_QPA_PLATFORM=offscreen qs -p "$tmp/cfg" > "$tmp/out.log" 2>&1 &
+XDG_STATE_HOME="$tmp/state" XDG_CONFIG_HOME="$tmp/config" QML_XHR_ALLOW_FILE_READ=1 QT_QPA_PLATFORM=offscreen qs -p "$tmp/cfg" > "$tmp/out.log" 2>&1 &
 qpid=$!
 for _ in $(seq 1 100); do
     grep -q 'TESTS DONE' "$tmp/out.log" && break

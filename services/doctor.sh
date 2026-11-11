@@ -5,25 +5,29 @@ for fam in "$@"; do
     if fc-list : family 2>/dev/null | tr ',' '\n' | grep -qxF "$fam"; then
         echo "ok    font $fam"
     else
-        echo "warn  font $fam is not installed; text and icons fall back to the default sans (install a Nerd Font)"
+        echo "warn  font $fam is not installed; text and icons fall back to the default sans (install a Nerd Font, e.g. pacman -S ttf-jetbrains-mono-nerd)"
     fi
 done
-check() {   # program, what it is for
-    if command -v "$1" >/dev/null 2>&1; then echo "ok    $1"; else echo "warn  $1 is missing: $2"; fi
+check() {   # program, what it is for, [Arch package that provides it, when the name differs]
+    if command -v "$1" >/dev/null 2>&1; then echo "ok    $1"; else echo "warn  $1 is missing: $2 (install: pacman -S ${3:-$1})"; fi
 }
-check python3    "wallpaper colours, clipboard history, calendar, mpd"
-check nmcli      "the network menu"
+check python3    "wallpaper colours, clipboard history, calendar, mpd" python
+check nmcli      "the network menu" networkmanager
 check ddcutil    "monitor brightness (DDC/CI)"
 check wlsunset   "night light"
-check wl-copy    "clipboard actions"
-check wl-paste   "clipboard history"
+check wl-copy    "clipboard actions" wl-clipboard
+check wl-paste   "clipboard history" wl-clipboard
 check slurp      "choosing a screenshot / recording region"
 check grim       "screenshots"
 check wf-recorder "screen recording"
 check cava       "the music visualiser"
-check notify-send "some confirmation messages"
-check xdg-open   "opening links and files"
+check notify-send "some confirmation messages" libnotify
+check xdg-open   "opening links and files" xdg-utils
 check curl       "weather"
+check paplay     "the timer's alarm sound" libpulse
+if command -v paplay >/dev/null 2>&1 && [ ! -f /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga ]; then
+    echo "warn  the timer's alarm sound is missing: /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga (install: pacman -S sound-theme-freedesktop)"
+fi
 optional() {   # like check, but absence is normal on many machines: reported as "info", not counted as a problem
     if command -v "$1" >/dev/null 2>&1; then echo "ok    $1"; else echo "info  $1 not found: $2"; fi
 }
