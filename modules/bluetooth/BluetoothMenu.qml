@@ -53,7 +53,7 @@ Overlay {
                 Layout.fillWidth: true
                 visible: Bt.on
                 spacing: 8
-                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.line }
                 SectionLabel { text: "Devices" }
                 Text {
                     Layout.fillWidth: true

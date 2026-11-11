@@ -66,7 +66,7 @@ Overlay {
                 Layout.fillWidth: true
                 visible: Network.vpns.length > 0
                 spacing: 8
-                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.line }
                 SectionLabel { text: "VPN" }
                 Repeater {
                     model: Network.vpns.slice(0, 8)
@@ -94,7 +94,7 @@ Overlay {
                 Layout.fillWidth: true
                 visible: Network.wifiPresent
                 spacing: 8
-                Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+                Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.line }
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 12

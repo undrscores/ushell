@@ -63,7 +63,7 @@ Overlay {
                 visible: Capture.recording
                 Layout.fillWidth: true
                 spacing: 12
-                Rectangle { width: 10; height: 10; radius: 5; color: Theme.danger
+                Rectangle { Layout.preferredWidth: 10; Layout.preferredHeight: 10; radius: 5; color: Theme.danger
                             SequentialAnimation on opacity { running: Capture.recording; loops: Animation.Infinite
                                 NumberAnimation { to: 0.25; duration: 700 } NumberAnimation { to: 1; duration: 700 } } }
                 Text {
@@ -102,7 +102,7 @@ Overlay {
                 font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: Theme.line }
+            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: Theme.line }
 
             RowLayout {
                 Layout.fillWidth: true

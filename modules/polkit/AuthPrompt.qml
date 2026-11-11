@@ -61,7 +61,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 spacing: 14
                 Rectangle {
-                    width: 44; height: 44; radius: 22
+                    Layout.preferredWidth: 44; Layout.preferredHeight: 44; radius: 22
                     color: Theme.accentSoft
                     Icon { anchors.centerIn: parent; text: ""; size: 18; color: Theme.accent }
                 }
@@ -113,7 +113,7 @@ PanelWindow {
 
             Rectangle {
                 Layout.fillWidth: true
-                height: 40
+                Layout.preferredHeight: 40
                 radius: Theme.radius
                 color: Theme.tint
                 border { width: 1; color: input.activeFocus ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.5) : "transparent" }

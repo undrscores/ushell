@@ -30,7 +30,7 @@ Item {
 
     // search + clear
     RowLayout {
-        id: top
+        id: searchRow
         anchors { top: parent.top; left: parent.left; right: parent.right }
         spacing: 8
         Rectangle {
@@ -93,7 +93,7 @@ Item {
 
     ListView {
         id: list
-        anchors { top: top.bottom; topMargin: 10; left: parent.left; right: parent.right; bottom: parent.bottom }
+        anchors { top: searchRow.bottom; topMargin: 10; left: parent.left; right: parent.right; bottom: parent.bottom }
         model: page.filtered
         clip: true
         spacing: 4
