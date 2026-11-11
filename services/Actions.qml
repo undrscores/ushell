@@ -23,12 +23,13 @@ Singleton {
     function widgetsTab(n) { Shell.widgetsTab = n; Shell.widgetsPinned = true }
 
     // { id, title, glyph, words, run, danger?, power?, label? }   (power ones also show in the power menu)
-    readonly property var defs: [
+    readonly property var defs: allDefs.filter(d => d.needsWidgets !== true || Prefs.widgetsPanel)
+    readonly property var allDefs: [
         { id: "lock", power: true, label: "Lock",     title: "Lock screen",     glyph: "", words: "lock screen secure",
           run: () => Lock.lock() },
         { id: "sleep", power: true, label: "Suspend",    title: "Sleep",           glyph: "", words: "suspend sleep",
           run: () => Quickshell.execDetached(["systemctl", "suspend"]) },
-        { id: "logout", power: true, label: "Log out",   title: "Log out",         glyph: "", words: "logout sign out exit uwm", danger: true,
+        { id: "logout", power: true, label: "Log out",   title: "Log out",         glyph: "", words: "logout sign out exit uwc", danger: true,
           run: () => Wm.logout() },
         { id: "reboot", power: true, label: "Reboot",   title: "Restart",         glyph: "", words: "reboot restart", danger: true,
           run: () => Quickshell.execDetached(["systemctl", "reboot"]) },
@@ -64,11 +65,11 @@ Singleton {
           run: () => Power.cycle() },
         { id: "media",  title: "Media player",    glyph: "", words: "music player now playing cava",
           run: () => Shell.open("media") },
-        { id: "w-system", title: "System monitor",  glyph: "", words: "cpu gpu memory ram disk stats performance usage widgets",
+        { id: "w-system", needsWidgets: true, title: "System monitor",  glyph: "", words: "cpu gpu memory ram disk stats performance usage widgets",
           run: () => root.widgetsTab(1) },
-        { id: "w-focus",   title: "Focus timer and note", glyph: "\uf017", words: "timer pomodoro countdown notes scratch widgets",
+        { id: "w-focus", needsWidgets: true,   title: "Focus timer and note", glyph: "\uf017", words: "timer pomodoro countdown notes scratch widgets",
           run: () => root.widgetsTab(3) },
-        { id: "w-weather", title: "Weather",        glyph: "", words: "forecast temperature rain sun widgets",
+        { id: "w-weather", needsWidgets: true, title: "Weather",        glyph: "", words: "forecast temperature rain sun widgets",
           run: () => root.widgetsTab(2) },
         { id: "network", title: "Network and Wi-Fi", glyph: "\uf1eb", words: "network wifi wi-fi internet connection ethernet wireless online",
           run: () => Shell.open("network") },

@@ -1,6 +1,0 @@
-// Minimal uwm config that only hosts the ushell greeter (see start.sh). No key binds or taps, so
-// nothing at the login screen can launch programs.
-binds {
-}
-taps {
-}

@@ -18,7 +18,7 @@ Singleton {
     property var pending: ({})        // bus -> value waiting to be written
     property var queue: []            // buses still to read during detection
 
-    function ensure() { if (!ready && !detecting) detect() }
+    function ensure() { if (!ready && !detecting && !missing) detect() }   // a failed detection is not retried by every caller; detect() does it on purpose
     function detect() { detecting = true; missing = false; displays = []; detectProc.started = false; detectProc.running = true }
 
     function set(bus, value) {

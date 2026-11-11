@@ -135,7 +135,52 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Panels"
+        SettingRow {
+            icon: "\uf06e"; title: "Panel transparency"
+            hint: Prefs.frostedPanels ? "Lower is more see-through; what is behind a panel is blurred" : "Turn on frosted panels in Settings → Canvas to blur behind them"
+            RowLayout {
+                spacing: 10
+                Slider {
+                    Layout.preferredWidth: 180
+                    value: (Theme.glassAlpha - 0.3) / 0.7
+                    onReleased: v => Prefs.set("glassOpacity", Math.round((0.3 + v * 0.7) * 100) / 100)
+                }
+                Text {
+                    Layout.preferredWidth: 40; horizontalAlignment: Text.AlignRight
+                    text: Math.round(Theme.glassAlpha * 100) + "%"; color: Theme.fgDim
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                }
+            }
+        }
+    }
+
+    SettingsGroup {
         title: "Wallpaper"
+        SettingRow {
+            icon: "\uf07b"; title: "Folder"
+            hint: Wallpapers.files.length > 0 ? Wallpapers.files.length + " pictures in " + Wallpapers.dir.replace(Wallpapers.home, "~") : "No pictures found in " + Wallpapers.dir.replace(Wallpapers.home, "~")
+            Rectangle {
+                implicitWidth: 260; implicitHeight: 34
+                radius: Theme.radiusSmall + 2
+                color: Theme.bg
+                border { width: 1; color: dirField.activeFocus ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.5) : Theme.line }
+                TextInput {
+                    id: dirField
+                    anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
+                    verticalAlignment: TextInput.AlignVCenter
+                    color: Theme.fg
+                    selectionColor: Theme.accent; selectedTextColor: Theme.accentFg
+                    clip: true
+                    text: Wallpapers.dir.replace(Wallpapers.home, "~")
+                    font { family: Theme.font; pixelSize: Theme.fontSize }
+                    onAccepted: focus = false                       // leaving the field is what saves it
+                    onActiveFocusChanged: if (!activeFocus && text.trim() !== Wallpapers.dir.replace(Wallpapers.home, "~")) Prefs.set("wallpaperDir", text.trim())
+                    Keys.onEscapePressed: { text = Wallpapers.dir.replace(Wallpapers.home, "~"); focus = false }
+                    Text { visible: !dirField.text; text: "e.g. ~/Pictures/Wallpapers"; color: Theme.fgDim; font: dirField.font; anchors.verticalCenter: parent.verticalCenter }
+                }
+            }
+        }
         RowLayout {
             Layout.fillWidth: true
             Item { Layout.fillWidth: true }
@@ -183,7 +228,7 @@ ColumnLayout {
             wrapMode: Text.Wrap
             color: Theme.fgDim
             font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
-            text: "No pictures in " + Wallpapers.dir.replace(Wallpapers.home, "~") + ". Put some there, or set \"wallpaperDir\" in config.json."
+            text: "No pictures in " + Wallpapers.dir.replace(Wallpapers.home, "~") + ". Put some there, or change the folder above."
         }
     }
 

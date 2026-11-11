@@ -31,7 +31,8 @@ Singleton {
     readonly property color dangerSoft: Qt.rgba(danger.r, danger.g, danger.b, 0.26)   // armed / hovered destructive buttons
 
     // Glass surfaces (shared by every panel). Overlays are white on dark and ink on light.
-    readonly property color glass:  Qt.rgba(bg.r, bg.g, bg.b, Config.glassOpacity)
+    property real glassAlpha: Config.glassOpacity      // set from Prefs.glassOpacity in shell.qml
+    readonly property color glass:  Qt.rgba(bg.r, bg.g, bg.b, glassAlpha)
     property color ink:    pal.ink
     readonly property color line:   Qt.rgba(ink.r, ink.g, ink.b, 0.08)
     readonly property color hover:  Qt.rgba(ink.r, ink.g, ink.b, 0.09)

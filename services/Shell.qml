@@ -52,6 +52,7 @@ Singleton {
         settingsOpen = true
     }
     function open(name) {
+        if (name === "widgets" && !Prefs.widgetsPanel) return
         if (name === "widgets") { widgetsPeek = false; peekTimer.stop(); widgetsPinned = true }
         else if (name === "media") mediaPinned = true
         else if (name === "settings") openSettings()
@@ -62,6 +63,7 @@ Singleton {
     }
     function close()      { overlay = "" }
     function toggle(name) {
+        if (name === "widgets" && !Prefs.widgetsPanel) return
         if (name === "widgets") { widgetsPeek = false; peekTimer.stop(); widgetsPinned = !widgetsPinned }
         else if (name === "media") mediaPinned = !mediaPinned
         else if (name === "settings") { if (settingsOpen) settingsOpen = false; else openSettings() }

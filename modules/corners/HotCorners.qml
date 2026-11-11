@@ -6,7 +6,7 @@ import "../../services"
 
 // Hot corners. Each screen corner has a small input zone; the pointer resting in it makes a glow swell
 // from the corner and, after Prefs.hotCornerDwell ms, runs the corner's action (Prefs.hotCornerTL, TR, BL,
-// BR): "uwm:COMMAND" sends that line to uwm (e.g. "uwm:overview"), "shell:NAME" toggles a panel
+// BR): "uwc:COMMAND" sends that line to uwc (e.g. "uwc:overview"; "uwm:" still works), "shell:NAME" toggles a panel
 // (e.g. "shell:launcher"), empty = no action and no zone. The pointer has to leave and come back to fire again.
 Variants {
     model: Prefs.hotCorners ? Quickshell.screens : []
@@ -50,7 +50,7 @@ Variants {
                 function run() {
                     armed = false
                     if (action.startsWith("shell:")) Shell.toggle(action.slice(6))
-                    else if (action.startsWith("uwm:")) Uwm.send(action.slice(4))
+                    else if (action.startsWith("uwc:") || action.startsWith("uwm:")) Uwc.send(action.slice(4))
                     ripple.restart()
                 }
 

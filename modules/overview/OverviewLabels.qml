@@ -23,13 +23,13 @@ Variants {
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-        readonly property var mon: Uwm.monitors.find(m => m.name === modelData.name) ?? null
+        readonly property var mon: Uwc.monitors.find(m => m.name === modelData.name) ?? null
         readonly property real z: mon ? mon.viewport.zoom : 1
         readonly property real amount: Prefs.overviewLabels ? Math.max(0, Math.min(1, (Prefs.overviewZoom - z) / (Prefs.overviewZoom * 0.3))) : 0
         visible: amount > 0.01
 
         Repeater {
-            model: win.visible ? Uwm.windowsOn(win.mon) : []
+            model: win.visible ? Uwc.windowsOn(win.mon) : []
             delegate: Item {
                 id: lab
                 required property var modelData

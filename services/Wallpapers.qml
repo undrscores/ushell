@@ -10,7 +10,23 @@ import "../config"
 Singleton {
     id: root
     readonly property string home: Quickshell.env("HOME")
-    readonly property string dir: Config.wallpaperDir.startsWith("~") ? home + Config.wallpaperDir.slice(1) : Config.wallpaperDir
+    function expand(p) { return p.startsWith("~") ? home + p.slice(1) : p }
+    // The folder the user chose (Appearance settings, else config.json) ...
+    readonly property string wanted: expand((Prefs.wallpaperDir !== "" ? Prefs.wallpaperDir : Config.wallpaperDir).trim())
+    // ... or, if that folder does not exist, the first of the usual places that does, so no setup is needed.
+    property string found: ""
+    readonly property string dir: found !== "" ? found : wanted
+    onWantedChanged: probe()
+    Component.onCompleted: probe()
+    function probe() { probeProc.running = false; probeProc.running = true }
+    Process {
+        id: probeProc
+        command: ["sh", "-c", 'for d in "$@"; do [ -d "$d" ] && { printf %s "$d"; exit 0; }; done', "sh",
+                  root.wanted, root.home + "/Pictures/Wallpapers", root.home + "/Pictures/wallpapers", root.home + "/Wallpapers", root.home + "/wallpapers"]
+        stdout: StdioCollector {
+            onStreamFinished: { root.found = text.trim(); root.refresh() }
+        }
+    }
     readonly property string script: Quickshell.shellPath("services/wallpaper_colors.py")
     readonly property string current: Prefs.wallpaper
 

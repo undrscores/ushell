@@ -2,6 +2,7 @@ singleton Wm 1.0 Wm.qml
 singleton Shell 1.0 Shell.qml
 singleton Audio 1.0 Audio.qml
 singleton Media 1.0 Media.qml
+singleton Doctor 1.0 Doctor.qml
 singleton Stats 1.0 Stats.qml
 singleton Cava 1.0 Cava.qml
 singleton Mpd 1.0 Mpd.qml
@@ -19,6 +20,7 @@ singleton Lock 1.0 Lock.qml
 singleton Idle 1.0 Idle.qml
 singleton LockKeys 1.0 LockKeys.qml
 ThemeExport 1.0 ThemeExport.qml
+UwcTheme 1.0 UwcTheme.qml
 singleton Countdown 1.0 Countdown.qml
 singleton Notes 1.0 Notes.qml
 singleton NightLight 1.0 NightLight.qml
@@ -30,4 +32,4 @@ singleton Power 1.0 Power.qml
 singleton Backup 1.0 Backup.qml
 singleton Schedule 1.0 Schedule.qml
 singleton Auth 1.0 Auth.qml
-singleton Uwm 1.0 Uwm.qml
+singleton Uwc 1.0 Uwc.qml

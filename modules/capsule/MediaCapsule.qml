@@ -29,6 +29,7 @@ Variants {
         color: "transparent"
         visible: Media.available
         mask: Region { item: hitbox }
+        BackgroundEffect.blurRegion: Region { item: Prefs.frostedPanels ? pivot : null; radius: Theme.radiusLarge }
 
         WlrLayershell.namespace: "qs-capsule"
         WlrLayershell.layer: WlrLayer.Top

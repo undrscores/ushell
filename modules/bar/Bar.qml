@@ -18,7 +18,7 @@ Variants {
         pinned: ["notifications", "network", "bluetooth", "calendar", "capture", "minimap"].includes(Shell.overlay)
                 && (Wm.focusedOutput === "" || (win.screen !== null && win.screen.name === Wm.focusedOutput))
         // each screen's pill follows that screen's own viewport (the focused monitor's is what the commands drive)
-        readonly property var mon: Uwm.monitors.find(m => win.screen && m.name === win.screen.name) ?? null
+        readonly property var mon: Uwc.monitors.find(m => win.screen && m.name === win.screen.name) ?? null
         readonly property real zoom: mon ? mon.viewport.zoom : 1
         panelWidth: row.implicitWidth + 20
         panelHeight: Theme.barHeight
@@ -35,12 +35,42 @@ Variants {
             Workspaces { id: wsRow; anchors.verticalCenter: parent.verticalCenter }
             Rectangle { visible: wsRow.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
 
+            // Tiling layout of the tag in view (only while one is on): click cycles, right click turns it off
+            BarItem {
+                id: tileItem
+                readonly property var tiling: win.mon && win.mon.tags ? ((win.mon.tags.find(t => t.active) ?? {}).tiling ?? null) : null
+                visible: Uwc.connected && tiling !== null
+                onClicked: mouse => Uwc.send(mouse.button === Qt.RightButton ? "tile off" : "tile cycle")
+                Text {
+                    text: tileItem.tiling ? tileItem.tiling.layout : ""
+                    color: Theme.accent
+                    font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+            Rectangle { visible: tileItem.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+
+            // Keyboard layout (only with more than one): click switches
+            BarItem {
+                id: kbItem
+                readonly property var kb: Uwc.state.keyboard_layout ?? null
+                visible: Uwc.connected && kb !== null && kb.count > 1
+                onClicked: Uwc.send("layout next")
+                Text {
+                    text: kbItem.kb ? (kbItem.kb.name || "").slice(0, 3).toUpperCase() : ""
+                    color: Theme.fg
+                    font { family: Theme.font; pixelSize: Theme.fontSize; bold: true }
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+            Rectangle { visible: kbItem.visible; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+
             // Camera zoom → canvas map (scroll zooms; shows only when not at 100%)
             BarItem {
-                visible: Uwm.connected && Math.abs(win.zoom - 1) > 0.005
+                visible: Uwc.connected && Math.abs(win.zoom - 1) > 0.005
                 active: Shell.overlay === "minimap"
-                onClicked: mouse => { if (mouse.button === Qt.RightButton) Uwm.zoomTo(1); else Shell.toggle("minimap") }
-                onScrolled: d => Uwm.zoomBy(d > 0 ? 1.1 : 1 / 1.1)
+                onClicked: mouse => { if (mouse.button === Qt.RightButton) Uwc.zoomTo(1); else Shell.toggle("minimap") }
+                onScrolled: d => Uwc.zoomBy(d > 0 ? 1.1 : 1 / 1.1)
                 Text {
                     text: Math.round(win.zoom * 100) + "%"
                     color: Theme.accent
@@ -48,7 +78,7 @@ Variants {
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
-            Rectangle { visible: Uwm.connected && Math.abs(win.zoom - 1) > 0.005; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
+            Rectangle { visible: Uwc.connected && Math.abs(win.zoom - 1) > 0.005; width: 1; height: 16; color: Theme.line; anchors.verticalCenter: parent.verticalCenter }
 
             // Clock → calendar
             BarItem {
@@ -78,7 +108,7 @@ Variants {
             BarItem {
                 id: timerItem
                 visible: Countdown.active
-                onClicked: { Shell.widgetsTab = 3; Shell.widgetsPinned = true }
+                onClicked: if (Prefs.widgetsPanel) { Shell.widgetsTab = 3; Shell.widgetsPinned = true }
                 Icon { text: "\uf017"; color: Countdown.running ? Theme.accent : Theme.fgDim; anchors.verticalCenter: parent.verticalCenter }
                 Text {
                     text: Countdown.fmt(Countdown.remaining)

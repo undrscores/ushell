@@ -19,7 +19,7 @@ Singleton {
         searchShortcuts: { yt: "https://www.youtube.com/results?search_query=", gh: "https://github.com/search?q=",
                            w: "https://en.wikipedia.org/w/index.php?search=", so: "https://stackoverflow.com/search?q=",
                            maps: "https://www.openstreetmap.org/search?query=" },
-        glassOpacity: 1.0,
+        glassOpacity: 0.78,
         maxVolume: 1.0,
         wallpaperDir: "~/wallpapers",
         recordingDir: "~/Videos/Recordings",

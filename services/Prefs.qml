@@ -16,11 +16,14 @@ Singleton {
     property real overviewZoom: 0.5      // labels start to fade in below this zoom
     property bool zoomAutoHide: true     // the top pill hides itself while zoomed out below overviewZoom
     property bool hotCorners: true       // corner zones that glow and run an action when the pointer rests in them
-    property string hotCornerTL: "uwm:overview"
+    property string hotCornerTL: "uwc:overview"
     property string hotCornerTR: "shell:minimap"
     property string hotCornerBL: ""
     property string hotCornerBR: ""
     property int hotCornerDwell: 350     // ms the pointer has to rest in the corner
+    property bool compositorColors: true // window borders, glow and snap guides in uwc follow the shell's theme
+    property bool widgetsPanel: false    // the top-right control centre (System / Weather / Focus tabs); off by default
+    property real glassOpacity: -1       // panel opacity 0.3..1 set in Appearance; -1 = use config.json (default 0.78)
     property bool frostedPanels: true    // ask the compositor to blur behind panels (ext-background-effect-v1)
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
@@ -29,6 +32,7 @@ Singleton {
     property string themeMode: "dark"    // dark | light
     property string accent: "mauve"      // see config/palette.js (unknown names fall back to mauve there)
     property string wallpaper: ""        // picture path; empty = ushell draws no wallpaper
+    property string wallpaperDir: ""     // folder of wallpapers set in Appearance; empty = config.json / the usual places (see Wallpapers.qml)
     property bool wallpaperColors: true  // the theme's colours follow the wallpaper (picking an accent in Appearance turns this off)
     property var wallpaperFavs: []       // pictures starred in the wallpaper picker (paths)
     property bool doNotDisturb: false    // no notification popups (urgent ones still show); history still fills
@@ -66,6 +70,7 @@ Singleton {
         hotCornerBL:     v => typeof v === "string",
         hotCornerBR:     v => typeof v === "string",
         hotCornerDwell:  v => typeof v === "number" && v >= 50 && v <= 3000,
+        compositorColors: v => typeof v === "boolean",
         frostedPanels:   v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",
@@ -74,6 +79,9 @@ Singleton {
         themeMode:       v => v === "dark" || v === "light",
         accent:          v => typeof v === "string",
         wallpaper:       v => typeof v === "string",
+        wallpaperDir:    v => typeof v === "string",
+        widgetsPanel:    v => typeof v === "boolean",
+        glassOpacity:    v => typeof v === "number" && isFinite(v) && (v === -1 || (v >= 0.3 && v <= 1)),
         wallpaperColors: v => typeof v === "boolean",
         wallpaperFavs:   v => Array.isArray(v) && v.every(x => typeof x === "string" && x !== ""),
         doNotDisturb:    v => typeof v === "boolean",

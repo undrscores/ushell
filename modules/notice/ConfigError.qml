@@ -5,11 +5,11 @@ import "../../config"
 import "../../services"
 import "../../components"
 
-// A banner under the top edge while uwm's config fails to load (snapshot `config_error`); gone once
+// A banner under the top edge while uwc's config fails to load (snapshot `config_error`); gone once
 // the config loads again. Click-through.
 PanelWindow {
     id: win
-    readonly property string err: Uwm.state.config_error ?? ""
+    readonly property string err: Uwc.state.config_error ?? ""
     screen: Quickshell.screens.find(s => s.name === Wm.focusedOutput) ?? Quickshell.screens[0]
     anchors { top: true }
     margins { top: Theme.edgeGap + Theme.barHeight + 12 }
@@ -36,7 +36,7 @@ PanelWindow {
         Text {
             id: text
             anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; leftMargin: 22; rightMargin: 16 }
-            text: "uwm config error: " + win.shown
+            text: "uwc config error: " + win.shown
             wrapMode: Text.Wrap
             color: Theme.fg
             font { family: Theme.font; pixelSize: Theme.fontSize }

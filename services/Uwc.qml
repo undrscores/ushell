@@ -3,12 +3,12 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// uwm's IPC socket ($UWM_SOCKET, set when the shell runs inside uwm; absent elsewhere).
+// uwc's IPC socket ($UWC_SOCKET, set when the shell runs inside uwc; absent elsewhere).
 // Display state (monitors, their modes and scale) and the commands to change it, with a
 // keep-or-revert timer so a bad mode cannot leave you with a blank screen.
 Singleton {
     id: root
-    readonly property string socketPath: Quickshell.env("UWM_SOCKET") ?? ""
+    readonly property string socketPath: Quickshell.env("UWC_SOCKET") || Quickshell.env("UWM_SOCKET") || ""
     readonly property bool available: socketPath !== ""
     readonly property bool connected: sock.connected
     property var state: ({ monitors: [], windows: [], selmon: "" })
@@ -112,13 +112,13 @@ Singleton {
                 let ev = null
                 try { ev = JSON.parse(line) } catch (e) { return }
                 if (ev.event === "state") root.state = ev
-                else if (ev.error) console.warn("uwm: " + ev.error)
+                else if (ev.error) console.warn("uwc: " + ev.error)
             }
         }
         onConnectedChanged: if (connected) root.send("subscribe")
     }
 
-    // uwm restarted or the socket was not up yet: keep trying
+    // uwc restarted or the socket was not up yet: keep trying
     Timer {
         interval: 1000
         repeat: true

@@ -22,7 +22,7 @@ Variants {
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-        readonly property var mon: Uwm.monitors.find(m => m.name === modelData.name) ?? null
+        readonly property var mon: Uwc.monitors.find(m => m.name === modelData.name) ?? null
         readonly property real inset: 22
 
         // one entry per off-screen window: edge position, arrow angle, opacity
@@ -32,7 +32,7 @@ Variants {
             const z = m.viewport.zoom, W = win.width, H = win.height
             const sx = W / m.width, sy = H / m.height
             const out = []
-            for (const w of Uwm.windowsOn(m)) {
+            for (const w of Uwc.windowsOn(m)) {
                 const cx = (w.x + w.width / 2 - m.viewport.x) * z * sx
                 const cy = (w.y + w.height / 2 - m.viewport.y) * z * sy
                 // any part of the window still visible: no pip

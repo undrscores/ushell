@@ -9,6 +9,14 @@ ColumnLayout {
     spacing: 22
 
     SettingsGroup {
+        title: "Panels"
+        SettingRow {
+            icon: "\uf0e4"; title: "Control centre"; hint: "A panel in the top right corner with system, weather and focus-timer tabs"
+            Switch { checked: Prefs.widgetsPanel; onToggled: v => Prefs.set("widgetsPanel", v) }
+        }
+    }
+
+    SettingsGroup {
         title: "Modes"
         SettingRow {
             icon: "\uf06e"; title: "Focus mode"; hint: "Silences notifications and hides the now-playing capsule and radial menu"

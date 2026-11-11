@@ -4,7 +4,7 @@ import "../../config"
 import "../../services"
 import "../../components"
 
-// Canvas: the shell's uwm-specific pieces (minimap, edge markers, zoomed-out labels, hot corners, frosted panels).
+// Canvas: the shell's uwc-specific pieces (minimap, edge markers, zoomed-out labels, hot corners, frosted panels).
 ColumnLayout {
     spacing: 22
 
@@ -36,6 +36,14 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Compositor"
+        SettingRow {
+            icon: ""; title: "Window colours follow the theme"; hint: "uwc's focus border, glow and snap guides take the accent and wallpaper colours"
+            Switch { checked: Prefs.compositorColors; onToggled: v => Prefs.set("compositorColors", v) }
+        }
+    }
+
+    SettingsGroup {
         title: "Hot corners"
         SettingRow {
             icon: ""; title: "Hot corners"; hint: "Rest the pointer in a screen corner to run its action. A few pixels of each corner stop taking clicks."
@@ -53,9 +61,9 @@ ColumnLayout {
                     width: 400
                     spacing: 4
                     Repeater {
-                        model: [ { l: "Off", a: "" }, { l: "Overview", a: "uwm:overview" }, { l: "Home", a: "uwm:home" },
+                        model: [ { l: "Off", a: "" }, { l: "Overview", a: "uwc:overview" }, { l: "Home", a: "uwc:home" },
                                  { l: "Map", a: "shell:minimap" }, { l: "Launcher", a: "shell:launcher" }, { l: "Alerts", a: "shell:notifications" } ]
-                        delegate: Pill { required property var modelData; label: modelData.l; active: Prefs[corner.modelData.key] === modelData.a
+                        delegate: Pill { required property var modelData; label: modelData.l; active: Prefs[corner.modelData.key].replace(/^uwm:/, "uwc:") === modelData.a
                                          onClicked: Prefs.set(corner.modelData.key, modelData.a) }
                     }
                 }

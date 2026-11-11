@@ -31,17 +31,19 @@ import "config"
 
 ShellRoot {
     // singletons are created lazily; touch the clipboard and the notification daemon so they start with the shell
-    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen, Power.hasBattery, Capture.canRecord, Schedule.day, Auth.registered]
+    readonly property var warm: [Clipboard.items.length, Notifications.count, LockKeys.seen, Power.hasBattery, Capture.canRecord, Schedule.day, Auth.registered, Doctor.done]
 
     // the saved theme choice drives the Theme singleton
     Binding { target: Theme; property: "mode"; value: Prefs.themeMode }
     Binding { target: Theme; property: "accentName"; value: Prefs.accent }
+    Binding { target: Theme; property: "glassAlpha"; value: Prefs.glassOpacity >= 0 ? Prefs.glassOpacity : Config.glassOpacity }
     Binding { target: Theme; property: "wallHue"; value: Wallpapers.useColors ? Wallpapers.hue : -1 }
     Binding { target: Theme; property: "wallSat"; value: Wallpapers.sat }
     Binding { target: Theme; property: "wallHue2"; value: Wallpapers.hue2 }
     Binding { target: Theme; property: "wallSat2"; value: Wallpapers.sat2 }
 
     ThemeExport {}
+    UwcTheme {}
     Wallpaper {}
     Pips {}
     OverviewLabels {}
@@ -51,7 +53,8 @@ ShellRoot {
     IdleHandler {}
 
     Bar {}
-    // Widgets {}   // top-right control centre: disabled
+    // top-right control centre: off unless Settings → General turns it on
+    LazyLoader { active: Prefs.widgetsPanel; Widgets {} }
     MediaCapsule {}
     RadialMenu {}
     Launcher { id: launcher }
@@ -123,7 +126,8 @@ ShellRoot {
         function vpn(name: string, on: bool): void { Network.setVpn(name, on) }       // a saved VPN / WireGuard profile, by name
     }
 
-    // qs ipc call wm dump     (what the shell sees of uwm: focused output, workspaces, windows; for debugging)
+    // qs -c ushell ipc call shell doctor   (fonts and helper programs ushell needs, and which are missing)
+    // qs ipc call wm dump     (what the shell sees of uwc: focused output, workspaces, windows; for debugging)
     IpcHandler {
         target: "wm"
         function dump(): string {
@@ -208,8 +212,8 @@ ShellRoot {
     // qs ipc call hud <togglePin | list>   pin the focused window to the screen (or unpin it); list = the pinned windows
     IpcHandler {
         target: "hud"
-        function togglePin(): void { Uwm.togglePin(Uwm.focusedWindow) }
-        function list(): string { return JSON.stringify(Uwm.pinnedOn(Uwm.focusedMon).map(w => ({ id: w.id, title: w.title, app_id: w.app_id }))) }
+        function togglePin(): void { Uwc.togglePin(Uwc.focusedWindow) }
+        function list(): string { return JSON.stringify(Uwc.pinnedOn(Uwc.focusedMon).map(w => ({ id: w.id, title: w.title, app_id: w.app_id }))) }
     }
 
     // qs ipc call osd test   (show the volume pill)
@@ -226,6 +230,7 @@ ShellRoot {
         // qs ipc call shell settings <general|appearance|notifications|power|weather|about>   open the settings window on a section
         function settings(page: string): void { Shell.openSettings(page) }
         function close(): void              { Shell.close() }
+        function doctor(): string           { return Doctor.report }
         // qs ipc call shell tab <0..3>   show the control centre (widgets panel) on a tab for a few seconds: 0 control, 1 system, 2 weather, 3 focus
         // qs ipc call shell brightness <+N|-N>   change brightness of all monitors by N percent
         function brightness(delta: int): void { Brightness.step(delta) }

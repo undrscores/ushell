@@ -3,11 +3,11 @@ import Quickshell
 import QtQuick
 
 // The compositor as the rest of the shell sees it: workspaces, windows, the focused output and the
-// commands on them, all derived from uwm's IPC snapshot (services/Uwm.qml). uwm's "workspaces" are the
+// commands on them, all derived from uwc's IPC snapshot (services/Uwc.qml). uwc's "workspaces" are the
 // tags of each monitor, so a workspace id is "<output>:<tag>" and idx is the 1-based tag.
 Singleton {
     id: root
-    readonly property var snap: Uwm.state
+    readonly property var snap: Uwc.state
     readonly property string focusedOutput: snap.selmon ?? ""
 
     function firstTag(mask) {
@@ -65,9 +65,9 @@ Singleton {
         const z = m.viewport.zoom, r = Math.round
         return r((w.x - m.viewport.x) * z + m.x) + "," + r((w.y - m.viewport.y) * z + m.y) + " " + r(w.width * z) + "x" + r(w.height * z)
     }
-    function focusWindow(id) { Uwm.send("focus " + id) }
-    function closeWindow(id) { Uwm.send("close " + id) }
-    function focusWorkspace(idx) { Uwm.send("view " + idx) }
+    function focusWindow(id) { Uwc.send("focus " + id) }
+    function closeWindow(id) { Uwc.send("close " + id) }
+    function focusWorkspace(idx) { Uwc.send("view " + idx) }
     function stepWorkspace(dir) {                  // dir > 0: next tag in use, < 0: previous
         const list = workspaces
         const cur = list.findIndex(w => w.is_active)
@@ -75,6 +75,6 @@ Singleton {
         if (next) focusWorkspace(next.idx)
     }
     function refresh() {}                          // the snapshot is pushed on every change
-    function logout() { Uwm.send("quit") }
-    function screensOff(off) { Uwm.send("dpms " + (off ? "off" : "on")) }
+    function logout() { Uwc.send("quit") }
+    function screensOff(off) { Uwc.send("dpms " + (off ? "off" : "on")) }
 }

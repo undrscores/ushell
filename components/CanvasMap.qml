@@ -13,11 +13,11 @@ Rectangle {
     color: Theme.tint
     clip: true
 
-    readonly property var wins: Uwm.windowsOn(Uwm.focusedMon)
+    readonly property var wins: Uwc.windowsOn(Uwc.focusedMon)
     // canvas bounds: all windows plus the screen, padded
     readonly property var bounds: {
-        let x0 = Uwm.viewport.x, y0 = Uwm.viewport.y
-        let x1 = x0 + Uwm.viewW, y1 = y0 + Uwm.viewH
+        let x0 = Uwc.viewport.x, y0 = Uwc.viewport.y
+        let x1 = x0 + Uwc.viewW, y1 = y0 + Uwc.viewH
         for (const w of wins) {
             x0 = Math.min(x0, w.x); y0 = Math.min(y0, w.y)
             x1 = Math.max(x1, w.x + w.width); y1 = Math.max(y1, w.y + w.height)
@@ -44,10 +44,10 @@ Rectangle {
     }
 
     Rectangle {                                 // where the screen is
-        x: map.ox + Uwm.viewport.x * map.k
-        y: map.oy + Uwm.viewport.y * map.k
-        width: Uwm.viewW * map.k
-        height: Uwm.viewH * map.k
+        x: map.ox + Uwc.viewport.x * map.k
+        y: map.oy + Uwc.viewport.y * map.k
+        width: Uwc.viewW * map.k
+        height: Uwc.viewH * map.k
         color: "transparent"
         radius: 2
         border.width: 2
@@ -59,9 +59,9 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
-        function pan(m) { Uwm.centerOn((m.x - map.ox) / map.k, (m.y - map.oy) / map.k) }
+        function pan(m) { Uwc.centerOn((m.x - map.ox) / map.k, (m.y - map.oy) / map.k) }
         onPressed: m => pan(m)
         onPositionChanged: m => { if (pressed) pan(m) }
-        onWheel: w => Uwm.zoomBy(w.angleDelta.y > 0 ? 1.15 : 1 / 1.15)
+        onWheel: w => Uwc.zoomBy(w.angleDelta.y > 0 ? 1.15 : 1 / 1.15)
     }
 }
