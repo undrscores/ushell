@@ -1,0 +1,71 @@
+import Quickshell
+import QtQuick
+import "@SERVICES@"   // replaced by scripts/test-qml.sh with the absolute path
+
+// Headless unit tests for the Prefs and Stats singletons. Run with scripts/test-qml.sh (it points XDG_STATE_HOME
+// at a temp dir holding a deliberately corrupt prefs.json, so nothing of yours is read or written).
+ShellRoot {
+    id: t
+    property int fails: 0
+    property int passes: 0
+    function ok(name, cond) {
+        if (cond) { passes++; console.log("ok   " + name) }
+        else { fails++; console.log("FAIL " + name) }
+    }
+    function near(a, b) { return Math.abs(a - b) < 1e-6 }
+
+    function testStats() {
+        const head = "cpu  100 0 100 800 0 0 0 0 0 0\n"
+        const rest = "MemTotal: 1048576 kB\nMemAvailable: 524288 kB\nSwapTotal: 2097152 kB\nSwapFree: 1048576 kB\n"
+                   + "#disk\n/dev/a / 100000000000 50000000000\n/dev/a /home 100000000000 50000000000\n/dev/b /data 200000000000 20000000000\n"
+                   + "#load\n0.5\n1000.0\n#temp\n45000\n"
+        Stats.parse(head + rest)
+        ok("stats: first sample has no cpu delta", Stats.cpu === 0)
+        ok("stats: memory fraction", t.near(Stats.mem, 0.5) && t.near(Stats.memTotal, 1) && t.near(Stats.memUsed, 0.5))
+        ok("stats: swap fraction", t.near(Stats.swap, 0.5))
+        ok("stats: disks listed once per device", Stats.disks.length === 2 && Stats.disks[0].label === "/" && t.near(Stats.disks[1].frac, 0.1))
+        ok("stats: load and uptime", t.near(Stats.load, 0.5) && t.near(Stats.uptime, 1000))
+        ok("stats: cpu temperature in degrees", Stats.hasCpuTemp && t.near(Stats.cpuTemp, 45))
+        // 100 more busy ticks and 100 more idle ticks: 50 % busy
+        Stats.parse("cpu  150 0 150 900 0 0 0 0 0 0\n" + rest)
+        ok("stats: cpu delta", t.near(Stats.cpu, 0.5))
+        Stats.parse("cpu  150 0 150 900 0 0 0 0 0 0\n" + rest)
+        ok("stats: no elapsed ticks gives 0, not NaN", Stats.cpu === 0)
+        ok("stats: cpu history keeps its length", Stats.cpuHistory.length === 40)
+        Stats.parse(head + "MemTotal: 0 kB\n#disk\n#load\n#temp\n")
+        ok("stats: missing sections do not break it", Stats.mem === 0 && Stats.disks.length === 0 && !Stats.hasCpuTemp)
+
+        Stats.parseGpu("37, 55, 2048, 8192, 120.5, 1800\n")
+        ok("gpu: parsed", Stats.hasGpu && t.near(Stats.gpu, 0.37) && t.near(Stats.vram, 0.25) && Stats.hasGpuPower && t.near(Stats.gpuPower, 120.5))
+        Stats.parseGpu("37, 55, 2048, 8192, [N/A], [N/A]\n")
+        ok("gpu: [N/A] optional columns are tolerated", Stats.hasGpu && !Stats.hasGpuPower && !Stats.hasGpuClock)
+        Stats.parseGpu("")
+        ok("gpu: no output counts as a failure", !Stats.hasGpu && Stats.gpuFailures === 1)
+    }
+
+    function testPrefsSchema() {
+        ok("prefs: themeMode accepts dark/light only", Prefs.valid("themeMode", "light") && !Prefs.valid("themeMode", "blue"))
+        ok("prefs: unknown keys are rejected", !Prefs.valid("noSuchSetting", true) && !Prefs.has("noSuchSetting"))
+        ok("prefs: times must be HH:MM", Prefs.valid("dndFrom", "22:30") && !Prefs.valid("dndFrom", "25:00") && !Prefs.valid("dndFrom", "7:00"))
+        ok("prefs: integers are range checked", Prefs.valid("idleLockMin", 10) && !Prefs.valid("idleLockMin", -1) && !Prefs.valid("idleLockMin", 241) && !Prefs.valid("idleLockMin", 1.5))
+        ok("prefs: booleans are strict", Prefs.valid("dockEnabled", true) && !Prefs.valid("dockEnabled", "yes") && !Prefs.valid("dockEnabled", 1))
+        ok("prefs: dockApps is a list of non-empty strings", Prefs.valid("dockApps", ["a.desktop"]) && !Prefs.valid("dockApps", ["a", ""]) && !Prefs.valid("dockApps", "a"))
+        ok("prefs: snapshot covers every schema key", Object.keys(Prefs.snapshot()).length === Object.keys(Prefs.schema).length)
+        ok("prefs: dock is off by default", Prefs.dockEnabled === false)
+    }
+
+    function testPrefsCorrupt() {
+        ok("prefs: a corrupt file is reported", Prefs.loadError !== "")
+        ok("prefs: a corrupt file falls back to defaults", Prefs.themeMode === "dark" && Prefs.loaded)
+        ok("prefs: an invalid change is ignored", (Prefs.set("themeMode", "blue"), Prefs.themeMode === "dark"))
+    }
+
+    Component.onCompleted: { testStats(); testPrefsSchema() }
+    Timer {   // the corrupt prefs.json is read and copied asynchronously
+        interval: 2500; running: true
+        onTriggered: {
+            t.testPrefsCorrupt()
+            console.log(t.fails === 0 ? "TESTS DONE: all " + t.passes + " passed" : "TESTS DONE: " + t.fails + " FAILED, " + t.passes + " passed")
+        }
+    }
+}

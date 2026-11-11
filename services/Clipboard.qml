@@ -15,7 +15,7 @@ Singleton {
 
     function parse(raw) {
         let list = []
-        try { list = JSON.parse(raw).items || [] } catch (e) {}
+        try { list = JSON.parse(raw).items || [] } catch (e) { console.warn("ushell clipboard.json: " + e.message + " (the store keeps a corrupt file as clipboard.json.corrupt)") }
         list.sort((a, b) => (b.pinned === true) - (a.pinned === true) || b.time - a.time)
         items = list
     }

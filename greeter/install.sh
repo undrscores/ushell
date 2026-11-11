@@ -1,10 +1,12 @@
 #!/bin/sh
-# Installs greetd + the ushell greeter. Run as root:  sudo ./greeter/install.sh [fixed-wallpaper.jpg]
+# Installs greetd + the ushell greeter (Arch Linux). Run as root:  sudo ./greeter/install.sh [fixed-wallpaper.jpg]
+# What it writes is listed in greeter/README.md.
 set -e
 [ "$(id -u)" = 0 ] || { echo "run with sudo"; exit 1; }
-USER_NAME="${SUDO_USER:-$USER}"
+USER_NAME="${SUDO_USER:-}"
+[ -n "$USER_NAME" ] && [ "$USER_NAME" != root ] || { echo "run it with sudo from your own user account (the greeter logs in as that user)"; exit 1; }
 SRC="$(cd "$(dirname "$0")" && pwd)"
-zypper --non-interactive install greetd
+pacman -S --needed --noconfirm greetd
 D=/etc/greetd/ushell-greeter
 mkdir -p "$D"
 sed "s/@USER@/$USER_NAME/" "$SRC/shell.qml" > "$D/shell.qml"
@@ -27,7 +29,7 @@ vt = 1
 command = "uwc --backend udev -c /etc/greetd/uwc-greeter.kdl -s /etc/greetd/uwc-greeter-start"
 user = "greeter"
 EOT
-id greeter >/dev/null 2>&1 || useradd -M -G video -s /usr/sbin/nologin greeter
+id greeter >/dev/null 2>&1 || useradd -M -G video -s /usr/bin/nologin greeter
 chown -R greeter: "$D"
 systemctl disable getty@tty1.service 2>/dev/null || true
 systemctl enable greetd.service

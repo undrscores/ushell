@@ -143,6 +143,10 @@ Singleton {
         if (changed) save()
     }
 
+    property string loadError: ""        // set when prefs.json could not be parsed
+    Process { id: keep; onExited: root.finishLoad() }   // loading finishes only after the copy: finishLoad may save
+    Timer { id: notice; interval: 3000; onTriggered: Osd.showText("note", root.loadError, true, "\uf071") }   // after the OSD window is up
+
     FileView {
         id: file
         path: StateDir.ready ? StateDir.dir + "/prefs.json" : ""
@@ -153,7 +157,15 @@ Singleton {
                 if (j !== null && typeof j === "object")
                     for (const k of Object.keys(root.schema))
                         if (k in j && root.schema[k](j[k])) root[k] = j[k]
-            } catch (e) { console.warn("ushell prefs.json: " + e.message + " (using defaults)") }
+            } catch (e) {
+                // Corrupt file: keep it aside (the next save would overwrite it with defaults) and say so.
+                console.warn("ushell prefs.json: " + e.message + " (using defaults; the old file is kept as prefs.json.corrupt)")
+                root.loadError = "Settings file was unreadable; defaults loaded (old copy: prefs.json.corrupt)"
+                keep.command = ["cp", "--", file.path, file.path + ".corrupt"]
+                keep.running = true
+                notice.start()
+                return
+            }
             root.finishLoad()
         }
         onLoadFailed: root.finishLoad()      // no file yet (first run) or unreadable: defaults
