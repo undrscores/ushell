@@ -51,7 +51,7 @@ ShellRoot {
     IdleHandler {}
 
     Bar {}
-    Widgets {}
+    // Widgets {}   // top-right control centre: disabled
     MediaCapsule {}
     RadialMenu {}
     Launcher { id: launcher }

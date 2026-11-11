@@ -65,9 +65,9 @@ Singleton {
     readonly property int barHeight:   38
 
     // Typography
-    readonly property string font: "JetBrains Mono"      // install jetbrains-mono-fonts; Qt falls back to the default sans without it
+    readonly property string font: "JetBrainsMono Nerd Font"      // the patched family name (ttf-jetbrains-mono-nerd); Qt falls back to the default sans without it
     readonly property int fontSize: 13       // JetBrains Mono is wide: 13 here sets about as wide as 14 in a proportional font
-    readonly property string iconFont: "Symbols Nerd Font"
+    readonly property string iconFont: "JetBrainsMono Nerd Font Mono"      // the Nerd Font glyphs, fitted to one cell so icons centre
     readonly property int iconSize: 17
 
     // Motion
