@@ -156,6 +156,15 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Dock"
+        SettingRow {
+            icon: "\uf2d0"; title: "Dock on the left edge"
+            hint: "Auto-hides and pops out on the left edge; shows your pinned apps plus the apps active on that screen. Right-click an icon to pin or unpin it"
+            Switch { checked: Prefs.dockEnabled; onToggled: v => Prefs.set("dockEnabled", v) }
+        }
+    }
+
+    SettingsGroup {
         title: "Wallpaper"
         SettingRow {
             icon: "\uf07b"; title: "Folder"

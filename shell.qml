@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import "modules/bar"
+import "modules/dock"
 import "modules/widgets"
 import "modules/launcher"
 import "modules/clipboard"
@@ -53,6 +54,8 @@ ShellRoot {
     IdleHandler {}
 
     Bar {}
+    // macOS-style dock auto-hidden on the left edge of each screen; hover the edge to pop it out
+    LazyLoader { active: Prefs.dockEnabled; Dock {} }
     // top-right control centre: off unless Settings → General turns it on
     LazyLoader { active: Prefs.widgetsPanel; Widgets {} }
     MediaCapsule {}

@@ -27,6 +27,8 @@ Singleton {
     property bool frostedPanels: true    // ask the compositor to blur behind panels (ext-background-effect-v1)
     property bool mediaCapsule: true     // now-playing capsule at the bottom left
     property bool radialMenu: true       // radial quick-action menu in the bottom right corner
+    property bool dockEnabled: false     // macOS-style dock auto-hidden on the left edge, pops out on hover
+    property var dockApps: ["firefox.desktop", "foot.desktop", "yazi.desktop"]  // pinned apps: desktop entry ids, top to bottom
     property bool weatherMetric: true
     property string weatherCity: ""      // empty = locate by IP address
     property string themeMode: "dark"    // dark | light
@@ -74,6 +76,8 @@ Singleton {
         frostedPanels:   v => typeof v === "boolean",
         mediaCapsule:    v => typeof v === "boolean",
         radialMenu:      v => typeof v === "boolean",
+        dockEnabled:     v => typeof v === "boolean",
+        dockApps:        v => Array.isArray(v) && v.every(x => typeof x === "string" && x !== ""),
         weatherMetric:   v => typeof v === "boolean",
         weatherCity:     v => typeof v === "string",
         themeMode:       v => v === "dark" || v === "light",
