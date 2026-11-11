@@ -11,7 +11,7 @@ import "units.js" as Units
 import "emoji.js" as EmojiData
 
 // Launcher. Plain text searches apps, open windows, system actions and does maths.
-// Prefixes switch mode:   z packages (zypper)   m music (MPD)   f files   g web   ? help
+// Prefixes switch mode:   z packages (pacman)   m music (MPD)   f files   g web   ? help
 PanelWindow {
     id: win
     readonly property bool open: Shell.overlay === "launcher"
@@ -200,16 +200,17 @@ PanelWindow {
 
     Process {
         id: pkgProc
-        command: ["zypper", "--quiet", "--no-refresh", "se", "--type", "package", "--", win.asyncQuery]
+        command: ["pacman", "-Ss", "--", win.asyncQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")]   // the query is a regex: match it literally
         stdout: StdioCollector {
             onStreamFinished: {
                 if (win.stale("pkg")) return
+                // pacman -Ss prints "repo/name version [installed]" followed by an indented description line (skipped)
                 const items = []
                 for (const line of text.split("\n")) {
-                    const c = line.split("|").map(x => x.trim())
-                    if (c.length < 4 || c[1] === "Name" || c[0].startsWith("--")) continue
-                    const st = line.split("|")[0].trim()
-                    items.push({ kind: "pkg", title: c[1], glyph: "", installed: st.startsWith("i") || st.startsWith("v"), data: c[1] })
+                    if (line.startsWith(" ") || line.trim() === "") continue
+                    const m = line.match(/^[^\/\s]+\/(\S+)\s+\S+(.*)$/)
+                    if (!m) continue
+                    items.push({ kind: "pkg", title: m[1], glyph: "", installed: m[2].includes("[installed"), data: m[1] })
                 }
                 items.sort((x, y) => (y.title === win.asyncQuery) - (x.title === win.asyncQuery) || x.title.length - y.title.length)
                 win.busy = false
@@ -250,6 +251,7 @@ PanelWindow {
 
     // ── activation ─────────────────────────────────────────────────────────────
     // Runs `sudo <args>` in a terminal and waits for a key. Arguments are passed as argv, never spliced into a shell string.
+    // (The "cmd" mode below is the exception: what you type after ">" is deliberately run as a shell command line.)
     function inTerminal(args) {
         Quickshell.execDetached([Config.terminal, "-e", "bash", "-c",
             "sudo \"$@\"; echo; read -n1 -s -r -p 'Press any key to close…'", "ushell"].concat(args))
@@ -273,7 +275,7 @@ PanelWindow {
         case "win":    Wm.focusWindow(item.data); break
         case "calc":   Quickshell.execDetached(["wl-copy", item.data]); break
         case "action": if (!Actions.trigger(item.data)) return; bump(item.id); break
-        case "pkg":    inTerminal(["zypper", item.installed ? "remove" : "install", item.data]); break
+        case "pkg":    inTerminal(["pacman", item.installed ? "-Rs" : "-S", "--", item.data]); break
         case "song":   Quickshell.execDetached(["python3", "-I", Mpd.script, alt ? "queue" : "playuri", item.data]); break
         case "file": {
             const target = alt ? item.data.slice(0, item.data.lastIndexOf("/")) : item.data
@@ -363,7 +365,7 @@ PanelWindow {
                 Text {
                     id: chipText
                     anchors.centerIn: parent
-                    text: win.busy ? "…" : ({ pkg: "zypper", song: "music", file: "files", web: "web", emoji: "emoji", clip: "clipboard", cmd: "run", help: "modes" }[win.mode] ?? "")
+                    text: win.busy ? "…" : ({ pkg: "pacman", song: "music", file: "files", web: "web", emoji: "emoji", clip: "clipboard", cmd: "run", help: "modes" }[win.mode] ?? "")
                     color: Theme.accent
                     font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
                 }

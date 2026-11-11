@@ -73,17 +73,18 @@ Singleton {
         later("Screenshot", () => {
             const dir = expand(Config.screenshotDir)
             const file = dir + "/screenshot-" + stamp() + ".png"
-            let sel = ""                                       // what to pass to grim, as shell words
-            if (kind === "screen") sel = Wm.focusedOutput !== "" ? "-o '" + Wm.focusedOutput + "'" : ""
+            let sel = []                                       // extra grim arguments, passed as argv (never spliced into the shell string)
+            if (kind === "screen") { if (Wm.focusedOutput !== "") sel = ["-o", Wm.focusedOutput] }
             else if (kind === "window") {
                 const g = Wm.focusedWindowGeometry()
                 if (!g) return
-                sel = "-g '" + g + "'"
+                sel = ["-g", g]
             }
+            // $1 = dir, $2 = file, the rest = grim arguments
             const cmd = kind === "region"
                 ? "mkdir -p \"$1\" && g=$(slurp -f '%x,%y %wx%h') && grim -g \"$g\" \"$2\" && wl-copy < \"$2\""
-                : "mkdir -p \"$1\" && grim " + sel + " \"$2\" && wl-copy < \"$2\""
-            Quickshell.execDetached(["sh", "-c", cmd, "sh", dir, file])
+                : "d=$1; f=$2; shift 2; mkdir -p \"$d\" && grim \"$@\" \"$f\" && wl-copy < \"$f\""
+            Quickshell.execDetached(["sh", "-c", cmd, "sh", dir, file].concat(kind === "region" ? [] : sel))
         })
     }
 

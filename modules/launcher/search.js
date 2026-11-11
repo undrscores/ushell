@@ -11,7 +11,7 @@ function parse(text, shortcuts) {
     if ((m = text.match(/^(c|clip|clipboard)\s+(.*)$/i))) return { mode: "clip", q: m[2].trim() }
     if (shortcuts && (m = text.match(/^([a-z0-9]{1,12})\s+(.*)$/i)) && Object.prototype.hasOwnProperty.call(shortcuts, m[1].toLowerCase()))
         return { mode: "web", q: m[2].trim(), url: shortcuts[m[1].toLowerCase()] }
-    if ((m = text.match(/^(z|zy|zypper)\s+(.*)$/i))) return { mode: "pkg",  q: m[2].trim() }
+    if ((m = text.match(/^(z|pkg|pacman)\s+(.*)$/i))) return { mode: "pkg",  q: m[2].trim() }
     if ((m = text.match(/^(m|music)\s+(.*)$/i)))     return { mode: "song", q: m[2].trim() }
     if ((m = text.match(/^(f|file|files)\s+(.*)$/i))) return { mode: "file", q: m[2].trim() }
     if ((m = text.match(/^(g|web)\s+(.*)$/i)))       return { mode: "web",  q: m[2].trim() }
