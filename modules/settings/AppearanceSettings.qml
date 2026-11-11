@@ -268,6 +268,26 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "Night light schedule"
+        SettingRow {
+            icon: ""; title: "Warm the screen at night"
+            hint: NightLight.available ? "On every day between these times, whatever the theme is. Replaces the option above" : "Install wlsunset to use this"
+            Switch { enabled: NightLight.available; checked: Prefs.nightSchedule; onToggled: v => Prefs.set("nightSchedule", v) }
+        }
+        RowLayout {
+            visible: Prefs.nightSchedule
+            Layout.fillWidth: true
+            Layout.leftMargin: 40
+            spacing: 10
+            Text { text: "From"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize } }
+            TimeField { value: Prefs.nightFrom; onEdited: v => Prefs.set("nightFrom", v) }
+            Text { text: "to"; color: Theme.fgDim; font { family: Theme.font; pixelSize: Theme.fontSize } }
+            TimeField { value: Prefs.nightTo; onEdited: v => Prefs.set("nightTo", v) }
+            Item { Layout.fillWidth: true }
+        }
+    }
+
+    SettingsGroup {
         visible: Quickshell.screens.length > 1
         title: "Screens"
         Text {

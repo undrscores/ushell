@@ -19,15 +19,32 @@ Singleton {
         if (now === last) return
         last = now
         Prefs.set("themeMode", day ? "light" : "dark")
-        if (Prefs.scheduleNightLight) Prefs.set("nightLight", !day)
+        if (Prefs.scheduleNightLight && !Prefs.nightSchedule) Prefs.set("nightLight", !day)   // an own night schedule takes over
     }
     onDayChanged: apply()
+
+    // Night light on its own clock (Prefs.nightFrom to Prefs.nightTo, may cross midnight), independent of the theme.
+    // Like the theme schedule it acts when the time crosses one of the two moments and when it is switched on.
+    readonly property bool night: Dnd.inWindow(Prefs.nightFrom, Prefs.nightTo, clock.date)
+    property int lastNight: -1                 // the part of the day applied last: 1 night, 0 day
+    function applyNight() {
+        if (!Prefs.nightSchedule || !Prefs.loaded) { lastNight = -1; return }
+        const now = night ? 1 : 0
+        if (now === lastNight) return
+        lastNight = now
+        Prefs.set("nightLight", night)
+    }
+    onNightChanged: applyNight()
+
     Connections {
         target: Prefs
         function onThemeScheduleChanged() { root.last = -1; root.apply() }
         function onThemeLightFromChanged() { root.apply() }
         function onThemeDarkFromChanged() { root.apply() }
-        function onLoadedChanged() { root.apply() }
+        function onNightScheduleChanged() { root.lastNight = -1; root.applyNight() }
+        function onNightFromChanged() { root.applyNight() }
+        function onNightToChanged() { root.applyNight() }
+        function onLoadedChanged() { root.apply(); root.applyNight() }
     }
-    Component.onCompleted: apply()
+    Component.onCompleted: { apply(); applyNight() }
 }

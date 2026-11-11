@@ -180,6 +180,8 @@ ShellRoot {
         ok("prefs: themeMode accepts dark/light only", Prefs.valid("themeMode", "light") && !Prefs.valid("themeMode", "blue"))
         ok("prefs: unknown keys are rejected", !Prefs.valid("noSuchSetting", true) && !Prefs.has("noSuchSetting"))
         ok("prefs: times must be HH:MM", Prefs.valid("dndFrom", "22:30") && !Prefs.valid("dndFrom", "25:00") && !Prefs.valid("dndFrom", "7:00"))
+        ok("prefs: night schedule and idle dim", Prefs.valid("nightFrom", "21:00") && !Prefs.valid("nightTo", "24:00") && Prefs.valid("nightSchedule", true)
+            && Prefs.valid("idleDimSec", 30) && Prefs.valid("idleDimSec", 0) && !Prefs.valid("idleDimSec", -1) && !Prefs.valid("idleDimSec", 121) && !Prefs.valid("idleDimSec", 2.5))
         ok("prefs: integers are range checked", Prefs.valid("idleLockMin", 10) && !Prefs.valid("idleLockMin", -1) && !Prefs.valid("idleLockMin", 241) && !Prefs.valid("idleLockMin", 1.5))
         ok("prefs: booleans are strict", Prefs.valid("dockEnabled", true) && !Prefs.valid("dockEnabled", "yes") && !Prefs.valid("dockEnabled", 1))
         ok("prefs: dockApps is a list of non-empty strings", Prefs.valid("dockApps", ["a.desktop"]) && !Prefs.valid("dockApps", ["a", ""]) && !Prefs.valid("dockApps", "a"))

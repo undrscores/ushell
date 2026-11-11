@@ -22,6 +22,17 @@ ColumnLayout {
             }
         }
         SettingRow {
+            icon: ""; title: "Dim the screen first"; hint: "A warning this long before it locks or turns off; any key or mouse move cancels it"
+            Row {
+                spacing: 4
+                Repeater {
+                    model: [0, 10, 30, 60]
+                    delegate: Pill { required property int modelData; label: modelData === 0 ? "Off" : modelData + "s"; active: Prefs.idleDimSec === modelData
+                                     onClicked: Prefs.set("idleDimSec", modelData) }
+                }
+            }
+        }
+        SettingRow {
             icon: ""; title: "Turn the screens off after"
             Row {
                 spacing: 4

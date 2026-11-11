@@ -47,11 +47,15 @@ Singleton {
     property int nightTemp: 4000         // its colour temperature in kelvin; lower is warmer
     property int idleLockMin: 0          // lock after this many idle minutes; 0 = never
     property int idleOffMin: 0           // turn the screens off after this many idle minutes; 0 = never
+    property int idleDimSec: 30          // dim the screens this many seconds before the idle lock (or screen-off) fires; 0 = no dimming
     property var monitorWallpapers: ({}) // screen name -> picture path, for screens that do not show the main wallpaper
     property bool themeSchedule: false   // switch between light and dark by the time of day
     property string themeLightFrom: "07:00"   // light theme from here ...
     property string themeDarkFrom: "19:00"    // ... until here, dark the rest of the day
     property bool scheduleNightLight: true    // the night light follows the dark part of the schedule
+    property bool nightSchedule: false   // the night light is on every day between nightFrom and nightTo, whatever the theme does (replaces scheduleNightLight)
+    property string nightFrom: "21:00"
+    property string nightTo: "07:00"
     property bool polkitAgent: true      // ushell shows the password prompt for privileged actions (needs the other polkit agents stopped)
     property bool recordAudio: false     // screen recordings include the default audio output
     property int captureDelay: 0         // seconds to wait before a screenshot or recording starts (0, 3, 5, 10)
@@ -98,11 +102,15 @@ Singleton {
         nightTemp:       v => Number.isInteger(v) && v >= 2500 && v <= 6000,
         idleLockMin:     v => Number.isInteger(v) && v >= 0 && v <= 240,
         idleOffMin:      v => Number.isInteger(v) && v >= 0 && v <= 240,
+        idleDimSec:      v => Number.isInteger(v) && v >= 0 && v <= 120,
         monitorWallpapers: v => v !== null && typeof v === "object" && !Array.isArray(v) && Object.keys(v).every(k => k !== "" && typeof v[k] === "string" && v[k] !== ""),
         themeSchedule:   v => typeof v === "boolean",
         themeLightFrom:  v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
         themeDarkFrom:   v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
         scheduleNightLight: v => typeof v === "boolean",
+        nightSchedule:   v => typeof v === "boolean",
+        nightFrom:       v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
+        nightTo:         v => typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v),
         polkitAgent:     v => typeof v === "boolean",
         recordAudio:     v => typeof v === "boolean",
         captureDelay:    v => Number.isInteger(v) && v >= 0 && v <= 30,
