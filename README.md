@@ -91,3 +91,7 @@ GitHub Actions runs it on every push, plus `shellcheck` and (building uwc from s
 
 `sudo greeter/install.sh` sets up greetd with a ushell greeter. Read `greeter/README.md` first: it overwrites
 `/etc/greetd/config.toml` and `/etc/pam.d/greetd`.
+
+## License
+
+MIT, see `LICENSE`.
