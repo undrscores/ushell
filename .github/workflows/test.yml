@@ -1,0 +1,12 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: archlinux:latest        # quickshell is in Arch's repositories
+    steps:
+      - name: Install dependencies
+        run: pacman -Syu --noconfirm quickshell python git
+      - uses: actions/checkout@v4
+      - name: Run the tests
+        run: sh scripts/test.sh

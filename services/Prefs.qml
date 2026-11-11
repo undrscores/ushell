@@ -151,6 +151,7 @@ Singleton {
         id: file
         path: StateDir.ready ? StateDir.dir + "/prefs.json" : ""
         watchChanges: false
+        printErrors: false                   // a missing file is the normal first run
         onLoaded: {
             try {
                 const j = JSON.parse(file.text())

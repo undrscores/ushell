@@ -32,6 +32,7 @@ Singleton {
         id: store
         path: StateDir.ready ? root.file : ""
         watchChanges: true
+        printErrors: false                  // no file until the first copy
         onLoaded: root.parse(store.text())
         onFileChanged: reload()
     }

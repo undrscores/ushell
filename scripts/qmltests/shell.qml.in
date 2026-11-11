@@ -1,8 +1,15 @@
 import Quickshell
 import QtQuick
-import "@SERVICES@"   // replaced by scripts/test-qml.sh with the absolute path
+import "@ROOT@/services"   // @ROOT@ is replaced by scripts/test-qml.sh with the absolute path
+import "@ROOT@/services/nm.js" as NM
+import "@ROOT@/services/dnd.js" as Dnd
+import "@ROOT@/config/config.js" as Rules
+import "@ROOT@/modules/launcher/search.js" as Search
+import "@ROOT@/modules/launcher/calc.js" as Calc
+import "@ROOT@/modules/launcher/units.js" as Units
+import "@ROOT@/modules/launcher/pkg.js" as Pkg
 
-// Headless unit tests for the Prefs and Stats singletons. Run with scripts/test-qml.sh (it points XDG_STATE_HOME
+// Headless unit tests: the Prefs and Stats singletons, plus the pure JS libraries (nm, dnd, config rules, launcher search / calc / units). Run with scripts/test-qml.sh (it points XDG_STATE_HOME
 // at a temp dir holding a deliberately corrupt prefs.json, so nothing of yours is read or written).
 ShellRoot {
     id: t
@@ -43,6 +50,79 @@ ShellRoot {
         ok("gpu: no output counts as a failure", !Stats.hasGpu && Stats.gpuFailures === 1)
     }
 
+
+    function same(a, b) { return JSON.stringify(a) === JSON.stringify(b) }
+
+    function testNm() {
+        ok("nm: splitTerse handles escapes", same(NM.splitTerse("a:b\\:c:d\\\\e:"), ["a", "b:c", "d\\e", ""]))
+        let s = NM.parseStatus("wlp8s0:wifi:connected:Home\neno1:ethernet:connected:Wired 1\nlo:loopback:connected (externally):lo\n")
+        ok("nm: wired beats wifi", s.kind === "ethernet" && s.name === "Wired 1" && s.wifiPresent)
+        s = NM.parseStatus("wlp8s0:wifi:connected:Home\neno1:ethernet:unavailable:\n")
+        ok("nm: wifi only", s.kind === "wifi" && s.name === "Home")
+        s = NM.parseStatus("eno1:ethernet:disconnected:\nlo:loopback:connected (externally):lo\n")
+        ok("nm: nothing connected", s.kind === "none" && !s.wifiPresent)
+        const l = NM.parseWifi(" :Ziggo:52:WPA2\n ::84:WPA2\n*:Home:40:WPA2 WPA3\n :Ziggo:84:WPA2\n :Cafe:90:\n :Odd\\:Name:30:WPA2\n", ["Ziggo"])
+        ok("nm: wifi list dedupes, sorts, skips hidden", same(l.map(n => n.ssid), ["Home", "Cafe", "Ziggo", "Odd:Name"]))
+        ok("nm: wifi list keeps the strongest signal and the flags", l[2].signal === 84 && l[2].saved && !l[1].secured && l[0].active)
+        ok("nm: saved wifi profiles", same(NM.parseSavedWifi("Wired 1:802-3-ethernet\nHome:802-11-wireless\n"), ["Home"]))
+        ok("nm: signal bars", same([0, 24, 25, 50, 75, 100].map(NM.bars), [0, 0, 1, 2, 3, 3]))
+    }
+
+    function testDnd() {
+        const at = (h, m) => new Date(2026, 0, 1, h, m)
+        ok("dnd: same-day window", Dnd.inWindow("09:00", "17:00", at(9, 0)) && Dnd.inWindow("09:00", "17:00", at(16, 59))
+            && !Dnd.inWindow("09:00", "17:00", at(17, 0)) && !Dnd.inWindow("09:00", "17:00", at(8, 59)))
+        ok("dnd: window across midnight", Dnd.inWindow("22:00", "07:00", at(23, 30)) && Dnd.inWindow("22:00", "07:00", at(0, 0))
+            && Dnd.inWindow("22:00", "07:00", at(6, 59)) && !Dnd.inWindow("22:00", "07:00", at(7, 0))
+            && !Dnd.inWindow("22:00", "07:00", at(12, 0)) && Dnd.inWindow("22:00", "07:00", at(22, 0)))
+        ok("dnd: empty and invalid windows are never active", !Dnd.inWindow("08:00", "08:00", at(8, 0)) && !Dnd.inWindow("25:00", "07:00", at(1, 0)) && !Dnd.inWindow("", "", at(1, 0)))
+    }
+
+    function testConfigRules() {
+        const defaults = { terminal: "alacritty", glassOpacity: 0.78, maxVolume: 1.0, nativeLock: true }
+        let r = Rules.parse('{"terminal": " foot ", "glassOpacity": 2, "maxVolume": 9}', defaults)
+        ok("config: values are trimmed and clamped", r.values.terminal === "foot" && r.values.glassOpacity === 1 && r.values.maxVolume === 1.5 && r.warnings.length === 0)
+        r = Rules.parse('{"nativeLock": "yes", "bogus": 1}', defaults)
+        ok("config: a wrong type keeps the default and warns", r.values.nativeLock === true && r.warnings.length === 2)
+        r = Rules.parse("{oops", defaults)
+        ok("config: invalid JSON gives the defaults and one warning", same(r.values, defaults) && r.warnings.length === 1)
+        r = Rules.parse("[1]", defaults)
+        ok("config: a non-object top level is refused", same(r.values, defaults) && r.warnings.length === 1)
+        r = Rules.parse('{"searchUrl": "javascript:alert(1)"}', { searchUrl: "https://x/?q=" })
+        ok("config: searchUrl must be http(s)", r.values.searchUrl === "https://x/?q=" && r.warnings.length === 1)
+    }
+
+    function testLauncherLibs() {
+        let p = Search.parse("yt cats", { yt: "https://y/?q=" })
+        ok("search: a shortcut selects web mode", p.mode === "web" && p.q === "cats" && p.url === "https://y/?q=")
+        ok("search: prefixes", Search.parse("> ls -la", {}).mode === "cmd" && Search.parse("e smile", {}).mode === "emoji"
+            && Search.parse("f notes", {}).mode === "file" && Search.parse("m queen", {}).mode === "song"
+            && Search.parse("c token", {}).mode === "clip" && Search.parse("?", {}).mode === "help")
+        ok("search: z, pkg and pacman select package mode", Search.parse("z firefox", {}).mode === "pkg" && Search.parse("pacman firefox", {}).mode === "pkg"
+            && Search.parse("pkg firefox", {}).mode === "pkg" && Search.parse("zypper firefox", {}).mode === "app")
+        ok("search: plain text is an app search", Search.parse("  firefox ", {}).mode === "app" && Search.parse("  firefox ", {}).q === "firefox")
+        ok("search: scoring order", Search.textScore("firefox", "firefox") > Search.textScore("firefox", "fire")
+            && Search.textScore("firefox", "fire") > Search.textScore("my firefox", "fire") && Search.textScore("firefox", "zzz") === 0)
+        ok("calc: arithmetic and precedence", Calc.tryCalc("2*(3+4)") === "14" && Calc.tryCalc("2+3*4") === "14" && Calc.tryCalc("2^10") === "1024")
+        ok("calc: text that is not a calculation", Calc.tryCalc("firefox") === null && Calc.tryCalc("") === null)
+        ok("calc: no code execution", Calc.tryCalc("process.exit()") === null && Calc.tryCalc("1;2") === null)
+        const pacman = "extra/foot 1.28.0-2 [installed]\n    A fast, lightweight and minimalistic Wayland terminal emulator\n"
+                     + "extra/footswitch 1.0-1\n    A tool\nextra/foo 2.0-1 [installed: 1.9-1]\n    Another\n"
+        let pk = Pkg.parseSearch(pacman, "foo")
+        ok("pkg: names without the repo, exact match first, then shorter", same(pk.map(x => x.title), ["foo", "foot", "footswitch"]))
+        ok("pkg: installed flag, including 'installed: version'", pk[0].installed && pk[1].installed && !pk[2].installed)
+        ok("pkg: description lines and garbage are skipped", Pkg.parseSearch("    only a description\n\n", "x").length === 0)
+        pk = Pkg.parseSearch("aur/paru-bin 2.1.0-1 (+900 12.30) (Installed)\n    AUR helper\n", "paru")
+        ok("pkg: AUR helper output", pk.length === 1 && pk[0].title === "paru-bin" && pk[0].installed)
+        ok("pkg: results are capped at 60", Pkg.parseSearch(Array.from({ length: 100 }, (_, i) => "extra/p" + i + " 1-1\n    d").join("\n"), "p").length === 60)
+        ok("pkg: the query is escaped so it matches literally", Pkg.escapeRegex("c++ (x)") === "c\\+\\+ \\(x\\)" && Pkg.escapeRegex("a.b") === "a\\.b")
+        let c = Units.tryConvert("5 km in mi")
+        ok("units: km to mi", c !== null && c.value.indexOf("3.1068") === 0)
+        c = Units.tryConvert("100 c to f")
+        ok("units: temperature", c !== null && c.value.indexOf("212") === 0)
+        ok("units: not a conversion", Units.tryConvert("hello world") === null)
+    }
+
     function testPrefsSchema() {
         ok("prefs: themeMode accepts dark/light only", Prefs.valid("themeMode", "light") && !Prefs.valid("themeMode", "blue"))
         ok("prefs: unknown keys are rejected", !Prefs.valid("noSuchSetting", true) && !Prefs.has("noSuchSetting"))
@@ -60,7 +140,7 @@ ShellRoot {
         ok("prefs: an invalid change is ignored", (Prefs.set("themeMode", "blue"), Prefs.themeMode === "dark"))
     }
 
-    Component.onCompleted: { testStats(); testPrefsSchema() }
+    Component.onCompleted: { testStats(); testNm(); testDnd(); testConfigRules(); testLauncherLibs(); testPrefsSchema() }
     Timer {   // the corrupt prefs.json is read and copied asynchronously
         interval: 2500; running: true
         onTriggered: {

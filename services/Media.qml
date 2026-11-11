@@ -33,11 +33,12 @@ Singleton {
     function next()   { if (useMpd) Mpd.next();   else if (player) player.next() }
     function prev()   { if (useMpd) Mpd.prev();   else if (player) player.previous() }
 
-    // Positions don't push updates: poll (MPD is interpolated between its ticks).
+    // Positions don't push updates: poll (MPD is interpolated between its ticks). Only the full player shows the
+    // position, so nothing polls while it is closed.
     Timer {
         interval: 400
         repeat: true
-        running: root.playing
+        running: root.playing && Shell.mediaFull
         triggeredOnStart: true
         onTriggered: root.syncPosition()
     }
@@ -45,6 +46,7 @@ Singleton {
         if (useMpd) position = Math.min(Mpd.duration, Mpd.elapsed + (Mpd.playing ? (Date.now() - Mpd.stamp) / 1000 : 0))
         else if (player) { player.positionChanged(); position = player.position }
     }
+    Connections { target: Shell; function onMediaFullChanged() { if (Shell.mediaFull) root.syncPosition() } }   // a paused player still needs its position when the full player opens
     onUseMpdChanged: syncPosition()
     onPlayerChanged: syncPosition()
     Connections { target: Mpd; function onElapsedChanged() { if (root.useMpd && !root.playing) root.syncPosition() } }

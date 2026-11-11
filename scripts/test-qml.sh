@@ -1,5 +1,6 @@
 #!/bin/sh
-# Headless QML unit tests (Prefs validation and corrupt-file handling, Stats and GPU parsers).
+# Headless QML unit tests: Prefs validation and corrupt-file handling, the Stats and GPU parsers, and the pure JS
+# libraries (nm.js, dnd.js, config rules, launcher search / calc / units).
 # Runs quickshell with the offscreen Qt platform against scripts/qmltests/shell.qml.in; XDG_STATE_HOME points at a
 # temp dir with a deliberately corrupt prefs.json, so your real settings are never read or written.
 # Also checks the corrupt file was kept as prefs.json.corrupt. Needs: qs (quickshell). Exit status 0 = all passed.
@@ -12,7 +13,7 @@ trap cleanup EXIT INT TERM
 mkdir -p "$tmp/state/ushell"
 printf '{"themeMode": "light", oops' > "$tmp/state/ushell/prefs.json"
 mkdir -p "$tmp/cfg"
-sed "s#@SERVICES@#file://$dir/services#" "$dir/scripts/qmltests/shell.qml.in" > "$tmp/cfg/shell.qml"
+sed "s#@ROOT@#file://$dir#" "$dir/scripts/qmltests/shell.qml.in" > "$tmp/cfg/shell.qml"
 XDG_STATE_HOME="$tmp/state" QT_QPA_PLATFORM=offscreen qs -p "$tmp/cfg" > "$tmp/out.log" 2>&1 &
 qpid=$!
 for _ in $(seq 1 100); do

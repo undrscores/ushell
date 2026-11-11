@@ -78,6 +78,25 @@ ColumnLayout {
     }
 
     SettingsGroup {
+        title: "System check"
+        SettingRow {
+            icon: "\uf0ad"; title: Doctor.done ? (Doctor.missing.length === 0 ? "Everything ushell uses is installed" : Doctor.missing.length + " thing" + (Doctor.missing.length === 1 ? "" : "s") + " missing") : "Checking…"
+            hint: "Fonts and helper programs the shell relies on. Features that need a missing one do nothing until you install it."
+            Pill { label: "Check again"; onClicked: Doctor.run() }
+        }
+        Repeater {
+            model: Doctor.missing
+            Text {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                text: "•  " + modelData.replace(/^warn\s+/, "")
+                color: Theme.fgDim
+                font { family: Theme.font; pixelSize: Theme.fontSize - 1 }
+            }
+        }
+    }
+
+    SettingsGroup {
         title: "Shell"
         SettingRow {
             icon: ""; title: "Reload the shell"; hint: "It also reloads by itself whenever a file changes"

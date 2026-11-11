@@ -8,6 +8,7 @@ import "../../components"
 import "calc.js" as Calc
 import "search.js" as Search
 import "units.js" as Units
+import "pkg.js" as Pkg
 import "emoji.js" as EmojiData
 
 // Launcher. Plain text searches apps, open windows, system actions and does maths.
@@ -74,6 +75,14 @@ PanelWindow {
         if (emojiList.length === 0)
             emojiList = EmojiData.RAW.split("\n").map(l => { const i = l.indexOf("|"); return { ch: l.slice(0, i), name: l.slice(i + 1) } })
         return emojiList
+    }
+    // An AUR helper, when one is installed, searches the AUR as well as the repositories and installs without sudo
+    // (helpers ask for it themselves). Without one, plain pacman.
+    property string pkgHelper: ""
+    Process {
+        running: true
+        command: ["sh", "-c", "command -v paru || command -v yay"]
+        stdout: StdioCollector { onStreamFinished: { const p = text.trim().split("/").pop(); win.pkgHelper = p } }
     }
     property bool emojiFont: true           // a colour emoji font is installed (without one the picker still copies, but shows boxes)
     Process {
@@ -200,21 +209,13 @@ PanelWindow {
 
     Process {
         id: pkgProc
-        command: ["pacman", "-Ss", "--", win.asyncQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")]   // the query is a regex: match it literally
+        command: [win.pkgHelper || "pacman", "-Ss", "--", Pkg.escapeRegex(win.asyncQuery)]   // the query is a regex: match it literally
         stdout: StdioCollector {
             onStreamFinished: {
                 if (win.stale("pkg")) return
-                // pacman -Ss prints "repo/name version [installed]" followed by an indented description line (skipped)
-                const items = []
-                for (const line of text.split("\n")) {
-                    if (line.startsWith(" ") || line.trim() === "") continue
-                    const m = line.match(/^[^\/\s]+\/(\S+)\s+\S+(.*)$/)
-                    if (!m) continue
-                    items.push({ kind: "pkg", title: m[1], glyph: "", installed: m[2].includes("[installed"), data: m[1] })
-                }
-                items.sort((x, y) => (y.title === win.asyncQuery) - (x.title === win.asyncQuery) || x.title.length - y.title.length)
+                const items = Pkg.parseSearch(text, win.asyncQuery)
                 win.busy = false
-                win.setResults(items.slice(0, 60))
+                win.setResults(items)
             }
         }
     }
@@ -257,6 +258,12 @@ PanelWindow {
             "sudo \"$@\"; echo; read -n1 -s -r -p 'Press any key to close…'", "ushell"].concat(args))
     }
 
+    // Same, without sudo: for an AUR helper, which elevates by itself and refuses to run as root.
+    function inTerminalPlain(args) {
+        Quickshell.execDetached([Config.terminal, "-e", "bash", "-c",
+            "\"$@\"; echo; read -n1 -s -r -p 'Press any key to close…'", "ushell"].concat(args))
+    }
+
     function activate(item, alt) {
         if (!item) return
         if (item.kind === "hint" && item.data === "") return
@@ -275,7 +282,10 @@ PanelWindow {
         case "win":    Wm.focusWindow(item.data); break
         case "calc":   Quickshell.execDetached(["wl-copy", item.data]); break
         case "action": if (!Actions.trigger(item.data)) return; bump(item.id); break
-        case "pkg":    inTerminal(["pacman", item.installed ? "-Rs" : "-S", "--", item.data]); break
+        case "pkg":
+            if (pkgHelper !== "") inTerminalPlain([pkgHelper, item.installed ? "-Rs" : "-S", "--", item.data])
+            else inTerminal(["pacman", item.installed ? "-Rs" : "-S", "--", item.data])
+            break
         case "song":   Quickshell.execDetached(["python3", "-I", Mpd.script, alt ? "queue" : "playuri", item.data]); break
         case "file": {
             const target = alt ? item.data.slice(0, item.data.lastIndexOf("/")) : item.data
@@ -365,7 +375,7 @@ PanelWindow {
                 Text {
                     id: chipText
                     anchors.centerIn: parent
-                    text: win.busy ? "…" : ({ pkg: "pacman", song: "music", file: "files", web: "web", emoji: "emoji", clip: "clipboard", cmd: "run", help: "modes" }[win.mode] ?? "")
+                    text: win.busy ? "…" : ({ pkg: (win.pkgHelper || "pacman"), song: "music", file: "files", web: "web", emoji: "emoji", clip: "clipboard", cmd: "run", help: "modes" }[win.mode] ?? "")
                     color: Theme.accent
                     font { family: Theme.font; pixelSize: Theme.fontSize - 2 }
                 }
