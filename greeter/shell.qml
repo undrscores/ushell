@@ -11,8 +11,9 @@ import QtQuick
 ShellRoot {
     id: root
     readonly property string user: "@USER@"
-    readonly property var session: ["sh", "-c", "exec uwc-session"]
-    readonly property string font: "JetBrains Mono"
+    // zsh -c (not sh -c): it reads ~/.zshenv, so the session gets the same PATH / EDITOR as a tty login would
+    readonly property var session: ["zsh", "-c", "exec uwc-session"]
+    readonly property string font: "Geist"      // must be installed system-wide: this runs as the `greeter` user, which can't read ~/.local/share/fonts
     property var theme: ({})
     readonly property color bg: theme.bg || "#1e1e2e"
     readonly property color surface: theme.surface || "#313244"
